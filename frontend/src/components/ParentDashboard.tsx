@@ -338,15 +338,6 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     { id: "ai-tools" as Tab, label: "AI Parenting Hub", icon: Sparkles, count: reports.length },
   ];
 
-  const ModalShell = ({ children: modalChildren }: { children: React.ReactNode }) =>
-    createPortal(
-      <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-slate-900/60 px-4 py-6 backdrop-blur-sm">
-        <div className="w-full max-w-md rounded-3xl border-2 border-b-4 border-[#E2E8F0] bg-white p-6 shadow-2xl max-h-[calc(100dvh-3rem)] overflow-y-auto">
-          {modalChildren}
-        </div>
-      </div>,
-      document.body
-    );
 
   return (
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-[#1E293B] md:flex">
@@ -540,4 +531,17 @@ function SelectField({ label, value, onChange, options, required }: { label: str
 }
 
 
+
+
+
+function ModalShell({ children: modalChildren }: { children: React.ReactNode }) {
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-slate-900/60 px-4 py-6 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-3xl border-2 border-b-4 border-[#E2E8F0] bg-white p-6 shadow-2xl max-h-[calc(100dvh-3rem)] overflow-y-auto">
+        {modalChildren}
+      </div>
+    </div>,
+    document.body
+  );
+}
 
