@@ -78,7 +78,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
   const fetchDashboard = async () => {
     try {
-      const res = await fetch(`/api/children/${childUser.id}/dashboard`);
+      const res = await fetch(`/api/children/${childUser.id}/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
       const dashboardData = await res.json();
       if (res.ok) {
         setData(dashboardData);
@@ -96,7 +96,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
   const fetchNotifs = async () => {
     try {
-      const res = await fetch(`/api/notifications/${childUser.id}`);
+      const res = await fetch(`/api/notifications/${childUser.id}`, { headers: { Authorization: `Bearer ${token}` } });
       const list = await res.json();
       if (res.ok) setNotifications(list);
     } catch (e) {}
@@ -133,7 +133,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     try {
       const res = await fetch(`/api/children/${childUser.id}/quests/${selectedQuest.id}/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ proofData: proof })
       });
 
@@ -160,7 +160,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     }
 
     try {
-      const res = await fetch(`/api/children/${childUser.id}/feed-pet`, { method: "POST" });
+      const res = await fetch(`/api/children/${childUser.id}/feed-pet`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       const resData = await res.json();
       if (res.ok) {
         playQuestSound("feed");
@@ -196,7 +196,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     }
 
     try {
-      const res = await fetch(`/api/children/${childUser.id}/rewards/${rewardId}/claim`, { method: "POST" });
+      const res = await fetch(`/api/children/${childUser.id}/rewards/${rewardId}/claim`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) {
         playQuestSound("success");
         alert("🎁 Reward claimed! Sent approval request to your Parent. Once approved, you can enjoy it!");
@@ -208,7 +208,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   // Read notification
   const markNotifRead = async (notifId: string) => {
     try {
-      await fetch(`/api/notifications/${notifId}/read`, { method: "POST" });
+      await fetch(`/api/notifications/${notifId}/read`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
       fetchNotifs();
     } catch (e) {}
   };
