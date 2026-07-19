@@ -352,7 +352,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     <div className="min-h-screen bg-[#F0F4F8] font-sans text-[#1E293B] md:flex">
       {message && <div className="fixed right-4 top-4 z-[10000] rounded-2xl border-2 border-sky-200 bg-sky-50 px-5 py-3 text-xs font-black text-sky-700 shadow-lg">{message}</div>}
 
-      <aside className="w-full border-r border-[#E2E8F0] bg-white md:min-h-screen md:w-72">
+      <aside className="w-full border-r border-[#E2E8F0] bg-white md:min-h-screen md:w-72 sticky top-0 z-50 flex flex-col shadow-sm md:shadow-none">
         <div className="flex items-center justify-between border-b border-[#E2E8F0] p-6">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl border-b-4 border-[#46A302] bg-[#58CC02] text-xl font-black text-white">H</div>
@@ -361,17 +361,17 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <p className="text-[10px] font-black uppercase tracking-widest text-[#64748B]">Parent Portal</p>
             </div>
           </div>
-          <button type="button" onClick={fetchData} className="rounded-xl p-2 text-[#777777] hover:bg-[#F1F5F9]" title="Refresh">
+          <div className="flex items-center gap-2"><button type="button" onClick={onLogout} className="md:hidden rounded-xl p-2 text-rose-500 hover:bg-rose-50" title="Sign Out"><LogOut className="h-5 w-5" /></button><button type="button" onClick={fetchData} className="rounded-xl p-2 text-[#777777] hover:bg-[#F1F5F9]" title="Refresh">
             <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
           </button>
         </div>
 
-        <div className="border-b border-[#E2E8F0] bg-[#F8FAFC] px-6 py-4">
+        <div className="hidden md:block border-b border-[#E2E8F0] bg-[#F8FAFC] px-6 py-4">
           <p className="text-[10px] font-black uppercase tracking-widest text-[#64748B]">Family Map</p>
           <p className="text-sm font-black text-[#1899D6]">The {parent.name} Family</p>
         </div>
 
-        <nav className="space-y-2 p-4">
+        <nav className="flex overflow-x-auto gap-2 p-4 md:flex-col md:space-y-2 md:gap-0 scrollbar-hide border-b md:border-b-0 border-[#E2E8F0]">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -379,18 +379,18 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                 key={item.id}
                 type="button"
                 onClick={() => setActiveTab(item.id)}
-                className={`flex w-full items-center justify-between rounded-2xl p-3 text-sm font-black transition ${
+                className={`flex w-auto md:w-full shrink-0 whitespace-nowrap items-center justify-between rounded-2xl p-3 text-sm font-black transition ${
                   activeTab === item.id ? "bg-[#DDF4FF] text-[#1899D6]" : "text-[#777777] hover:bg-[#F1F5F9] hover:text-[#4B4B4B]"
                 }`}
               >
-                <span className="flex items-center gap-3"><Icon className="h-5 w-5" />{item.label}</span>
-                <span className="rounded-full bg-[#E2E8F0] px-2.5 py-0.5 text-[10px] text-[#4B4B4B]">{item.count}</span>
+                <span className="flex items-center gap-3"><Icon className="h-5 w-5 hidden md:block" />{item.label}</span>
+                <span className="ml-2 rounded-full bg-[#E2E8F0] px-2.5 py-0.5 text-[10px] text-[#4B4B4B]">{item.count}</span>
               </button>
             );
           })}
         </nav>
 
-        <div className="mt-auto border-t border-[#E2E8F0] p-4">
+        <div className="hidden md:block mt-auto border-t border-[#E2E8F0] p-4">
           <p className="mb-3 truncate text-xs font-black text-[#4B4B4B]">{parent.email}</p>
           <button type="button" onClick={onLogout} className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-rose-200 bg-rose-50 py-3 text-xs font-black uppercase text-rose-500">
             <LogOut className="h-4 w-4" /> Sign Out Family
@@ -520,11 +520,11 @@ function DataList({ empty, children }: { empty: string; children: React.ReactNod
 }
 
 function QuestRow({ quest, childName, onEdit, onDelete }: { quest: any; childName: string; onEdit: () => void; onDelete: () => void }) {
-  return <div className="row-card"><div><p className="font-black text-[#4B4B4B]">{quest.adventureTitle || quest.title}</p><p className="text-xs font-bold text-[#64748B]">{childName} • {quest.difficulty} • {quest.repetition} • {quest.status}</p></div><div className="flex gap-2"><button type="button" onClick={onEdit} className="icon-button"><Edit2 className="h-4 w-4" /></button><button type="button" onClick={onDelete} className="icon-button danger"><Trash2 className="h-4 w-4" /></button></div></div>;
+  return <div className="row-card"><div><p className="font-black text-[#4B4B4B]">{quest.adventureTitle || quest.title}</p><p className="text-xs font-bold text-[#64748B]">{childName} ï¿½ {quest.difficulty} ï¿½ {quest.repetition} ï¿½ {quest.status}</p></div><div className="flex gap-2"><button type="button" onClick={onEdit} className="icon-button"><Edit2 className="h-4 w-4" /></button><button type="button" onClick={onDelete} className="icon-button danger"><Trash2 className="h-4 w-4" /></button></div></div>;
 }
 
 function RewardRow({ reward, childName, onApprove, onReject }: { reward: any; childName: string; onApprove: () => void; onReject: () => void }) {
-  return <div className="row-card"><div><p className="font-black text-[#4B4B4B]">{reward.title}</p><p className="text-xs font-bold text-[#64748B]">{childName} • {reward.coinsCost} coins • {reward.status}</p></div>{reward.status === "requested" && <div className="flex gap-2"><button type="button" onClick={onApprove} className="small-green">Approve</button><button type="button" onClick={onReject} className="small-red">Reject</button></div>}</div>;
+  return <div className="row-card"><div><p className="font-black text-[#4B4B4B]">{reward.title}</p><p className="text-xs font-bold text-[#64748B]">{childName} ï¿½ {reward.coinsCost} coins ï¿½ {reward.status}</p></div>{reward.status === "requested" && <div className="flex gap-2"><button type="button" onClick={onApprove} className="small-green">Approve</button><button type="button" onClick={onReject} className="small-red">Reject</button></div>}</div>;
 }
 
 function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
