@@ -1,0 +1,6 @@
+{
+  "name": "HabitQuest",
+  "description": "An immersive, gamified habit-building and productivity platform that motivates children to form lifelong good habits with virtual pets, level systems, parent validation queues, and AI-powered recommendations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

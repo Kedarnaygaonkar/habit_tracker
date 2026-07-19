@@ -1,0 +1,354 @@
+{
+  "parents": [
+    {
+      "id": "p-sample",
+      "email": "parent@habitquest.com",
+      "passwordHash": "$2b$10$t2TYapiDIZFtHvQZ5EhB5.b2kZyMuyOjK8T3LhN9JHMrwnFrSuk/W",
+      "familyName": "Adventures"
+    },
+    {
+      "id": "p-wqaeqb5s0",
+      "email": "test@gmail.com",
+      "passwordHash": "$2b$10$g2jdH8AwA/s5nPbJ93VNSemgOTUtoarwH8ysTM4.nKnEqUf7ks9D.",
+      "familyName": "Test User1 "
+    },
+    {
+      "id": "p-9bgz2tgc0",
+      "email": "codextest20260719165940@example.com",
+      "passwordHash": "$2b$10$s.zELSkmUXp7CMv9YWYBAu5Arn.OBx6BjMK3lN/E9Tf7u8roO25Q.",
+      "familyName": "CodexTest20260719165940"
+    }
+  ],
+  "children": [
+    {
+      "id": "c-leo",
+      "parentId": "p-sample",
+      "name": "Leo",
+      "passcode": "1234",
+      "avatar": "avatar_knight",
+      "xp": 450,
+      "coins": 120,
+      "level": 2,
+      "streak": 5,
+      "longestStreak": 12,
+      "pet": {
+        "name": "Sparky the Dragon",
+        "level": 2,
+        "xp": 150,
+        "happiness": 85,
+        "status": "happy",
+        "lastFedAt": "2026-07-19T10:23:40.282Z"
+      },
+      "loginId": "leo",
+      "passwordHash": "$2b$10$cBInZVKo68Qp9TmcX70JCOdRFkDCakb20kWhkqtPFCgxwm7EVNuKK"
+    },
+    {
+      "id": "c-emma",
+      "parentId": "p-sample",
+      "name": "Emma",
+      "passcode": "5678",
+      "avatar": "avatar_wizard",
+      "xp": 950,
+      "coins": 40,
+      "level": 4,
+      "streak": 18,
+      "longestStreak": 25,
+      "pet": {
+        "name": "Mochi the Bunny",
+        "level": 4,
+        "xp": 450,
+        "happiness": 95,
+        "status": "excited",
+        "lastFedAt": "2026-07-19T10:23:40.283Z"
+      },
+      "loginId": "emma",
+      "passwordHash": "$2b$10$cBInZVKo68Qp9TmcX70JCOx9nKJj6AUJ3qcXWOUKy3ZQB8BvY/A6K"
+    },
+    {
+      "id": "c-z152uhwrl",
+      "parentId": "p-9bgz2tgc0",
+      "name": "Kid 20260719165940",
+      "loginId": "kid20260719165940",
+      "passwordHash": "$2b$10$G1PvedbGUnpIQgUTlT8ZN..X5q3UrweY.KkgmnXq1q.3S/y3ymXhy",
+      "avatar": "avatar_knight",
+      "xp": 0,
+      "coins": 0,
+      "level": 1,
+      "streak": 0,
+      "longestStreak": 0,
+      "pet": {
+        "name": "Mochi the Bunny",
+        "level": 1,
+        "xp": 0,
+        "happiness": 100,
+        "status": "happy",
+        "lastFedAt": "2026-07-19T11:29:43.274Z"
+      }
+    },
+    {
+      "id": "c-9vzrvc628",
+      "parentId": "p-wqaeqb5s0",
+      "name": "testchild1",
+      "loginId": "testgmailcom",
+      "passwordHash": "$2b$10$yHfLxLTdvbwXPM9xTumlg.TYLMSkK6N0lNXSqp5fya5JMsTCXyp2e",
+      "avatar": "avatar_knight",
+      "xp": 0,
+      "coins": 0,
+      "level": 1,
+      "streak": 0,
+      "longestStreak": 0,
+      "pet": {
+        "name": "Mochi the Bunny",
+        "level": 1,
+        "xp": 0,
+        "happiness": 100,
+        "status": "happy",
+        "lastFedAt": "2026-07-19T11:49:00.341Z"
+      }
+    },
+    {
+      "id": "c-kxk3yatul",
+      "parentId": "p-wqaeqb5s0",
+      "name": "testchild2",
+      "loginId": "test2gmailcom",
+      "passwordHash": "$2b$10$gjaL9/kUTxQ4/v2PWaGB6.cJLFME.sWJP2klVo2J1341foUwSpomu",
+      "avatar": "avatar_wizard",
+      "xp": 0,
+      "coins": 0,
+      "level": 1,
+      "streak": 0,
+      "longestStreak": 0,
+      "pet": {
+        "name": "Mochi the Bunny",
+        "level": 1,
+        "xp": 0,
+        "happiness": 100,
+        "status": "happy",
+        "lastFedAt": "2026-07-19T11:49:25.833Z"
+      }
+    }
+  ],
+  "quests": [
+    {
+      "id": "q-1",
+      "parentId": "p-sample",
+      "childId": "c-leo",
+      "title": "Brush Teeth",
+      "adventureTitle": "Defeat the Cavity Monster",
+      "difficulty": "easy",
+      "repetition": "daily",
+      "xp": 20,
+      "coins": 5,
+      "reminderTime": "08:00",
+      "requireProof": "none",
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "q-2",
+      "parentId": "p-sample",
+      "childId": "c-leo",
+      "title": "Read Book",
+      "adventureTitle": "Discover the Lost Library",
+      "difficulty": "medium",
+      "repetition": "daily",
+      "xp": 50,
+      "coins": 15,
+      "reminderTime": "19:30",
+      "requireProof": "text",
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "q-3",
+      "parentId": "p-sample",
+      "childId": "c-leo",
+      "title": "Do Homework",
+      "adventureTitle": "Complete the Wizard Academy Challenge",
+      "difficulty": "hard",
+      "repetition": "daily",
+      "xp": 100,
+      "coins": 30,
+      "reminderTime": "16:00",
+      "requireProof": "photo",
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "q-4",
+      "parentId": "p-sample",
+      "childId": "c-emma",
+      "title": "Clean Room",
+      "adventureTitle": "Organize the Kingdom of Chaos",
+      "difficulty": "medium",
+      "repetition": "weekly",
+      "xp": 60,
+      "coins": 20,
+      "reminderTime": "10:00",
+      "requireProof": "photo",
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "q-5",
+      "parentId": "p-sample",
+      "childId": "c-emma",
+      "title": "Drink Water",
+      "adventureTitle": "Drink the Magic Potion",
+      "difficulty": "easy",
+      "repetition": "daily",
+      "xp": 10,
+      "coins": 2,
+      "reminderTime": "12:00",
+      "requireProof": "none",
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "q-c4ilnl15b",
+      "parentId": "p-sample",
+      "childId": "c-leo",
+      "title": "pushups",
+      "adventureTitle": "Quest: pushups",
+      "difficulty": "medium",
+      "repetition": "daily",
+      "xp": 50,
+      "coins": 15,
+      "reminderTime": "08:00",
+      "requireProof": "text",
+      "status": "pending",
+      "verified": false
+    }
+  ],
+  "rewards": [
+    {
+      "id": "r-1",
+      "parentId": "p-sample",
+      "childId": "c-leo",
+      "title": "30 Minutes TV Time",
+      "coinsCost": 20,
+      "status": "available"
+    },
+    {
+      "id": "r-2",
+      "parentId": "p-sample",
+      "childId": "c-leo",
+      "title": "Ice Cream Treat",
+      "coinsCost": 50,
+      "status": "available"
+    },
+    {
+      "id": "r-3",
+      "parentId": "p-sample",
+      "childId": "c-emma",
+      "title": "Movie Night Choice",
+      "coinsCost": 80,
+      "status": "available"
+    },
+    {
+      "id": "r-8flcpda5d",
+      "parentId": "p-sample",
+      "childId": "c-leo",
+      "title": "trips",
+      "coinsCost": 1000,
+      "status": "available"
+    }
+  ],
+  "achievements": [
+    {
+      "id": "a-1",
+      "childId": "c-leo",
+      "title": "First Quest",
+      "description": "Completed your very first quest!",
+      "icon": "award_star",
+      "unlockedAt": "2026-07-19T10:23:40.283Z"
+    },
+    {
+      "id": "a-2",
+      "childId": "c-emma",
+      "title": "First Quest",
+      "description": "Completed your very first quest!",
+      "icon": "award_star",
+      "unlockedAt": "2026-07-19T10:23:40.283Z"
+    },
+    {
+      "id": "a-3",
+      "childId": "c-emma",
+      "title": "18 Day Streak",
+      "description": "Maintained a quest streak for 18 days!",
+      "icon": "flame",
+      "unlockedAt": "2026-07-19T10:23:40.283Z"
+    }
+  ],
+  "questHistory": [
+    {
+      "id": "h-1",
+      "childId": "c-leo",
+      "questId": "q-1",
+      "title": "Brush Teeth",
+      "adventureTitle": "Defeat the Cavity Monster",
+      "xpEarned": 20,
+      "coinsEarned": 5,
+      "completedAt": "2026-07-18T10:23:40.283Z",
+      "status": "verified"
+    },
+    {
+      "id": "h-2",
+      "childId": "c-emma",
+      "questId": "q-5",
+      "title": "Drink Water",
+      "adventureTitle": "Drink the Magic Potion",
+      "xpEarned": 10,
+      "coinsEarned": 2,
+      "completedAt": "2026-07-19T10:23:40.283Z",
+      "status": "verified"
+    }
+  ],
+  "notifications": [],
+  "aiReports": [
+    {
+      "id": "rep-1",
+      "childId": "c-leo",
+      "parentId": "p-sample",
+      "createdAt": "2026-07-19T10:23:40.283Z",
+      "habitScore": 78,
+      "completionRate": 80,
+      "strengths": [
+        "Excellent brushing habits",
+        "Highly engaged in reading"
+      ],
+      "weaknesses": [
+        "Often postpones evening routines",
+        "Homework completion drops on Thursdays"
+      ],
+      "recommendations": [
+        "Set reading quest exactly 30 minutes before bed",
+        "Gamify the homework quest with extra XP booster"
+      ],
+      "bestTimeOfDay": "Morning",
+      "parentSummary": "Leo is responding extremely well to gamification. His reading habit has seen a massive 40% increase in consistency. Focus on evening routines to maintain the streak!"
+    },
+    {
+      "id": "rep-lc2cfl1h8",
+      "childId": "c-9vzrvc628",
+      "parentId": "p-wqaeqb5s0",
+      "createdAt": "2026-07-19T12:19:11.559Z",
+      "habitScore": 20,
+      "completionRate": 0,
+      "strengths": [
+        "Excellent persistence with a streak of 0 days",
+        "testchild1 is highly consistent with morning quests"
+      ],
+      "weaknesses": [
+        "Bedtime routines are occasionally missed",
+        "Completing tasks without parents requiring multiple reminders"
+      ],
+      "recommendations": [
+        "Set a bedtime quest 30 minutes earlier",
+        "Convert difficult tasks into team adventures with parents"
+      ],
+      "bestTimeOfDay": "Morning",
+      "parentSummary": "testchild1 has made incredible progress this week! With an overall habit consistency score of 20%, they are showing real growth, particularly in brushing teeth and reading. Keep reinforcing their awesome streak!"
+    }
+  ]
+}
