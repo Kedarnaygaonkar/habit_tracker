@@ -10,7 +10,7 @@ const ai = new GoogleGenAI({
   }
 });
 
-const MODEL_NAME = "gemini-1.5-flash";
+const MODEL_NAME = "gemini-1.5-flash-8b";
 
 // Check if API key exists. If not, we can return dummy values or mock responses.
 function hasApiKey(): boolean {
