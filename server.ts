@@ -7,8 +7,12 @@ dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 import path from "path";
+import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { createApp } from "./backend/app.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = 3000;
 
