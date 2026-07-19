@@ -354,7 +354,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
           </div>
           <div className="flex items-center gap-2"><button type="button" onClick={onLogout} className="md:hidden rounded-xl p-2 text-rose-500 hover:bg-rose-50" title="Sign Out"><LogOut className="h-5 w-5" /></button><button type="button" onClick={fetchData} className="rounded-xl p-2 text-[#777777] hover:bg-[#F1F5F9]" title="Refresh">
             <RefreshCw className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
-          </button>
+          </button></div>
         </div>
 
         <div className="hidden md:block border-b border-[#E2E8F0] bg-[#F8FAFC] px-6 py-4">
