@@ -8,7 +8,7 @@ dotenv.config();
 
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { createApp } from "./backend/app";
+import { createApp } from "./backend/app.js";
 
 const PORT = 3000;
 

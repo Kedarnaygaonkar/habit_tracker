@@ -1,7 +1,7 @@
 // NOTE: No dotenv needed — Vercel injects env vars automatically.
 // dotenv is only needed in server.ts for local development.
 import serverless from "serverless-http";
-import { createApp } from "../backend/app";
+import { createApp } from "../backend/app.js";
 
 // Cache the handler across warm invocations (avoids re-initializing DB on every request)
 let handler: ReturnType<typeof serverless> | null = null;
