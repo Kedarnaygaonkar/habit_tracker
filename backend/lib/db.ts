@@ -385,7 +385,7 @@ export class DBEngine {
     const mongoUri = process.env.MONGODB_URI;
     if (mongoUri) {
       try {
-        this.client = new MongoClient(mongoUri);
+        this.client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 });
         await this.client.connect();
         this.mongoDb = this.client.db(process.env.MONGODB_DB || "habitquest");
         this.collection = this.mongoDb.collection<AppStateDocument>("app_state");
@@ -480,13 +480,13 @@ export class DBEngine {
       ["aiReports", data.aiReports],
     ];
 
-    for (const [name, items] of collections) {
-      const collection = this.mongoDb.collection(String(name));
+    await Promise.all(collections.map(async ([name, items]) => {
+      const collection = this.mongoDb!.collection(String(name));
       await collection.deleteMany({});
       if (items.length > 0) {
         await collection.insertMany(items.map((item) => ({ ...(item as object) })));
       }
-    }
+    }));
   }
   public get(): Schema {
     return this.schema;
