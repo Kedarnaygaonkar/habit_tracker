@@ -406,7 +406,7 @@ export class DBEngine {
     }
 
     try {
-      if (fs.existsSync(DB_FILE)) {
+      if (!process.env.VERCEL && fs.existsSync(DB_FILE)) {
         const fileContent = fs.readFileSync(DB_FILE, "utf-8");
         const parsed = this.normalizeSchema(JSON.parse(fileContent));
         await this.saveData(parsed);
@@ -442,10 +442,12 @@ export class DBEngine {
   }
 
   private async saveData(data: Schema) {
-    try {
-      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
-    } catch (e) {
-      console.error("Failed to write to db.json", e);
+    if (!process.env.VERCEL) {
+      try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+      } catch (e) {
+        console.error("Failed to write to db.json", e);
+      }
     }
 
     if (this.collection) {
