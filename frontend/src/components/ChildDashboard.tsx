@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Award, Flame, Trophy, Coins, Compass, Sparkles, CheckCircle, 
-  Clock, X, Send, Camera, Shield, Heart, HelpCircle, LogOut, Bell
+  Flame, Clock, X, Send, Camera, LogOut, Bell
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -20,6 +19,15 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const [proofPhoto, setProofPhoto] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+
+  // THEME STATE
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    return (localStorage.getItem("habitquest_theme") as "light" | "dark") || "light";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("habitquest_theme", theme);
+  }, [theme]);
 
   // Sound Synthesizer helper using Web Audio API (completely native, zero dependencies!)
   const playQuestSound = (type: "success" | "feed" | "levelUp" | "click") => {
@@ -82,7 +90,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
       const dashboardData = await res.json();
       if (res.ok) {
         setData(dashboardData);
-        // Check if level has increased compared to local state to trigger levelUp confetti
         if (data && dashboardData.child.level > data.child.level) {
           triggerLevelCelebration();
         }
@@ -105,7 +112,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   useEffect(() => {
     fetchDashboard();
     fetchNotifs();
-    // Poll for notifications or parent approvals
     const interval = setInterval(() => {
       fetchDashboard();
       fetchNotifs();
@@ -122,7 +128,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     });
   };
 
-  // Submit Quest Proof
   const handleQuestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedQuest) return;
@@ -152,7 +157,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     }
   };
 
-  // Feed Pet
   const feedPet = async () => {
     if (!data || data.child.coins < 10) {
       alert("You need 10 Coins to buy pet snacks! Complete more quests first! 🍪");
@@ -164,7 +168,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
       const resData = await res.json();
       if (res.ok) {
         playQuestSound("feed");
-        // Happy bounce animation trigger
         const petEl = document.getElementById("virtual-pet-visual");
         if (petEl) {
           petEl.classList.add("animate-bounce");
@@ -188,7 +191,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     }
   };
 
-  // Buy Reward from store
   const claimReward = async (rewardId: string, cost: number) => {
     if (!data || data.child.coins < cost) {
       alert("Not enough coins! Go complete some quests to earn coins first! 🪙");
@@ -205,7 +207,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     } catch (e) {}
   };
 
-  // Read notification
   const markNotifRead = async (notifId: string) => {
     try {
       await fetch(`/api/notifications/${notifId}/read`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
@@ -215,18 +216,13 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
   if (loading || !data) {
     return (
-      <div className="min-h-screen child-bg flex flex-col items-center justify-center" style={{ fontFamily: "'Nunito', sans-serif" }}>
+      <div className={`min-h-screen child-bg flex flex-col items-center justify-center theme-${theme}`} style={{ fontFamily: "'Nunito', sans-serif" }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center text-4xl animate-float-bob" style={{ background: 'linear-gradient(135deg, rgba(108,61,224,0.4), rgba(99,102,241,0.3))', border: '1px solid rgba(167,139,250,0.3)', boxShadow: '0 0 30px rgba(108,61,224,0.4)' }}>
+          <div className="w-24 h-24 rounded-full flex items-center justify-center text-5xl animate-bounce bg-white shadow-xl">
             🏰
           </div>
           <div className="text-center">
-            <p className="text-sm font-black uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.7)' }}>Loading Quest Map...</p>
-            <div className="mt-3 flex gap-1 justify-center">
-              {[0, 1, 2].map(i => (
-                <div key={i} className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
-              ))}
-            </div>
+            <h2 className="text-2xl font-black uppercase tracking-widest text-[var(--text-main)]">Loading...</h2>
           </div>
         </div>
       </div>
@@ -235,7 +231,6 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
   const { child, pet, quests, achievements, rewards } = data;
 
-  // Avatar lookup
   const getAvatarEmoji = (key: string) => {
     switch(key) {
       case "avatar_knight": return "🛡️";
@@ -247,244 +242,172 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     }
   };
 
-  const getAvatarTitle = (key: string) => {
-    switch(key) {
-      case "avatar_knight": return "Noble Knight";
-      case "avatar_wizard": return "Spellcaster Wizard";
-      case "avatar_ninja": return "Shadow Ninja";
-      case "avatar_ranger": return "Nature Ranger";
-      case "avatar_unicorn": return "Unicorn Champion";
-      default: return "Junior Hero";
-    }
-  };
-
-  const getAvatarColor = (key: string) => {
-    switch(key) {
-      case "avatar_knight": return { glow: 'rgba(251,191,36,0.5)', bg: 'rgba(251,191,36,0.15)', border: 'rgba(251,191,36,0.4)' };
-      case "avatar_wizard": return { glow: 'rgba(167,139,250,0.6)', bg: 'rgba(167,139,250,0.15)', border: 'rgba(167,139,250,0.4)' };
-      case "avatar_ninja": return { glow: 'rgba(100,116,139,0.6)', bg: 'rgba(100,116,139,0.15)', border: 'rgba(100,116,139,0.4)' };
-      case "avatar_ranger": return { glow: 'rgba(74,222,128,0.5)', bg: 'rgba(74,222,128,0.15)', border: 'rgba(74,222,128,0.4)' };
-      case "avatar_unicorn": return { glow: 'rgba(236,72,153,0.5)', bg: 'rgba(236,72,153,0.15)', border: 'rgba(236,72,153,0.4)' };
-      default: return { glow: 'rgba(99,102,241,0.5)', bg: 'rgba(99,102,241,0.15)', border: 'rgba(99,102,241,0.4)' };
-    }
-  };
-
-  // Simulating Camera capture with pre-uploaded adorable mock canvas
   const simulateCameraCapture = () => {
     playQuestSound("click");
-    // adorable pixel graphics mock base64 representation
     setProofPhoto("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
     alert("📸 Photo captured successfully!");
   };
 
   const unreadNotifs = notifications.filter(n => !n.read);
-  const avatarColors = getAvatarColor(child.avatar);
 
   const navItems = [
     { id: "quests" as const, icon: "⚔️", label: "Quests" },
-    { id: "pet" as const, icon: "🐾", label: "My Pet" },
+    { id: "pet" as const, icon: "🐾", label: "Pet" },
     { id: "shop" as const, icon: "🛒", label: "Shop" },
-    { id: "badges" as const, icon: "🏆", label: "Trophies" },
+    { id: "badges" as const, icon: "🏆", label: "Badges" },
   ];
 
   return (
-    <div className="child-bg min-h-screen text-white flex flex-col select-none pb-24 relative" style={{ fontFamily: "'Nunito', sans-serif" }}>
+    <div className={`child-bg min-h-screen flex flex-col select-none pb-24 relative theme-${theme}`} style={{ fontFamily: "'Nunito', sans-serif" }}>
       
-      {/* Ambient background decorations */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-10 animate-spin-slow" style={{ background: 'radial-gradient(circle, rgba(108,61,224,0.8) 0%, transparent 70%)' }} />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-8 animate-spin-slow" style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.6) 0%, transparent 70%)', animationDirection: 'reverse', animationDuration: '20s' }} />
-      </div>
-
+      {/* Decorative background elements only show in dark mode */}
+      {theme === "dark" && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full opacity-10 animate-spin-slow" style={{ background: 'radial-gradient(circle, rgba(108,61,224,0.8) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full opacity-8 animate-spin-slow" style={{ background: 'radial-gradient(circle, rgba(236,72,153,0.6) 0%, transparent 70%)', animationDirection: 'reverse', animationDuration: '20s' }} />
+        </div>
+      )}
+      
       {/* ─── HEADER ─── */}
-      <header className="child-header-glass sticky top-0 z-40 px-4 py-3 md:px-6 md:py-4">
+      <header className="child-header-glass sticky top-0 z-40 px-4 py-3 md:px-6 md:py-4 shadow-sm">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
           
           {/* Avatar + Level info */}
           <div className="flex items-center gap-3">
             <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl relative shrink-0"
-              style={{ background: avatarColors.bg, border: `2px solid ${avatarColors.border}`, boxShadow: `0 0 18px ${avatarColors.glow}` }}
+              className="w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-lg border-4 border-white bg-blue-100 relative shrink-0"
             >
               {getAvatarEmoji(child.avatar)}
-              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-purple-500 border-2 border-[#0f0a28] flex items-center justify-center text-[9px] font-black">
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-yellow-400 border-2 border-white flex items-center justify-center text-xs font-black text-yellow-900 shadow-sm">
                 {child.level}
               </div>
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-black text-white">{child.name}</h2>
-                <span className="text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider" style={{ background: avatarColors.bg, border: `1px solid ${avatarColors.border}`, color: 'rgba(255,255,255,0.75)' }}>
-                  {getAvatarTitle(child.avatar)}
-                </span>
-              </div>
+              <h2 className="text-xl font-black var(--text-main)">{child.name}</h2>
               {/* XP Bar */}
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[10px] font-black" style={{ color: '#a78bfa' }}>Lvl {child.level}</span>
-                <div className="xp-bar-track w-32 md:w-48">
+                <div className="xp-bar-track w-28 md:w-48 bg-black/20 border-white/20 border-2 h-4">
                   <div className="xp-bar-fill" style={{ width: `${child.levelProgress.progressPercentage}%` }} />
-                  <span className="absolute inset-0 flex items-center justify-center text-[7px] font-black" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                    {child.levelProgress.currentLevelXp} / {child.levelProgress.nextLevelXpNeeded} XP
-                  </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Stats chips + logout */}
+          {/* Stats chips + toggle + logout */}
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl" style={{ background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)' }}>
-              <span className="text-base leading-none">🪙</span>
-              <span className="text-sm font-black" style={{ color: '#fbbf24' }}>{child.coins}</span>
+            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-yellow-100 border-2 border-yellow-300 shadow-sm">
+              <span className="text-xl leading-none">🪙</span>
+              <span className="text-lg font-black text-yellow-600">{child.coins}</span>
             </div>
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl" style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.25)' }}>
-              <Flame className="w-4 h-4" style={{ color: '#f87171' }} />
-              <span className="text-sm font-black" style={{ color: '#f87171' }}>{child.streak}d</span>
-            </div>
-            {unreadNotifs.length > 0 && (
-              <div className="relative flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.3)' }}>
-                <Bell className="w-4 h-4 text-red-400" />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-black text-white">
-                  {unreadNotifs.length}
-                </div>
-              </div>
-            )}
+            
             <button
-              type="button"
-              onClick={onLogout}
-              className="w-9 h-9 flex items-center justify-center rounded-xl transition-all cursor-pointer"
-              style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(248,113,113,0.2)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(248,113,113,0.1)')}
+              onClick={() => setTheme(t => t === "light" ? "dark" : "light")}
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/50 border-2 border-white shadow-sm hover:bg-white transition-colors cursor-pointer text-2xl ml-2"
+              title="Toggle Theme"
             >
-              <LogOut className="w-4 h-4 text-red-400" />
+              {theme === "light" ? "🌙" : "☀️"}
+            </button>
+
+            <button
+              onClick={onLogout}
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-red-100 border-2 border-red-200 hover:bg-red-200 transition-colors cursor-pointer text-red-500 shadow-sm"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
             </button>
           </div>
         </div>
       </header>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="max-w-4xl mx-auto px-4 py-5 md:px-6 w-full flex-1 relative z-10">
+      <main className="max-w-4xl mx-auto px-4 py-5 md:px-6 w-full flex-1 relative z-10 text-[var(--text-main)]">
 
         {/* AI Motivation Banner */}
         {data.motivationMessage && (
-          <div className="mb-5 rounded-2xl p-4 relative overflow-hidden flex items-center gap-4 animate-fade-in" style={{ background: 'linear-gradient(135deg, rgba(108,61,224,0.4), rgba(99,102,241,0.3))', border: '1px solid rgba(167,139,250,0.25)', boxShadow: '0 8px 32px rgba(108,61,224,0.25)' }}>
-            <div className="absolute inset-0 shimmer-bg" />
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 relative z-10" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
-              🔮
-            </div>
-            <div className="relative z-10">
-              <span className="text-[9px] font-black uppercase tracking-widest block mb-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>✨ AI Spirit Guide</span>
-              <p className="text-xs font-bold leading-relaxed italic" style={{ color: 'rgba(255,255,255,0.85)' }}>"{data.motivationMessage}"</p>
+          <div className="mb-6 rounded-3xl p-5 flex items-center gap-4 bg-[var(--bg-card)] border-2 border-[var(--border-color)] shadow-[var(--card-shadow)] animate-fade-in">
+            <div className="text-4xl shrink-0">🔮</div>
+            <div>
+              <p className="text-sm font-black uppercase text-[var(--text-muted)] mb-1">Magic Guide Says:</p>
+              <p className="text-base md:text-lg font-bold leading-tight">"{data.motivationMessage}"</p>
             </div>
           </div>
         )}
 
         {/* Notification Banners */}
         {unreadNotifs.length > 0 && (
-          <div className="mb-5 space-y-2">
+          <div className="mb-6 space-y-3">
             {unreadNotifs.map(n => (
-              <div key={n.id} className="rounded-xl flex items-center justify-between px-4 py-3 text-xs font-bold animate-slide-up" style={{ background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#a5b4fc' }}>
-                <span className="flex items-center gap-2">
-                  <Bell className="w-3.5 h-3.5" />
+              <div key={n.id} className="rounded-2xl flex items-center justify-between px-5 py-4 bg-blue-100 border-2 border-blue-200 text-blue-800 shadow-sm font-bold text-sm md:text-base animate-slide-up">
+                <span className="flex items-center gap-3">
+                  <Bell className="w-5 h-5 text-blue-500" />
                   {n.message}
                 </span>
                 <button
-                  type="button"
                   onClick={() => markNotifRead(n.id)}
-                  className="p-1 rounded-lg transition cursor-pointer"
-                  style={{ color: 'rgba(165,180,252,0.7)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(99,102,241,0.2)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  className="p-2 rounded-full hover:bg-blue-200 transition cursor-pointer"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             ))}
           </div>
         )}
 
-        {/* Mobile stats bar */}
-        <div className="sm:hidden flex gap-2 mb-5">
-          <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)' }}>
-            <span>🪙</span>
-            <span className="text-sm font-black" style={{ color: '#fbbf24' }}>{child.coins} coins</span>
-          </div>
-          <div className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl" style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)' }}>
-            <Flame className="w-4 h-4 text-red-400" />
-            <span className="text-sm font-black" style={{ color: '#f87171' }}>{child.streak} day streak</span>
-          </div>
-        </div>
-
         {/* ── TAB: QUESTS ── */}
         {activeMenu === "quests" && (
-          <div className="space-y-5 animate-fade-in">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-lg font-black flex items-center gap-2 uppercase tracking-tight text-white">
-                  <span>⚔️</span> Your Active Quest Map
-                </h3>
-                <p className="text-xs font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Conquer quests to earn Gold & level up your hero!</p>
-              </div>
-            </div>
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-2xl md:text-3xl font-black flex items-center gap-3 uppercase tracking-tight">
+              <span>⚔️</span> Epic Quests
+            </h3>
 
             {quests.length === 0 ? (
-              <div className="rounded-2xl p-10 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <Compass className="w-12 h-12 mx-auto stroke-2 mb-3" style={{ color: 'rgba(255,255,255,0.2)' }} />
-                <p className="font-black text-sm uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.5)' }}>All quests completed!</p>
-                <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>Ask your Parent to assign new adventures.</p>
+              <div className="rounded-3xl p-12 text-center bg-[var(--bg-card)] border-2 border-[var(--border-color)] shadow-[var(--card-shadow)]">
+                <div className="text-6xl mb-4">🎉</div>
+                <p className="font-black text-xl uppercase text-[var(--text-main)]">All Done!</p>
+                <p className="text-lg text-[var(--text-muted)] mt-2 font-bold">You completed all your quests today.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {quests.map(q => {
-                  const isPendingApproval = q.status === "completed";
-                  const difficultyBorderColor = q.difficulty === "easy" ? '#4ade80' : q.difficulty === "medium" ? '#fbbf24' : '#f87171';
-                  const difficultyGlow = q.difficulty === "easy" ? 'rgba(74,222,128,0.15)' : q.difficulty === "medium" ? 'rgba(251,191,36,0.15)' : 'rgba(248,113,113,0.15)';
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {quests.map((q: any) => {
+                  const isPending = q.status === "completed";
+                  const color = q.difficulty === "easy" ? "bg-green-100 text-green-700 border-green-300" 
+                              : q.difficulty === "medium" ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                              : "bg-red-100 text-red-700 border-red-300";
+
                   return (
                     <div
                       key={q.id}
-                      className={`quest-card quest-card-${q.difficulty} flex flex-col justify-between ${isPendingApproval ? 'opacity-60' : ''}`}
-                      style={{
-                        background: `rgba(255,255,255,0.04)`,
-                        borderLeft: `3px solid ${difficultyBorderColor}`,
-                        padding: '1.25rem',
-                      }}
+                      className={`rounded-3xl p-5 border-4 flex flex-col justify-between ${isPending ? 'opacity-60 bg-gray-100 border-gray-300' : 'bg-white border-[var(--border-color)]'} shadow-lg transition-transform hover:-translate-y-1`}
                     >
-                      {/* Quest header */}
-                      <div>
-                        <div className="flex justify-between items-center mb-3">
-                          <span className={`badge-${q.difficulty}`}>{q.difficulty} Quest</span>
-                          <span className="text-[10px] font-black uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.35)' }}>{q.repetition}</span>
-                        </div>
-
-                        <h4 className="font-black text-sm text-white flex items-start gap-1.5 uppercase tracking-tight leading-snug">
-                          <Sparkles className="w-4 h-4 mt-0.5 shrink-0" style={{ color: difficultyBorderColor }} />
+                      <div className="mb-4">
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase mb-3 ${color}`}>
+                          {q.difficulty} Quest
+                        </span>
+                        <h4 className="font-black text-xl text-gray-800 leading-tight">
                           {q.adventureTitle || q.title}
                         </h4>
-                        <p className="text-xs mt-1 font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                          Goal: <span className="italic" style={{ color: 'rgba(255,255,255,0.55)' }}>"{q.title}"</span>
-                        </p>
                       </div>
 
-                      {/* Quest footer */}
-                      <div className="mt-4 pt-3 flex items-center justify-between" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                      <div className="pt-4 border-t-2 border-gray-100 flex items-center justify-between">
                         <div className="flex gap-2">
-                          <span className="text-[10px] font-black px-2.5 py-1 rounded-lg uppercase" style={{ background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.25)' }}>+{q.xp} XP</span>
-                          <span className="text-[10px] font-black px-2.5 py-1 rounded-lg uppercase" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)' }}>+{q.coins} 🪙</span>
+                          <span className="font-black text-sm bg-purple-100 text-purple-700 px-3 py-1.5 rounded-xl border-2 border-purple-200">
+                            +{q.xp} XP
+                          </span>
+                          <span className="font-black text-sm bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-xl border-2 border-yellow-200">
+                            +{q.coins} 🪙
+                          </span>
                         </div>
 
-                        {isPendingApproval ? (
-                          <span className="text-[10px] flex items-center gap-1 font-black uppercase px-3 py-1.5 rounded-xl" style={{ background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)' }}>
-                            <Clock className="w-3 h-3" /> Awaiting Parent
+                        {isPending ? (
+                          <span className="font-black text-xs uppercase bg-gray-200 text-gray-600 px-3 py-2 rounded-xl flex items-center gap-1">
+                            <Clock className="w-4 h-4" /> Wait
                           </span>
                         ) : (
                           <button
-                            type="button"
                             onClick={() => { setSelectedQuest(q); playQuestSound("click"); }}
-                            className="quest-submit-btn"
-                            style={{ padding: '0.5rem 1.125rem', fontSize: '0.7rem' }}
+                            className="bg-green-500 hover:bg-green-600 text-white font-black uppercase text-sm px-5 py-2.5 rounded-xl border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer"
                           >
-                            Conquer! ⚔️
+                            DO IT!
                           </button>
                         )}
                       </div>
@@ -496,90 +419,56 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
             {/* Quest Submission Modal */}
             {selectedQuest && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
-                <div className="w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-scale-in relative" style={{ background: 'linear-gradient(160deg, #150d35, #0d1a30)', border: '1px solid rgba(167,139,250,0.25)', boxShadow: '0 30px 80px rgba(0,0,0,0.6)' }}>
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                <div className="w-full max-w-sm rounded-3xl p-6 bg-white shadow-2xl animate-scale-in relative border-4 border-gray-200 text-center">
                   <button
-                    type="button"
                     onClick={() => { setSelectedQuest(null); setProofText(""); setProofPhoto(null); }}
-                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-xl cursor-pointer transition"
-                    style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)' }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+                    className="absolute -top-4 -right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white border-2 border-gray-200 shadow-md text-gray-500 hover:bg-gray-100 cursor-pointer"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-5 h-5" />
                   </button>
 
-                  <div className="text-center space-y-2 mb-5">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl mx-auto mb-3" style={{ background: 'linear-gradient(135deg, rgba(108,61,224,0.4), rgba(99,102,241,0.3))', border: '1px solid rgba(167,139,250,0.3)', boxShadow: '0 0 24px rgba(108,61,224,0.4)' }}>
-                      ⚔️
-                    </div>
-                    <h3 className="text-base font-black text-white uppercase tracking-tight">Claim Your Loot!</h3>
-                    <p className="text-xs font-semibold italic" style={{ color: 'rgba(255,255,255,0.5)' }}>"{selectedQuest.adventureTitle}"</p>
-                    <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>Provide proof of completion to earn your rewards</p>
-                  </div>
+                  <div className="text-6xl mb-4">🏆</div>
+                  <h3 className="text-2xl font-black text-gray-800 uppercase mb-1">Claim Reward!</h3>
+                  <p className="text-sm font-bold text-gray-500 mb-6">{selectedQuest.adventureTitle}</p>
 
                   <form onSubmit={handleQuestSubmit} className="space-y-4">
                     {selectedQuest.requireProof === "text" && (
-                      <div className="space-y-2">
-                        <label className="block text-[10px] font-black uppercase tracking-wider mb-1" style={{ color: 'rgba(255,255,255,0.4)' }}>Write a short note</label>
-                        <textarea
-                          required
-                          placeholder="e.g. I read chapter 3 of the adventure book today!"
-                          value={proofText}
-                          onChange={(e) => setProofText(e.target.value)}
-                          className="w-full px-4 py-3 rounded-xl text-xs font-bold outline-none h-24 resize-none transition-all"
-                          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', caretColor: '#a78bfa' }}
-                          onFocus={(e) => { e.target.style.borderColor = 'rgba(167,139,250,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(108,61,224,0.2)'; }}
-                          onBlur={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; e.target.style.boxShadow = 'none'; }}
-                        />
-                      </div>
+                      <textarea
+                        required
+                        placeholder="Type a short note here..."
+                        value={proofText}
+                        onChange={(e) => setProofText(e.target.value)}
+                        className="w-full p-4 rounded-2xl text-sm font-bold bg-gray-50 border-2 border-gray-200 text-gray-800 h-28 resize-none focus:border-purple-400 focus:outline-none"
+                      />
                     )}
 
                     {selectedQuest.requireProof === "photo" && (
-                      <div className="space-y-2 text-center">
-                        <label className="block text-[10px] font-black uppercase tracking-wider text-left mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>Photo Proof</label>
+                      <div>
                         {proofPhoto ? (
-                          <div className="p-3 rounded-xl flex flex-col items-center gap-2" style={{ background: 'rgba(74,222,128,0.1)', border: '1px solid rgba(74,222,128,0.3)' }}>
-                            <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: '#4ade80' }}>✓ Evidence Locked In!</span>
-                            <button
-                              type="button"
-                              onClick={() => setProofPhoto(null)}
-                              className="text-[10px] font-black cursor-pointer"
-                              style={{ color: '#f87171' }}
-                            >
-                              Retake Photo
-                            </button>
+                          <div className="p-4 rounded-2xl bg-green-100 border-2 border-green-300 text-green-700 font-black">
+                            <p className="mb-2">📸 Photo Ready!</p>
+                            <button type="button" onClick={() => setProofPhoto(null)} className="text-xs text-red-500 underline cursor-pointer">Retake</button>
                           </div>
                         ) : (
                           <button
                             type="button"
                             onClick={simulateCameraCapture}
-                            className="w-full py-8 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition"
-                            style={{ background: 'rgba(255,255,255,0.04)', border: '2px dashed rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.5)' }}
-                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'; e.currentTarget.style.background = 'rgba(108,61,224,0.1)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                            className="w-full py-10 rounded-3xl bg-blue-50 border-4 border-dashed border-blue-200 text-blue-500 flex flex-col items-center gap-2 hover:bg-blue-100 transition cursor-pointer"
                           >
-                            <Camera className="w-8 h-8" style={{ color: '#a78bfa' }} />
-                            <span className="text-xs font-black">Capture Camera Photo</span>
+                            <Camera className="w-10 h-10" />
+                            <span className="font-black text-sm uppercase">Take Photo</span>
                           </button>
                         )}
                       </div>
                     )}
 
-                    {selectedQuest.requireProof === "none" && (
-                      <p className="text-center text-xs py-3 font-bold italic" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                        No evidence needed. Just press the button! 🎯
-                      </p>
-                    )}
-
                     <button
                       type="submit"
                       disabled={claiming}
-                      className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all text-white disabled:opacity-50"
-                      style={{ background: 'linear-gradient(135deg, #22c55e, #16a34a)', border: 'none', borderBottom: '3px solid #15803d', boxShadow: '0 8px 28px rgba(34,197,94,0.4)' }}
+                      className="w-full py-4 mt-4 rounded-2xl bg-green-500 hover:bg-green-600 text-white font-black text-xl uppercase border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all shadow-lg cursor-pointer disabled:opacity-50"
                     >
-                      <Send className="w-4 h-4" />
-                      {claiming ? "Submitting..." : "Claim Gold & XP! 🪙"}
+                      {claiming ? "Sending..." : "GIVE ME XP! 🌟"}
                     </button>
                   </form>
                 </div>
@@ -590,145 +479,98 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
         {/* ── TAB: VIRTUAL PET ── */}
         {activeMenu === "pet" && (
-          <div className="space-y-5 max-w-sm mx-auto text-center animate-fade-in">
-            <div>
-              <h3 className="text-lg font-black flex items-center justify-center gap-2 uppercase tracking-tight text-white">
-                🐲 Virtual Companion
-              </h3>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Keep your pet happy & level up together!</p>
-            </div>
+          <div className="space-y-6 max-w-sm mx-auto text-center animate-fade-in">
+            <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight">
+              🐾 My Pet
+            </h3>
 
-            <div className="rounded-3xl p-6 relative overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}>
-              {/* Status badge */}
-              <div className="absolute top-4 right-4">
-                <span className={`text-[10px] px-2.5 py-1 rounded-full font-black uppercase border ${
-                  pet.status === "happy" ? "text-green-400" :
-                  pet.status === "excited" ? "text-blue-400 animate-pulse" : "text-yellow-400"
-                }`} style={{
-                  background: pet.status === "happy" ? 'rgba(74,222,128,0.1)' : pet.status === "excited" ? 'rgba(99,102,241,0.1)' : 'rgba(251,191,36,0.1)',
-                  border: `1px solid ${pet.status === "happy" ? 'rgba(74,222,128,0.3)' : pet.status === "excited" ? 'rgba(99,102,241,0.3)' : 'rgba(251,191,36,0.3)'}`
-                }}>
-                  {pet.status === "happy" ? "😊 Happy" : pet.status === "excited" ? "🤩 Excited" : "😐 Neutral"}
+            <div className="rounded-[3rem] p-8 bg-[var(--bg-card)] border-4 border-[var(--border-color)] shadow-[var(--card-shadow)] relative">
+              <div className="text-center mb-6">
+                <h4 className="font-black text-2xl uppercase mb-1">{pet.name}</h4>
+                <span className="bg-purple-100 text-purple-700 px-4 py-1.5 rounded-full text-sm font-black border-2 border-purple-200">
+                  Level {pet.level}
                 </span>
               </div>
 
-              {/* Pet visual */}
-              <div className="py-6 flex flex-col items-center">
-                <Sparkles className="w-5 h-5 absolute top-12 left-8 animate-pulse text-purple-400" />
-                <div
-                  id="virtual-pet-visual"
-                  className="w-32 h-32 text-7xl flex items-center justify-center animate-float-bob relative"
-                  style={{ filter: 'drop-shadow(0 0 20px rgba(108,61,224,0.5))' }}
-                >
+              {/* Huge Pet */}
+              <div className="py-4 mb-6">
+                <div id="virtual-pet-visual" className="text-9xl animate-float-bob filter drop-shadow-xl inline-block">
                   {child.avatar === "avatar_knight" ? "🐉" : "🐰"}
                 </div>
-                {/* Shadow */}
-                <div className="w-16 h-2.5 rounded-full blur-sm mt-2 opacity-40 animate-pulse" style={{ background: 'rgba(108,61,224,0.6)' }} />
               </div>
 
-              <div className="space-y-4">
-                <div className="text-center">
-                  <h4 className="font-black text-white text-lg uppercase">{pet.name}</h4>
-                  <p className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>Level {pet.level} Guardian Companion</p>
+              {/* Simple Happiness */}
+              <div className="bg-gray-100/50 p-4 rounded-3xl border-2 border-[var(--border-color)] mb-6">
+                <div className="flex justify-between items-center mb-2 font-black text-sm uppercase text-[var(--text-main)]">
+                  <span>Happy Meter</span>
+                  <span>{pet.happiness > 50 ? '🥰' : '🥺'}</span>
                 </div>
-
-                {/* Happiness bar */}
-                <div className="space-y-1.5 text-left">
-                  <div className="flex justify-between text-[10px] font-black uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                    <span>Happiness ({pet.happiness}%)</span>
-                    <span>{pet.happiness > 50 ? '💚 Healthy' : '🍖 Hungry'}</span>
-                  </div>
-                  <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pet.happiness}%`, background: pet.happiness > 50 ? 'linear-gradient(90deg, #f87171, #ef4444)' : 'linear-gradient(90deg, #94a3b8, #64748b)' }}
-                    />
-                  </div>
+                <div className="w-full h-6 bg-gray-200 rounded-full border-2 border-gray-300 overflow-hidden">
+                  <div 
+                    className="h-full bg-pink-500 transition-all duration-1000" 
+                    style={{ width: `${pet.happiness}%` }} 
+                  />
                 </div>
-
-                {/* XP bar */}
-                <div className="space-y-1.5 text-left">
-                  <div className="flex justify-between text-[10px] font-black uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                    <span>Pet XP ({pet.xp} / {pet.level * 100})</span>
-                  </div>
-                  <div className="xp-bar-track">
-                    <div className="xp-bar-fill" style={{ width: `${(pet.xp / (pet.level * 100)) * 100}%` }} />
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={feedPet}
-                  className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all text-white"
-                  style={{ background: 'linear-gradient(135deg, #fbbf24, #d97706)', border: 'none', borderBottom: '3px solid #b45309', boxShadow: '0 8px 24px rgba(251,191,36,0.35)' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 12px 32px rgba(251,191,36,0.5)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(251,191,36,0.35)'; e.currentTarget.style.transform = 'none'; }}
-                >
-                  🍖 Feed Pet Snacks (10 🪙)
-                </button>
               </div>
+
+              <button
+                onClick={feedPet}
+                className="w-full py-5 rounded-3xl bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-black text-xl uppercase border-b-8 border-yellow-600 active:border-b-0 active:translate-y-2 transition-all shadow-xl cursor-pointer flex items-center justify-center gap-3"
+              >
+                <span className="text-2xl">🍖</span> FEED (10 🪙)
+              </button>
             </div>
           </div>
         )}
 
         {/* ── TAB: REWARDS SHOP ── */}
         {activeMenu === "shop" && (
-          <div className="space-y-5 animate-fade-in">
-            <div>
-              <h3 className="text-lg font-black flex items-center gap-2 uppercase tracking-tight text-white">
-                🛒 Hero Rewards Shop
-              </h3>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Trade your coins for real-life treats and activities!</p>
-            </div>
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight">
+              🛒 Rewards Shop
+            </h3>
 
             {rewards.length === 0 ? (
-              <div className="rounded-2xl p-10 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-xs font-black uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.4)' }}>Shop is empty! Ask your parent to stock some rewards. 🛍️</p>
+              <div className="rounded-3xl p-12 text-center bg-[var(--bg-card)] border-2 border-[var(--border-color)] shadow-[var(--card-shadow)]">
+                <div className="text-6xl mb-4">🛍️</div>
+                <p className="font-black text-xl uppercase text-[var(--text-main)]">Shop Empty!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {rewards.map(r => {
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {rewards.map((r: any) => {
                   const isPending = r.status === "requested";
                   const isApproved = r.status === "approved";
                   const canAfford = child.coins >= r.coinsCost;
+
                   return (
                     <div
                       key={r.id}
-                      className="rounded-2xl p-5 flex items-center justify-between transition-all"
-                      style={{
-                        background: isApproved ? 'rgba(74,222,128,0.08)' : 'rgba(255,255,255,0.04)',
-                        border: `1px solid ${isApproved ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.1)'}`,
-                      }}
+                      className="rounded-3xl p-6 bg-[var(--bg-card)] border-4 border-[var(--border-color)] shadow-md flex items-center justify-between"
                     >
-                      <div className="space-y-1 flex-1 mr-3">
-                        <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: '#a78bfa' }}>Reward</span>
-                        <h4 className="font-black text-sm text-white">"{r.title}"</h4>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg">🪙</span>
-                          <span className="text-sm font-black" style={{ color: '#fbbf24' }}>{r.coinsCost} coins</span>
-                          {!canAfford && !isPending && !isApproved && (
-                            <span className="text-[10px] font-black ml-1" style={{ color: 'rgba(248,113,113,0.7)' }}>(Need {r.coinsCost - child.coins} more)</span>
-                          )}
-                        </div>
+                      <div>
+                        <h4 className="font-black text-lg md:text-xl text-[var(--text-main)] mb-2 leading-tight">
+                          {r.title}
+                        </h4>
+                        <span className="font-black text-lg text-yellow-600 bg-yellow-100 px-3 py-1 rounded-xl border-2 border-yellow-200">
+                          {r.coinsCost} 🪙
+                        </span>
                       </div>
 
                       {isPending ? (
-                        <span className="text-[10px] font-black px-3 py-2 rounded-xl uppercase tracking-wider animate-pulse" style={{ background: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.25)' }}>
-                          ⏳ Pending
+                        <span className="font-black text-sm uppercase bg-orange-100 text-orange-600 p-3 rounded-2xl border-2 border-orange-200 text-center">
+                          WAIT ⏳
                         </span>
                       ) : isApproved ? (
-                        <span className="text-[10px] font-black px-3 py-2 rounded-xl uppercase tracking-wider" style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.25)' }}>
-                          ✅ Enjoy!
+                        <span className="font-black text-sm uppercase bg-green-100 text-green-600 p-3 rounded-2xl border-2 border-green-200 text-center">
+                          YAY ✅
                         </span>
                       ) : (
                         <button
-                          type="button"
                           onClick={() => claimReward(r.id, r.coinsCost)}
                           disabled={!canAfford}
-                          className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-wider cursor-pointer transition-all disabled:opacity-30 text-white shrink-0"
-                          style={{ background: 'linear-gradient(135deg, #fbbf24, #d97706)', border: '1px solid rgba(251,191,36,0.3)', boxShadow: canAfford ? '0 4px 16px rgba(251,191,36,0.3)' : 'none' }}
+                          className="bg-blue-500 hover:bg-blue-600 text-white font-black text-lg uppercase px-6 py-3 rounded-2xl border-b-4 border-blue-700 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Claim 🎁
+                          BUY
                         </button>
                       )}
                     </div>
@@ -741,45 +583,30 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
         {/* ── TAB: BADGES ── */}
         {activeMenu === "badges" && (
-          <div className="space-y-5 animate-fade-in">
-            <div>
-              <h3 className="text-lg font-black flex items-center gap-2 uppercase tracking-tight text-white">
-                🏆 Trophy Room
-              </h3>
-              <p className="text-xs font-semibold mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Complete quests and streaks to unlock legendary badges!</p>
-            </div>
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight">
+              🏆 Badges
+            </h3>
 
             {achievements.length === 0 ? (
-              <div className="rounded-2xl p-10 text-center" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-xs font-black uppercase tracking-wide" style={{ color: 'rgba(255,255,255,0.4)' }}>Keep completing quests to unlock your first badge! 🏅</p>
+              <div className="rounded-3xl p-12 text-center bg-[var(--bg-card)] border-2 border-[var(--border-color)] shadow-[var(--card-shadow)]">
+                <div className="text-6xl mb-4">🏅</div>
+                <p className="font-black text-xl uppercase text-[var(--text-main)]">No Badges Yet</p>
+                <p className="text-lg text-[var(--text-muted)] mt-2 font-bold">Keep playing to win trophies!</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                 {achievements.map((ach: any) => (
                   <div
                     key={ach.id}
-                    className="rounded-2xl p-4 text-center space-y-3 flex flex-col justify-between items-center relative overflow-hidden transition-all"
-                    style={{ background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.2)', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 8px 32px rgba(251,191,36,0.15), 0 0 0 1px rgba(251,191,36,0.3)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)'; e.currentTarget.style.transform = 'none'; }}
+                    className="rounded-3xl p-6 text-center bg-[var(--bg-card)] border-4 border-yellow-300 shadow-lg relative overflow-hidden transition-transform hover:-translate-y-1"
                   >
-                    {/* Shimmer overlay on hover */}
-                    <div className="absolute top-0 right-0 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded-bl-xl" style={{ background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '0 0 1px 1px solid rgba(251,191,36,0.2)' }}>
-                      Legendary
-                    </div>
-
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-3xl mt-2 animate-float-bob" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', boxShadow: '0 0 16px rgba(251,191,36,0.2)', animationDelay: `${Math.random() * 2}s` }}>
+                    <div className="text-5xl md:text-6xl mb-3 animate-float-bob" style={{ animationDelay: `${Math.random() * 2}s` }}>
                       🏆
                     </div>
-
-                    <div className="space-y-1">
-                      <h4 className="font-black text-xs uppercase tracking-wide text-white">{ach.title}</h4>
-                      <p className="text-[10px] font-semibold leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{ach.description}</p>
-                    </div>
-
-                    <span className="text-[9px] font-bold" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                      {new Date(ach.unlockedAt).toLocaleDateString()}
-                    </span>
+                    <h4 className="font-black text-sm md:text-base uppercase text-[var(--text-main)] leading-tight">
+                      {ach.title}
+                    </h4>
                   </div>
                 ))}
               </div>
@@ -789,17 +616,16 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
       </main>
 
       {/* ─── BOTTOM NAVIGATION ─── */}
-      <footer className="fixed bottom-0 inset-x-0 child-footer-glass py-2 px-4 z-40">
-        <div className="max-w-md mx-auto flex items-center justify-around">
+      <footer className="fixed bottom-0 inset-x-0 child-footer-glass py-3 px-4 z-40">
+        <div className="max-w-md mx-auto flex items-center justify-between px-2">
           {navItems.map(item => (
             <button
               key={item.id}
-              type="button"
               onClick={() => { setActiveMenu(item.id); playQuestSound("click"); }}
-              className={`child-nav-btn ${activeMenu === item.id ? "active" : ""}`}
+              className={`child-nav-btn ${activeMenu === item.id ? "active" : ""} flex-1`}
             >
-              <span className="text-xl leading-none">{item.icon}</span>
-              {item.label}
+              <span className="text-3xl mb-1">{item.icon}</span>
+              <span className="text-[10px] md:text-xs">{item.label}</span>
             </button>
           ))}
         </div>

@@ -8,6 +8,48 @@
 }
 
 /* ========================
+   THEME VARIABLES
+======================== */
+
+:root {
+  /* Default to light theme */
+  --bg-page: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 50%, #f0f9ff 100%);
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-card-hover: rgba(255, 255, 255, 0.9);
+  --border-color: rgba(255, 255, 255, 0.5);
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-inverse: #0f172a; /* Same for light mode since we want dark text on bright bg */
+  --header-bg: rgba(255, 255, 255, 0.6);
+  --footer-bg: rgba(255, 255, 255, 0.8);
+  --nav-active-bg: rgba(56, 189, 248, 0.2);
+  --nav-active-text: #0284c7;
+  --nav-inactive-text: #64748b;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --input-bg: rgba(255, 255, 255, 0.5);
+}
+
+.theme-dark {
+  --bg-page: radial-gradient(ellipse at 30% 0%, rgba(108, 61, 224, 0.4) 0%, transparent 55%),
+             radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.25) 0%, transparent 45%),
+             radial-gradient(ellipse at 10% 90%, rgba(99, 102, 241, 0.3) 0%, transparent 40%),
+             linear-gradient(160deg, #0a0618 0%, #150d35 40%, #0d1a30 100%);
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-inverse: #ffffff;
+  --header-bg: rgba(10, 6, 30, 0.7);
+  --footer-bg: rgba(10, 6, 30, 0.85);
+  --nav-active-bg: rgba(108, 61, 224, 0.2);
+  --nav-active-text: #a78bfa;
+  --nav-inactive-text: rgba(255, 255, 255, 0.35);
+  --card-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  --input-bg: rgba(255, 255, 255, 0.06);
+}
+
+/* ========================
    KEYFRAME ANIMATIONS
 ======================== */
 
@@ -620,11 +662,9 @@
 ======================== */
 
 .child-bg {
-  background: radial-gradient(ellipse at 30% 0%, rgba(108, 61, 224, 0.4) 0%, transparent 55%),
-              radial-gradient(ellipse at 80% 80%, rgba(236, 72, 153, 0.25) 0%, transparent 45%),
-              radial-gradient(ellipse at 10% 90%, rgba(99, 102, 241, 0.3) 0%, transparent 40%),
-              linear-gradient(160deg, #0a0618 0%, #150d35 40%, #0d1a30 100%);
+  background: var(--bg-page);
   min-height: 100vh;
+  color: var(--text-main);
 }
 
 .quest-submit-btn {
@@ -662,32 +702,32 @@
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: rgba(255,255,255,0.35);
+  color: var(--nav-inactive-text);
   cursor: pointer;
   transition: color 0.2s ease, transform 0.2s ease;
   padding: 0.5rem 1rem;
   border-radius: 0.875rem;
 }
 
-.child-nav-btn:hover { color: rgba(255,255,255,0.7); }
+.child-nav-btn:hover { color: var(--nav-active-text); }
 
 .child-nav-btn.active {
-  color: #a78bfa;
-  background: rgba(108, 61, 224, 0.2);
-  box-shadow: 0 0 16px rgba(108, 61, 224, 0.25);
+  color: var(--nav-active-text);
+  background: var(--nav-active-bg);
+  box-shadow: 0 0 16px var(--nav-active-bg);
   transform: translateY(-2px);
 }
 
 .child-header-glass {
-  background: rgba(10, 6, 30, 0.7);
+  background: var(--header-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,0.07);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .child-footer-glass {
-  background: rgba(10, 6, 30, 0.85);
+  background: var(--footer-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255,255,255,0.07);
+  border-top: 1px solid var(--border-color);
 }
