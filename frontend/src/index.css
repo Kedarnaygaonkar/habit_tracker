@@ -22,11 +22,14 @@
   --text-inverse: #0f172a; /* Same for light mode since we want dark text on bright bg */
   --header-bg: rgba(255, 255, 255, 0.6);
   --footer-bg: rgba(255, 255, 255, 0.8);
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e2e8f0;
   --nav-active-bg: rgba(56, 189, 248, 0.2);
   --nav-active-text: #0284c7;
   --nav-inactive-text: #64748b;
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   --input-bg: rgba(255, 255, 255, 0.5);
+  --input-border: #cbd5e1;
 }
 
 .theme-dark {
@@ -42,11 +45,14 @@
   --text-inverse: #ffffff;
   --header-bg: rgba(10, 6, 30, 0.7);
   --footer-bg: rgba(10, 6, 30, 0.85);
+  --sidebar-bg: linear-gradient(180deg, #0f0a28 0%, #1a1040 50%, #0d1526 100%);
+  --sidebar-border: rgba(255,255,255,0.06);
   --nav-active-bg: rgba(108, 61, 224, 0.2);
   --nav-active-text: #a78bfa;
   --nav-inactive-text: rgba(255, 255, 255, 0.35);
   --card-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
   --input-bg: rgba(255, 255, 255, 0.06);
+  --input-border: rgba(255, 255, 255, 0.12);
 }
 
 /* ========================
@@ -532,8 +538,9 @@
    SIDEBAR (PARENT)
 ======================== */
 
-.sidebar-dark {
-  background: linear-gradient(180deg, #0f0a28 0%, #1a1040 50%, #0d1526 100%);
+.parent-sidebar {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
 }
 
 .sidebar-nav-item {
@@ -616,10 +623,8 @@
 ======================== */
 
 .hero-bg {
-  background: radial-gradient(ellipse at 50% 0%, rgba(108, 61, 224, 0.3) 0%, transparent 60%),
-              radial-gradient(ellipse at 100% 100%, rgba(236, 72, 153, 0.2) 0%, transparent 50%),
-              radial-gradient(ellipse at 0% 100%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
-              linear-gradient(180deg, #0a0618 0%, #120c2e 50%, #0d1526 100%);
+  background: var(--bg-page);
+  color: var(--text-main);
 }
 
 .login-card {

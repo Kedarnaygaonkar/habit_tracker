@@ -1,24 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  Award,
-  BarChart2,
-  Check,
-  Compass,
-  Edit2,
-  Flame,
-  Gift,
-  LogOut,
-  Plus,
-  RefreshCw,
-  Sparkles,
-  Trash2,
-  Users,
-  X,
-  TrendingUp,
-  Star,
-  Zap,
-  ShieldCheck,
+  Award, BarChart2, Check, Compass, Edit2, Flame, Gift, LogOut,
+  Plus, RefreshCw, Sparkles, Trash2, Users, X, TrendingUp, Star, Zap, ShieldCheck
 } from "lucide-react";
 
 interface ParentDashboardProps {
@@ -29,34 +13,9 @@ interface ParentDashboardProps {
 
 type Tab = "analytics" | "children" | "quests" | "rewards" | "verifications" | "ai-tools";
 
-const emptyChildForm = {
-  open: false,
-  isEdit: false,
-  id: "",
-  name: "",
-  loginId: "",
-  password: "",
-  avatar: "avatar_knight",
-};
-
-const emptyQuestForm = {
-  open: false,
-  isEdit: false,
-  id: "",
-  childId: "",
-  title: "",
-  difficulty: "medium",
-  repetition: "daily",
-  reminderTime: "08:00",
-  requireProof: "none",
-};
-
-const emptyRewardForm = {
-  open: false,
-  childId: "",
-  title: "",
-  coinsCost: "30",
-};
+const emptyChildForm = { open: false, isEdit: false, id: "", name: "", loginId: "", password: "", avatar: "avatar_knight" };
+const emptyQuestForm = { open: false, isEdit: false, id: "", childId: "", title: "", difficulty: "medium", repetition: "daily", reminderTime: "08:00", requireProof: "none" };
+const emptyRewardForm = { open: false, childId: "", title: "", coinsCost: "30" };
 
 export default function ParentDashboard({ token, parent, onLogout }: ParentDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("children");
@@ -81,6 +40,15 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const [selectedChildForReport, setSelectedChildForReport] = useState("");
   const [generatedReport, setGeneratedReport] = useState<any | null>(null);
 
+  // THEME STATE
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    return (localStorage.getItem("habitquest_theme") as "light" | "dark") || "light";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("habitquest_theme", theme);
+  }, [theme]);
+
   const avatars = [
     { key: "avatar_knight", name: "Noble Knight", icon: "🛡️" },
     { key: "avatar_wizard", name: "Reading Wizard", icon: "🔮" },
@@ -89,11 +57,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     { key: "avatar_unicorn", name: "Magic Unicorn", icon: "🦄" },
   ];
 
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-
+  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
   const authHeaders = { Authorization: `Bearer ${token}` };
 
   const showMessage = (text: string) => {
@@ -102,7 +66,6 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   };
 
   const getAvatarEmoji = (key: string) => avatars.find((avatar) => avatar.key === key)?.icon || "👤";
-
   const childName = (id: string) => children.find((child) => child.id === id)?.name || "Unknown child";
 
   const fetchData = async () => {
@@ -208,11 +171,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
       const res = await fetch("/api/parent/rewards", {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          childId: rewardForm.childId,
-          title: rewardForm.title,
-          coinsCost: rewardForm.coinsCost,
-        }),
+        body: JSON.stringify({ childId: rewardForm.childId, title: rewardForm.title, coinsCost: rewardForm.coinsCost }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not create reward.");
@@ -334,16 +293,16 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   };
 
   const navItems = [
-    { id: "analytics" as Tab, label: "Progress & Stats", icon: BarChart2, emoji: "📊", count: children.length, alert: false },
-    { id: "children" as Tab, label: "Manage Heroes", icon: Users, emoji: "👨‍👩‍👧", count: children.length, alert: false },
-    { id: "quests" as Tab, label: "Quest Master", icon: Compass, emoji: "⚔️", count: quests.length, alert: false },
-    { id: "rewards" as Tab, label: "Rewards Shop", icon: Gift, emoji: "🎁", count: rewards.length, alert: requestedRewards.length > 0 },
-    { id: "verifications" as Tab, label: "Verifications", icon: Check, emoji: "✅", count: pendingQuests.length, alert: pendingQuests.length > 0 },
-    { id: "ai-tools" as Tab, label: "AI Parenting Hub", icon: Sparkles, emoji: "🤖", count: reports.length, alert: false },
+    { id: "analytics" as Tab, label: "Stats", icon: BarChart2, emoji: "📊", count: children.length, alert: false },
+    { id: "children" as Tab, label: "Heroes", icon: Users, emoji: "👨‍👩‍👧", count: children.length, alert: false },
+    { id: "quests" as Tab, label: "Quests", icon: Compass, emoji: "⚔️", count: quests.length, alert: false },
+    { id: "rewards" as Tab, label: "Rewards", icon: Gift, emoji: "🎁", count: rewards.length, alert: requestedRewards.length > 0 },
+    { id: "verifications" as Tab, label: "Verify", icon: Check, emoji: "✅", count: pendingQuests.length, alert: pendingQuests.length > 0 },
+    { id: "ai-tools" as Tab, label: "AI Hub", icon: Sparkles, emoji: "🤖", count: reports.length, alert: false },
   ];
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] font-sans text-slate-800 md:flex">
+    <div className={`min-h-screen bg-[var(--bg-page)] text-[var(--text-main)] font-sans theme-${theme} md:flex pb-24 md:pb-0`}>
       {/* ── TOAST ── */}
       {message && (
         <div className="fixed right-4 top-4 z-[10000] toast-success flex items-center gap-2">
@@ -352,86 +311,107 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         </div>
       )}
 
-      {/* ── SIDEBAR ── */}
-      <aside className="sidebar-dark w-full md:w-72 md:min-h-screen sticky top-0 z-50 flex flex-col shadow-2xl">
-        {/* Brand */}
-        <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      {/* ── DESKTOP SIDEBAR ── */}
+      <aside className="parent-sidebar hidden md:flex w-72 min-h-screen sticky top-0 z-50 flex-col shadow-xl">
+        <div className="flex items-center justify-between p-5 border-b border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #6C3DE0, #4f46e5)', boxShadow: '0 0 20px rgba(108,61,224,0.5)' }}>
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg">
               🏰
-              <div className="absolute inset-0 shimmer-bg" />
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-wide text-white">HabitQuest</h2>
-              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Parent Portal</p>
+              <h2 className="text-sm font-black uppercase tracking-wide text-[var(--text-main)]">HabitQuest</h2>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)]">Parent Portal</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <button type="button" onClick={onLogout} className="md:hidden p-2 rounded-xl transition cursor-pointer" style={{ color: '#f87171', background: 'rgba(248,113,113,0.1)' }} title="Sign Out">
-              <LogOut className="h-4 w-4" />
-            </button>
-            <button type="button" onClick={fetchData} className="p-2 rounded-xl transition cursor-pointer" style={{ color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)' }} title="Refresh">
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={fetchData} className="p-2 rounded-xl text-[var(--text-muted)] hover:bg-[var(--border-color)] transition cursor-pointer" title="Refresh">
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            </button>
+            <button
+              onClick={() => setTheme(t => t === "light" ? "dark" : "light")}
+              className="p-2 rounded-xl text-[var(--text-muted)] hover:bg-[var(--border-color)] transition cursor-pointer"
+              title="Toggle Theme"
+            >
+              {theme === "light" ? "🌙" : "☀️"}
             </button>
           </div>
         </div>
 
-        {/* Family info */}
-        <div className="hidden md:block px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
-          <p className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'rgba(255,255,255,0.3)' }}>Family</p>
-          <p className="text-sm font-black" style={{ color: '#a78bfa' }}>The {parent.name} Family</p>
+        <div className="px-5 py-4 border-b border-[var(--border-color)]">
+          <p className="text-[10px] font-black uppercase tracking-widest mb-0.5 text-[var(--text-muted)]">Family</p>
+          <p className="text-sm font-black text-purple-500">The {parent.name} Family</p>
         </div>
 
-        {/* Nav */}
-        <nav className="flex overflow-x-auto gap-1.5 p-3 md:flex-col md:p-4 md:space-y-1 border-b md:border-b-0 scrollbar-hide" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setActiveTab(item.id)}
-                className={`sidebar-nav-item ${isActive ? "active" : ""} shrink-0`}
-              >
-                <span className="flex items-center gap-2.5">
-                  <span className="text-base leading-none hidden md:inline">{item.emoji}</span>
-                  <Icon className="h-4 w-4 md:hidden" />
-                  {item.label}
-                </span>
-                <div className="flex items-center gap-1.5">
-                  {item.alert && (
-                    <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
-                  )}
-                  <span className="rounded-full px-2 py-0.5 text-[9px] font-black" style={{ background: isActive ? 'rgba(167,139,250,0.2)' : 'rgba(255,255,255,0.07)', color: isActive ? '#a78bfa' : 'rgba(255,255,255,0.3)' }}>
-                    {item.count}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
+        <nav className="flex flex-col p-4 space-y-1">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`flex items-center justify-between p-3 rounded-xl font-bold transition-all ${
+                activeTab === item.id 
+                  ? "bg-purple-100 text-purple-700 border-2 border-purple-200 shadow-sm" 
+                  : "text-[var(--text-muted)] hover:bg-[var(--border-color)] border-2 border-transparent"
+              }`}
+            >
+              <span className="flex items-center gap-3">
+                <span className="text-xl">{item.emoji}</span>
+                {item.label}
+              </span>
+              {item.alert && <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />}
+            </button>
+          ))}
         </nav>
 
-        {/* Logout (desktop) */}
-        <div className="hidden md:block mt-auto p-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          <p className="mb-3 truncate text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>{parent.email}</p>
+        <div className="mt-auto p-4 border-t border-[var(--border-color)]">
+          <p className="mb-3 truncate text-xs font-bold text-[var(--text-muted)] text-center">{parent.email}</p>
           <button
-            type="button"
             onClick={onLogout}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wide cursor-pointer transition"
-            style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.2)', color: '#f87171' }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(248,113,113,0.18)')}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(248,113,113,0.1)')}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wide cursor-pointer transition text-red-500 bg-red-50 hover:bg-red-100 border-2 border-red-200"
           >
             <LogOut className="h-4 w-4" /> Sign Out Family
           </button>
         </div>
       </aside>
 
+      {/* ── MOBILE HEADER ── */}
+      <header className="md:hidden sticky top-0 z-40 parent-sidebar flex items-center justify-between p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-md">
+            🏰
+          </div>
+          <h2 className="text-lg font-black uppercase tracking-wide text-[var(--text-main)]">Parent Portal</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setTheme(t => t === "light" ? "dark" : "light")} className="p-2 rounded-xl text-[var(--text-muted)] bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-lg">
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
+          <button onClick={onLogout} className="p-2 rounded-xl text-red-500 bg-red-100 border-2 border-red-200">
+            <LogOut className="h-5 w-5" />
+          </button>
+        </div>
+      </header>
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 parent-sidebar z-50 flex items-center justify-between px-2 py-3 shadow-t-xl">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center p-2 rounded-xl transition-all flex-1 relative ${
+              activeTab === item.id ? "text-purple-600 bg-purple-100 border-2 border-purple-200" : "text-[var(--text-muted)] border-2 border-transparent"
+            }`}
+          >
+            <span className="text-2xl mb-1">{item.emoji}</span>
+            <span className="text-[10px] font-black uppercase">{item.label}</span>
+            {item.alert && <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-red-500 shadow-sm border border-white" />}
+          </button>
+        ))}
+      </nav>
+
       {/* ── MAIN CONTENT ── */}
-      <main className="flex-1 p-5 md:p-8 overflow-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-auto">
         {error && (
-          <div className="mb-5 rounded-2xl p-4 text-sm font-bold flex items-center gap-2" style={{ background: '#fef2f2', border: '2px solid #fecaca', color: '#dc2626' }}>
+          <div className="mb-5 rounded-2xl p-4 text-sm font-bold flex items-center gap-2 bg-red-100 border-2 border-red-300 text-red-600 shadow-sm">
             ⚠️ {error}
           </div>
         )}
@@ -440,53 +420,52 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {activeTab === "analytics" && (
           <section className="space-y-6 animate-fade-in">
             <SectionHeader title="Progress & Stats" subtitle="Family habit progress at a glance" emoji="📊" />
-            <div className="grid gap-5 md:grid-cols-3">
-              <MetricCard label="Children" value={children.length} color="#6C3DE0" emoji="👨‍👩‍👧" bg="from-violet-50 to-white" />
-              <MetricCard label="Active Quests" value={quests.length} color="#0ea5e9" emoji="⚔️" bg="from-sky-50 to-white" />
-              <MetricCard label="Rewards" value={rewards.length} color="#f59e0b" emoji="🎁" bg="from-amber-50 to-white" />
+            <div className="grid gap-4 sm:grid-cols-3">
+              <MetricCard label="Children" value={children.length} color="#6C3DE0" emoji="👨‍👩‍👧" />
+              <MetricCard label="Active Quests" value={quests.length} color="#0ea5e9" emoji="⚔️" />
+              <MetricCard label="Rewards" value={rewards.length} color="#f59e0b" emoji="🎁" />
             </div>
 
-            {/* Quick Stats */}
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="panel">
-                <h3 className="panel-title mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-violet-500" /> Family Overview
+              <div className="bg-[var(--bg-card)] border-2 border-[var(--border-color)] rounded-3xl p-6 shadow-[var(--card-shadow)]">
+                <h3 className="text-lg font-black mb-4 flex items-center gap-2 text-[var(--text-main)] uppercase tracking-wide">
+                  <TrendingUp className="w-5 h-5 text-violet-500" /> Family Overview
                 </h3>
                 <div className="space-y-3">
                   {[
-                    { label: "Pending Quest Verifications", value: pendingQuests.length, color: pendingQuests.length > 0 ? '#f59e0b' : '#22c55e', icon: '⏳' },
-                    { label: "Reward Requests Awaiting", value: requestedRewards.length, color: requestedRewards.length > 0 ? '#f59e0b' : '#22c55e', icon: '🎁' },
+                    { label: "Pending Verifications", value: pendingQuests.length, color: pendingQuests.length > 0 ? '#f59e0b' : '#22c55e', icon: '⏳' },
+                    { label: "Reward Requests", value: requestedRewards.length, color: requestedRewards.length > 0 ? '#f59e0b' : '#22c55e', icon: '🎁' },
                     { label: "Total Heroes", value: children.length, color: '#6C3DE0', icon: '🛡️' },
                   ].map(({ label, value, color, icon }) => (
-                    <div key={label} className="flex items-center justify-between py-2.5 px-3 rounded-xl" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                      <span className="text-sm font-bold text-slate-600 flex items-center gap-2">
-                        <span>{icon}</span> {label}
+                    <div key={label} className="flex items-center justify-between py-3 px-4 rounded-2xl bg-[var(--input-bg)] border-2 border-[var(--input-border)]">
+                      <span className="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
+                        <span className="text-xl">{icon}</span> {label}
                       </span>
-                      <span className="text-lg font-black" style={{ color }}>{value}</span>
+                      <span className="text-xl font-black" style={{ color }}>{value}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="panel">
-                <h3 className="panel-title mb-4 flex items-center gap-2">
-                  <Star className="w-4 h-4 text-amber-500" /> Hero Leaderboard
+              <div className="bg-[var(--bg-card)] border-2 border-[var(--border-color)] rounded-3xl p-6 shadow-[var(--card-shadow)]">
+                <h3 className="text-lg font-black mb-4 flex items-center gap-2 text-[var(--text-main)] uppercase tracking-wide">
+                  <Star className="w-5 h-5 text-amber-500" /> Hero Leaderboard
                 </h3>
                 {children.length === 0 ? (
-                  <p className="text-center text-sm font-bold text-slate-400 py-8">No heroes yet. Add your first child!</p>
+                  <p className="text-center text-sm font-bold text-[var(--text-muted)] py-8">No heroes yet.</p>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {[...children].sort((a, b) => (b.xp || 0) - (a.xp || 0)).map((child, idx) => (
-                      <div key={child.id} className="flex items-center gap-3 py-2.5 px-3 rounded-xl" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                        <span className="text-lg font-black w-6 text-center" style={{ color: idx === 0 ? '#f59e0b' : idx === 1 ? '#94a3b8' : '#b45309' }}>
+                      <div key={child.id} className="flex items-center gap-3 py-3 px-4 rounded-2xl bg-[var(--input-bg)] border-2 border-[var(--input-border)]">
+                        <span className="text-2xl w-8 text-center" style={{ color: idx === 0 ? '#f59e0b' : idx === 1 ? '#94a3b8' : '#b45309' }}>
                           {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
                         </span>
-                        <span className="text-xl">{getAvatarEmoji(child.avatar)}</span>
+                        <span className="text-3xl">{getAvatarEmoji(child.avatar)}</span>
                         <div className="flex-1">
-                          <p className="text-sm font-black text-slate-700">{child.name}</p>
-                          <p className="text-xs font-bold text-slate-400">Level {child.level} · {child.streak || 0}d streak</p>
+                          <p className="text-sm font-black text-[var(--text-main)]">{child.name}</p>
+                          <p className="text-xs font-bold text-[var(--text-muted)]">Lvl {child.level} · {child.streak || 0}d streak</p>
                         </div>
-                        <span className="text-xs font-black px-2 py-1 rounded-lg" style={{ background: 'rgba(108,61,224,0.08)', color: '#6C3DE0' }}>
+                        <span className="text-sm font-black px-3 py-1 rounded-xl text-purple-600 bg-purple-100 border-2 border-purple-200">
                           {child.xp || 0} XP
                         </span>
                       </div>
@@ -502,78 +481,71 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {activeTab === "children" && (
           <section className="space-y-6 animate-fade-in">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <SectionHeader title="Manage Heroes" subtitle="Add children, customize profiles, set login ID and password" emoji="👨‍👩‍👧" />
-              <button type="button" onClick={() => setChildForm({ ...emptyChildForm, open: true })} className="primary-button">
-                <Plus className="h-4 w-4" /> Add Hero Child
+              <SectionHeader title="Manage Heroes" subtitle="Add children and customize profiles" emoji="👨‍👩‍👧" />
+              <button type="button" onClick={() => setChildForm({ ...emptyChildForm, open: true })} className="primary-button w-full sm:w-auto">
+                <Plus className="h-5 w-5" /> Add Hero Child
               </button>
             </div>
 
             {children.length === 0 ? (
-              <div className="panel text-center py-16">
-                <div className="text-5xl mb-4">👨‍👩‍👧</div>
-                <p className="text-sm font-black uppercase text-slate-400">No heroes yet. Add your first child!</p>
+              <div className="bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-3xl text-center py-16 shadow-[var(--card-shadow)]">
+                <div className="text-6xl mb-4">👨‍👩‍👧</div>
+                <p className="text-lg font-black uppercase text-[var(--text-main)]">No heroes yet!</p>
               </div>
             ) : (
               <div className="grid gap-5 lg:grid-cols-2">
                 {children.map((child) => (
-                  <article key={child.id} className="hero-card overflow-hidden">
-                    {/* Colored header band */}
-                    <div className="h-20 relative flex items-end px-6 pb-0" style={{ background: 'linear-gradient(135deg, #0f0a28, #1a1040)' }}>
-                      <div className="absolute inset-0 shimmer-bg" />
-                      <div className="flex gap-2 absolute top-3 right-3">
-                        <button type="button" onClick={() => setChildForm({ open: true, isEdit: true, id: child.id, name: child.name, loginId: child.loginId || "", password: "", avatar: child.avatar })} className="icon-button" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>
-                          <Edit2 className="h-3.5 w-3.5" />
+                  <article key={child.id} className="bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-[2.5rem] overflow-hidden shadow-lg relative">
+                    <div className="h-24 bg-gradient-to-r from-purple-500 to-indigo-500 flex items-start justify-end p-4">
+                      <div className="flex gap-2 bg-white/20 p-2 rounded-xl backdrop-blur-md border border-white/30">
+                        <button type="button" onClick={() => setChildForm({ open: true, isEdit: true, id: child.id, name: child.name, loginId: child.loginId || "", password: "", avatar: child.avatar })} className="p-1.5 text-white hover:text-purple-200">
+                          <Edit2 className="h-5 w-5" />
                         </button>
-                        <button type="button" onClick={() => deleteChild(child.id)} className="icon-button" style={{ background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.25)', color: '#f87171' }}>
-                          <Trash2 className="h-3.5 w-3.5" />
+                        <button type="button" onClick={() => deleteChild(child.id)} className="p-1.5 text-white hover:text-red-300">
+                          <Trash2 className="h-5 w-5" />
                         </button>
-                      </div>
-                      {/* Avatar floating over band */}
-                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl relative z-10 -mb-8 shadow-xl" style={{ background: 'rgba(255,255,255,0.12)', border: '2px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}>
-                        {getAvatarEmoji(child.avatar)}
                       </div>
                     </div>
+                    
+                    <div className="px-6 pb-6 pt-12 relative text-center sm:text-left sm:pt-6">
+                      <div className="w-24 h-24 rounded-3xl bg-white border-4 border-indigo-200 shadow-xl flex items-center justify-center text-5xl absolute -top-12 left-1/2 -translate-x-1/2 sm:left-6 sm:translate-x-0">
+                        {getAvatarEmoji(child.avatar)}
+                      </div>
 
-                    {/* Card body */}
-                    <div className="p-5 pt-10">
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="sm:ml-32 sm:flex sm:items-start sm:justify-between mb-4 mt-12 sm:mt-0">
                         <div>
-                          <h3 className="text-xl font-black text-slate-800">{child.name}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs px-2.5 py-0.5 rounded-full font-black" style={{ background: 'rgba(108,61,224,0.08)', color: '#6C3DE0', border: '1px solid rgba(108,61,224,0.15)' }}>
+                          <h3 className="text-2xl font-black text-[var(--text-main)]">{child.name}</h3>
+                          <p className="text-sm font-bold text-[var(--text-muted)] mb-2">Login: {child.loginId}</p>
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                            <span className="text-xs font-black px-3 py-1 rounded-xl bg-purple-100 text-purple-700 border-2 border-purple-200">
                               Level {child.level}
                             </span>
-                            <span className="flex items-center gap-1 text-xs font-bold" style={{ color: '#ef4444' }}>
-                              <Flame className="h-3.5 w-3.5" /> {child.streak || 0}d streak
+                            <span className="flex items-center gap-1 text-xs font-black bg-red-100 text-red-600 px-3 py-1 rounded-xl border-2 border-red-200">
+                              <Flame className="h-3.5 w-3.5" /> {child.streak || 0}d
                             </span>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs font-bold text-slate-400">Login ID</p>
-                          <code className="text-sm font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-lg">{child.loginId}</code>
                         </div>
                       </div>
 
-                      {/* Pet info */}
-                      <div className="flex items-center justify-between rounded-2xl px-4 py-3 mb-4" style={{ background: 'linear-gradient(135deg, #f8faff, #f0f4ff)', border: '1px solid #e2e8f0' }}>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xl">🐾</span>
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: '#6C3DE0' }}>Pet Buddy</p>
-                            <p className="text-sm font-black text-slate-700">{child.pet?.name || "Mochi the Bunny"}</p>
+                      <div className="flex items-center justify-between rounded-2xl p-4 mt-6 bg-[var(--input-bg)] border-2 border-[var(--input-border)]">
+                        <div className="flex items-center gap-3">
+                          <span className="text-3xl">🐾</span>
+                          <div className="text-left">
+                            <p className="text-[10px] font-black uppercase tracking-wider text-purple-500">Pet Buddy</p>
+                            <p className="text-base font-black text-[var(--text-main)]">{child.pet?.name || "Mochi"}</p>
                           </div>
                         </div>
-                        <span className="rounded-xl px-3 py-1.5 text-xs font-black" style={{ background: 'rgba(108,61,224,0.08)', color: '#6C3DE0', border: '1px solid rgba(108,61,224,0.15)' }}>
+                        <span className="rounded-xl px-4 py-2 text-sm font-black bg-purple-100 text-purple-700 border-2 border-purple-200">
                           Lvl {child.pet?.level || 1}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                        <button type="button" onClick={() => openQuestForChild(child.id)} className="secondary-button text-sky-600 gap-1.5">
-                          <Compass className="h-3.5 w-3.5" /> Assign Quest
+                      <div className="grid grid-cols-2 gap-3 mt-4">
+                        <button type="button" onClick={() => openQuestForChild(child.id)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm uppercase bg-sky-100 text-sky-700 border-b-4 border-sky-300 active:translate-y-1 active:border-b-0">
+                          <Compass className="h-4 w-4" /> Quest
                         </button>
-                        <button type="button" onClick={() => openRewardForChild(child.id)} className="secondary-button gap-1.5" style={{ color: '#22c55e' }}>
-                          <Gift className="h-3.5 w-3.5" /> Create Reward
+                        <button type="button" onClick={() => openRewardForChild(child.id)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm uppercase bg-green-100 text-green-700 border-b-4 border-green-300 active:translate-y-1 active:border-b-0">
+                          <Gift className="h-4 w-4" /> Reward
                         </button>
                       </div>
                     </div>
@@ -588,19 +560,17 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {activeTab === "quests" && (
           <section className="space-y-6 animate-fade-in">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <SectionHeader title="Quest Master Board" subtitle="Create and customize quest habits for daily streaks" emoji="⚔️" />
-              <button type="button" onClick={() => setQuestForm({ ...emptyQuestForm, open: true, childId: children[0]?.id || "" })} className="primary-button">
-                <Plus className="h-4 w-4" /> Craft A Quest
+              <SectionHeader title="Quest Master Board" subtitle="Manage habits and chores" emoji="⚔️" />
+              <button type="button" onClick={() => setQuestForm({ ...emptyQuestForm, open: true, childId: children[0]?.id || "" })} className="primary-button w-full sm:w-auto">
+                <Plus className="h-5 w-5" /> Craft Quest
               </button>
             </div>
-            <div className="panel space-y-3">
+            <div className="space-y-4">
               {quests.length === 0 ? (
-                <p className="py-12 text-center text-sm font-black uppercase text-slate-400">No quests yet. Craft your first quest!</p>
+                <p className="py-12 text-center text-lg font-black uppercase text-[var(--text-muted)]">No quests yet.</p>
               ) : (
                 quests.map((quest) => (
-                  <div key={quest.id}>
-                    <QuestRow quest={quest} childName={childName(quest.childId)} onEdit={() => setQuestForm({ open: true, isEdit: true, id: quest.id, childId: quest.childId, title: quest.title, difficulty: quest.difficulty, repetition: quest.repetition, reminderTime: quest.reminderTime, requireProof: quest.requireProof })} onDelete={() => deleteQuest(quest.id)} />
-                  </div>
+                  <QuestRow key={quest.id} quest={quest} childName={childName(quest.childId)} onEdit={() => setQuestForm({ open: true, isEdit: true, ...quest })} onDelete={() => deleteQuest(quest.id)} />
                 ))
               )}
             </div>
@@ -611,19 +581,17 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {activeTab === "rewards" && (
           <section className="space-y-6 animate-fade-in">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <SectionHeader title="Rewards Shop Board" subtitle="Create rewards children can claim with coins" emoji="🎁" />
-              <button type="button" onClick={() => setRewardForm({ ...emptyRewardForm, open: true, childId: children[0]?.id || "" })} className="primary-button">
-                <Plus className="h-4 w-4" /> Stock Reward
+              <SectionHeader title="Rewards Shop" subtitle="Prizes for hard work" emoji="🎁" />
+              <button type="button" onClick={() => setRewardForm({ ...emptyRewardForm, open: true, childId: children[0]?.id || "" })} className="primary-button w-full sm:w-auto">
+                <Plus className="h-5 w-5" /> Stock Reward
               </button>
             </div>
-            <div className="panel space-y-3">
+            <div className="space-y-4">
               {rewards.length === 0 ? (
-                <p className="py-12 text-center text-sm font-black uppercase text-slate-400">No rewards yet. Stock your first reward!</p>
+                <p className="py-12 text-center text-lg font-black uppercase text-[var(--text-muted)]">No rewards yet.</p>
               ) : (
                 rewards.map((reward) => (
-                  <div key={reward.id}>
-                    <RewardRow reward={reward} childName={childName(reward.childId)} onApprove={() => approveReward(reward.id)} onReject={() => rejectReward(reward.id)} />
-                  </div>
+                  <RewardRow key={reward.id} reward={reward} childName={childName(reward.childId)} onApprove={() => approveReward(reward.id)} onReject={() => rejectReward(reward.id)} />
                 ))
               )}
             </div>
@@ -633,36 +601,29 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {/* ── VERIFICATIONS ── */}
         {activeTab === "verifications" && (
           <section className="space-y-6 animate-fade-in">
-            <SectionHeader title="Quest Verification Queue" subtitle="Confirm completed quests and send feedback to your hero" emoji="✅" />
-            <div className="panel space-y-3">
+            <SectionHeader title="Verification Queue" subtitle="Approve completed quests" emoji="✅" />
+            <div className="space-y-4">
               {pendingQuests.length === 0 ? (
-                <div className="py-12 text-center">
-                  <div className="text-5xl mb-3">🎉</div>
-                  <p className="text-sm font-black uppercase text-slate-400">All caught up! No pending verifications.</p>
+                <div className="py-16 text-center bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-[2.5rem] shadow-[var(--card-shadow)]">
+                  <div className="text-6xl mb-3">🎉</div>
+                  <p className="text-lg font-black uppercase text-[var(--text-main)]">All caught up!</p>
                 </div>
               ) : (
                 pendingQuests.map((quest) => (
-                  <div key={quest.id} className="row-card">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)' }}>
-                        ⚔️
-                      </div>
-                      <div>
-                        <p className="font-black text-slate-800 text-sm">{quest.adventureTitle || quest.title}</p>
-                        <p className="text-xs font-bold text-slate-400">
-                          {childName(quest.childId)} · <span className="text-slate-500">{quest.title}</span> ·
-                          <span className={`ml-1 font-black ${quest.difficulty === 'easy' ? 'text-green-500' : quest.difficulty === 'medium' ? 'text-amber-500' : 'text-red-500'}`}>
-                            {quest.difficulty}
-                          </span>
-                        </p>
-                      </div>
+                  <div key={quest.id} className="bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-3xl p-5 shadow-lg flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="text-4xl shrink-0">📸</div>
+                    <div className="flex-1">
+                      <p className="font-black text-xl text-[var(--text-main)]">{quest.adventureTitle || quest.title}</p>
+                      <p className="text-sm font-bold text-[var(--text-muted)] mt-1">
+                        Hero: {childName(quest.childId)}
+                      </p>
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      <button type="button" onClick={() => verifyQuest(quest.id)} className="small-green flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Verify
+                    <div className="flex gap-2 mt-2 sm:mt-0">
+                      <button onClick={() => verifyQuest(quest.id)} className="flex-1 sm:flex-none py-3 px-5 rounded-xl font-black text-sm uppercase bg-green-500 hover:bg-green-600 text-white border-b-4 border-green-700 active:translate-y-1 active:border-b-0">
+                        Approve
                       </button>
-                      <button type="button" onClick={() => setRejectQuestModal({ open: true, questId: quest.id, comment: "" })} className="small-red flex items-center gap-1">
-                        <X className="w-3 h-3" /> Reject
+                      <button onClick={() => setRejectQuestModal({ open: true, questId: quest.id, comment: "" })} className="flex-1 sm:flex-none py-3 px-5 rounded-xl font-black text-sm uppercase bg-red-500 hover:bg-red-600 text-white border-b-4 border-red-700 active:translate-y-1 active:border-b-0">
+                        Reject
                       </button>
                     </div>
                   </div>
@@ -675,170 +636,125 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {/* ── AI TOOLS ── */}
         {activeTab === "ai-tools" && (
           <section className="space-y-6 animate-fade-in">
-            <SectionHeader title="AI Parenting Hub" subtitle="Generate plans, get expert advice, and create child reports" emoji="🤖" />
+            <SectionHeader title="AI Parenting Hub" subtitle="Plans, advice, and reports" emoji="🤖" />
 
             <div className="grid gap-6 lg:grid-cols-2">
-              {/* AI Habit Planner */}
-              <form onSubmit={handleAIPlanSubmit} className="panel space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(108,61,224,0.1)', border: '1px solid rgba(108,61,224,0.2)' }}>
-                    <Zap className="w-4 h-4 text-violet-500" />
-                  </div>
-                  <h3 className="panel-title">AI Habit Planner</h3>
+              <form onSubmit={handleAIPlanSubmit} className="bg-[var(--bg-card)] border-2 border-[var(--border-color)] rounded-3xl p-6 shadow-[var(--card-shadow)] space-y-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-3xl">Zap</div>
+                  <h3 className="text-xl font-black uppercase tracking-wide text-[var(--text-main)]">Habit Planner</h3>
                 </div>
-                <p className="text-xs text-slate-500 font-semibold">Describe your child's needs and get a full daily routine.</p>
-                <textarea value={plannerPrompt} onChange={(e) => setPlannerPrompt(e.target.value)} className="field h-28" />
-                <button className="primary-button" type="submit">
-                  <Sparkles className="w-3.5 h-3.5" /> Generate Plan
-                </button>
+                <textarea value={plannerPrompt} onChange={(e) => setPlannerPrompt(e.target.value)} className="w-full p-4 rounded-xl text-sm font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none focus:border-purple-500 min-h-[100px]" />
+                <button className="primary-button w-full" type="submit"><Sparkles className="w-5 h-5 mr-2" /> Generate Plan</button>
                 {aiPlanResult && (
-                  <div className="space-y-3 mt-2">
-                    {Object.entries(aiPlanResult).map(([key, value]) => (
-                      <div key={key} className="rounded-xl p-3" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                        <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                        {Array.isArray(value) ? (
-                          <ul className="space-y-1">
-                            {(value as string[]).map((item, i) => (
-                              <li key={i} className="text-xs font-semibold text-slate-700 flex items-start gap-2">
-                                <span className="text-violet-500 mt-0.5 shrink-0">•</span> {item}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <p className="text-xs font-semibold text-slate-700">{String(value)}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <div className="result-box bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] mt-4 whitespace-pre-wrap">{JSON.stringify(aiPlanResult, null, 2)}</div>
                 )}
               </form>
 
-              {/* Parent Assistant */}
-              <form onSubmit={handleAIAssistantSubmit} className="panel space-y-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(14,165,233,0.2)' }}>
-                    <Award className="w-4 h-4 text-sky-500" />
-                  </div>
-                  <h3 className="panel-title">Parent Assistant</h3>
+              <form onSubmit={handleAIAssistantSubmit} className="bg-[var(--bg-card)] border-2 border-[var(--border-color)] rounded-3xl p-6 shadow-[var(--card-shadow)] space-y-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="text-3xl">Award</div>
+                  <h3 className="text-xl font-black uppercase tracking-wide text-[var(--text-main)]">Parent Assistant</h3>
                 </div>
-                <p className="text-xs text-slate-500 font-semibold">Ask for expert parenting advice tailored to gamified habits.</p>
-                <textarea value={assistantQuestion} onChange={(e) => setAssistantQuestion(e.target.value)} className="field h-28" />
-                <button className="primary-button" type="submit">
-                  <Sparkles className="w-3.5 h-3.5" /> Ask Assistant
-                </button>
+                <textarea value={assistantQuestion} onChange={(e) => setAssistantQuestion(e.target.value)} className="w-full p-4 rounded-xl text-sm font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none focus:border-purple-500 min-h-[100px]" />
+                <button className="primary-button w-full" type="submit"><Sparkles className="w-5 h-5 mr-2" /> Ask Assistant</button>
                 {aiAdviceResult && (
-                  <div className="result-box whitespace-pre-wrap">{aiAdviceResult}</div>
+                  <div className="result-box bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] mt-4 whitespace-pre-wrap">{aiAdviceResult}</div>
                 )}
               </form>
             </div>
-
-            {/* Weekly Report */}
-            <form onSubmit={handleAIReportSubmit} className="panel space-y-4">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)' }}>
-                  <BarChart2 className="w-4 h-4 text-amber-500" />
-                </div>
-                <h3 className="panel-title">Weekly Progress Report</h3>
-              </div>
-              <p className="text-xs text-slate-500 font-semibold">Generate an AI-powered weekly analysis of your child's habit progress.</p>
-              <select required value={selectedChildForReport} onChange={(e) => setSelectedChildForReport(e.target.value)} className="field md:w-72">
-                <option value="">Choose a hero child...</option>
-                {children.map((child) => (
-                  <option key={child.id} value={child.id}>{child.name}</option>
-                ))}
-              </select>
-              <button className="primary-button" type="submit">
-                <Sparkles className="w-3.5 h-3.5" /> Generate Report
-              </button>
-              {generatedReport && (
-                <div className="grid gap-3 md:grid-cols-2 mt-2">
-                  {Object.entries(generatedReport).map(([key, value]) => (
-                    <div key={key} className="rounded-xl p-3" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                      {Array.isArray(value) ? (
-                        <ul className="space-y-1">
-                          {(value as string[]).map((item, i) => (
-                            <li key={i} className="text-xs font-semibold text-slate-700 flex items-start gap-2">
-                              <span className="text-violet-500 mt-0.5 shrink-0">•</span> {item}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-xs font-semibold text-slate-700">{String(value)}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </form>
           </section>
         )}
       </main>
 
       {/* ── MODALS ── */}
+      {/* Simplify Modals using Portal */}
       {childForm.open && (
-        <ModalShell>
-          <ModalHeader title={childForm.isEdit ? "Edit Hero Profile" : "Register New Hero"} emoji="🛡️" onClose={() => setChildForm(emptyChildForm)} />
+        <ModalShell onClose={() => setChildForm(emptyChildForm)} title={childForm.isEdit ? "Edit Hero" : "New Hero"} emoji="🛡️">
           <form onSubmit={handleChildSubmit} className="space-y-4">
-            <Field label="Hero Name" value={childForm.name} onChange={(value) => setChildForm({ ...childForm, name: value })} required placeholder="e.g. Leo, Emma" />
-            <Field label="Child Login ID" value={childForm.loginId} onChange={(value) => setChildForm({ ...childForm, loginId: value.toLowerCase().replace(/[^a-z0-9_-]/g, "") })} required placeholder="e.g. leo (used to log in)" />
-            <Field label="Child Password" type="password" value={childForm.password} onChange={(value) => setChildForm({ ...childForm, password: value })} required={!childForm.isEdit} placeholder={childForm.isEdit ? "Leave blank to keep current" : "Password child will use"} />
-            <SelectField label="Hero Avatar Class" value={childForm.avatar} onChange={(value) => setChildForm({ ...childForm, avatar: value })} options={avatars.map((avatar) => ({ value: avatar.key, label: `${avatar.icon} ${avatar.name}` }))} />
-            <button disabled={saving} type="submit" className="primary-button w-full">
-              {saving ? "Saving..." : childForm.isEdit ? "Save Changes" : "Create Hero! 🏰"}
+            <Field label="Hero Name" value={childForm.name} onChange={(v) => setChildForm({ ...childForm, name: v })} required placeholder="e.g. Leo" />
+            <Field label="Login ID" value={childForm.loginId} onChange={(v) => setChildForm({ ...childForm, loginId: v.toLowerCase().replace(/[^a-z0-9_-]/g, "") })} required placeholder="e.g. leo" />
+            <Field label="Password" type="password" value={childForm.password} onChange={(v) => setChildForm({ ...childForm, password: v })} required={!childForm.isEdit} placeholder="Secret password" />
+            <div className="space-y-2">
+              <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Avatar</label>
+              <select value={childForm.avatar} onChange={(e) => setChildForm({ ...childForm, avatar: e.target.value })} className="w-full px-4 py-4 rounded-2xl text-lg font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none focus:border-purple-400">
+                {avatars.map((avatar) => <option key={avatar.key} value={avatar.key}>{avatar.icon} {avatar.name}</option>)}
+              </select>
+            </div>
+            <button disabled={saving} type="submit" className="primary-button w-full mt-4 py-5 text-xl">
+              {saving ? "Saving..." : "Save Hero"}
             </button>
           </form>
         </ModalShell>
       )}
 
       {questForm.open && (
-        <ModalShell>
-          <ModalHeader title={questForm.isEdit ? "Edit Quest Details" : "Craft A New Quest"} emoji="⚔️" onClose={() => setQuestForm(emptyQuestForm)} />
+        <ModalShell onClose={() => setQuestForm(emptyQuestForm)} title={questForm.isEdit ? "Edit Quest" : "New Quest"} emoji="⚔️">
           <form onSubmit={handleQuestSubmit} className="space-y-4">
-            <SelectField label="Assign to Hero" value={questForm.childId} onChange={(value) => setQuestForm({ ...questForm, childId: value })} options={children.map((child) => ({ value: child.id, label: `${getAvatarEmoji(child.avatar)} ${child.name}` }))} required />
-            <Field label="Chore / Habit Name" value={questForm.title} onChange={(value) => setQuestForm({ ...questForm, title: value })} required placeholder="e.g. Brush Teeth, Read Book" />
-            <div className="grid grid-cols-2 gap-3">
-              <SelectField label="Difficulty" value={questForm.difficulty} onChange={(value) => setQuestForm({ ...questForm, difficulty: value })} options={[{ value: "easy", label: "⭐ Easy" }, { value: "medium", label: "⭐⭐ Medium" }, { value: "hard", label: "⭐⭐⭐ Hard" }]} />
-              <SelectField label="Frequency" value={questForm.repetition} onChange={(value) => setQuestForm({ ...questForm, repetition: value })} options={[{ value: "daily", label: "📅 Daily" }, { value: "weekly", label: "📆 Weekly" }, { value: "monthly", label: "🗓️ Monthly" }]} />
+            <div className="space-y-2">
+              <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Hero</label>
+              <select value={questForm.childId} onChange={(e) => setQuestForm({ ...questForm, childId: e.target.value })} required className="w-full px-4 py-4 rounded-2xl text-lg font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none focus:border-purple-400">
+                <option value="">Select a Hero...</option>
+                {children.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}
+              </select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Reminder Time" type="time" value={questForm.reminderTime} onChange={(value) => setQuestForm({ ...questForm, reminderTime: value })} />
-              <SelectField label="Required Proof" value={questForm.requireProof} onChange={(value) => setQuestForm({ ...questForm, requireProof: value })} options={[{ value: "none", label: "None" }, { value: "text", label: "✍️ Text" }, { value: "photo", label: "📸 Photo" }]} />
+            <Field label="Quest Name" value={questForm.title} onChange={(v) => setQuestForm({ ...questForm, title: v })} required placeholder="Brush Teeth" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Difficulty</label>
+                <select value={questForm.difficulty} onChange={(e) => setQuestForm({ ...questForm, difficulty: e.target.value })} className="w-full px-4 py-4 rounded-2xl text-lg font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none">
+                  <option value="easy">Easy (10 XP, 5 🪙)</option>
+                  <option value="medium">Medium (25 XP, 15 🪙)</option>
+                  <option value="hard">Hard (50 XP, 30 🪙)</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Proof</label>
+                <select value={questForm.requireProof} onChange={(e) => setQuestForm({ ...questForm, requireProof: e.target.value })} className="w-full px-4 py-4 rounded-2xl text-lg font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none">
+                  <option value="none">None (Trust)</option>
+                  <option value="photo">Photo 📸</option>
+                  <option value="text">Text ✍️</option>
+                </select>
+              </div>
             </div>
-            <button disabled={saving} type="submit" className="primary-button w-full">
-              {saving ? "Saving..." : questForm.isEdit ? "Update Quest" : "Assign Quest! ⚔️"}
+            <button disabled={saving} type="submit" className="primary-button w-full mt-4 py-5 text-xl">
+              {saving ? "Saving..." : "Save Quest"}
             </button>
           </form>
         </ModalShell>
       )}
 
       {rewardForm.open && (
-        <ModalShell>
-          <ModalHeader title="Stock A New Reward" emoji="🎁" onClose={() => setRewardForm(emptyRewardForm)} />
+        <ModalShell onClose={() => setRewardForm(emptyRewardForm)} title="New Reward" emoji="🎁">
           <form onSubmit={handleRewardSubmit} className="space-y-4">
-            <SelectField label="Assign to Hero" value={rewardForm.childId} onChange={(value) => setRewardForm({ ...rewardForm, childId: value })} options={children.map((child) => ({ value: child.id, label: `${getAvatarEmoji(child.avatar)} ${child.name}` }))} required />
-            <Field label="Reward Title" value={rewardForm.title} onChange={(value) => setRewardForm({ ...rewardForm, title: value })} required placeholder="e.g. 30 Minutes TV Time" />
-            <Field label="Coin Cost" type="number" value={rewardForm.coinsCost} onChange={(value) => setRewardForm({ ...rewardForm, coinsCost: value })} required min={5} placeholder="e.g. 30" />
-            <button disabled={saving} type="submit" className="primary-button w-full">
-              {saving ? "Saving..." : "Create Reward! 🎁"}
+            <div className="space-y-2">
+              <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)]">Hero</label>
+              <select value={rewardForm.childId} onChange={(e) => setRewardForm({ ...rewardForm, childId: e.target.value })} required className="w-full px-4 py-4 rounded-2xl text-lg font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none focus:border-purple-400">
+                <option value="">Select a Hero...</option>
+                {children.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}
+              </select>
+            </div>
+            <Field label="Reward Title" value={rewardForm.title} onChange={(v) => setRewardForm({ ...rewardForm, title: v })} required placeholder="e.g. 1 Hour Video Games" />
+            <Field label="Coin Cost 🪙" type="number" value={rewardForm.coinsCost} onChange={(v) => setRewardForm({ ...rewardForm, coinsCost: v })} required placeholder="30" />
+            <button disabled={saving} type="submit" className="primary-button w-full mt-4 py-5 text-xl">
+              {saving ? "Saving..." : "Stock Reward"}
             </button>
           </form>
         </ModalShell>
       )}
 
       {rejectQuestModal.open && (
-        <ModalShell>
-          <ModalHeader title="Send Quest Back" emoji="↩️" onClose={() => setRejectQuestModal({ open: false, questId: "", comment: "" })} />
+        <ModalShell onClose={() => setRejectQuestModal({ open: false, questId: "", comment: "" })} title="Reject Quest" emoji="⚠️">
           <form onSubmit={rejectQuest} className="space-y-4">
-            <p className="text-sm font-semibold text-slate-500">Tell your child what to improve and try again.</p>
+            <p className="text-sm font-bold text-[var(--text-muted)]">Give your hero some feedback so they can try again!</p>
             <textarea
               required
               value={rejectQuestModal.comment}
               onChange={(e) => setRejectQuestModal({ ...rejectQuestModal, comment: e.target.value })}
-              placeholder="e.g. Great try! Please add more detail to your reading note."
-              className="field h-28"
+              className="w-full p-4 rounded-2xl text-base font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] h-32 outline-none focus:border-red-400"
+              placeholder="E.g., Please make sure you clean under the bed too!"
             />
-            <button type="submit" className="small-red w-full py-3.5 rounded-2xl text-sm">
+            <button type="submit" className="w-full py-4 rounded-xl font-black text-sm uppercase bg-red-500 hover:bg-red-600 text-white border-b-4 border-red-700 active:translate-y-1 active:border-b-0">
               Send Feedback
             </button>
           </form>
@@ -848,139 +764,86 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   );
 }
 
-/* ─── Sub-components ─── */
+// ── HELPERS ──
+const SectionHeader = ({ title, subtitle, emoji }: { title: string; subtitle: string; emoji: string }) => (
+  <div>
+    <h2 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-3 text-[var(--text-main)] uppercase">
+      <span className="text-3xl md:text-4xl">{emoji}</span> {title}
+    </h2>
+    <p className="text-sm font-bold text-[var(--text-muted)] mt-1 ml-12">{subtitle}</p>
+  </div>
+);
 
-function SectionHeader({ title, subtitle, emoji }: { title: string; subtitle: string; emoji: string }) {
-  return (
+const MetricCard = ({ label, value, color, emoji }: { label: string; value: number | string; color: string; emoji: string; bg?: string }) => (
+  <div className="bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-3xl p-5 shadow-[var(--card-shadow)] flex items-center gap-4">
+    <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl bg-[var(--input-bg)] border-2 border-[var(--input-border)]">
+      {emoji}
+    </div>
     <div>
-      <h1 className="flex items-center gap-2.5 text-2xl md:text-3xl font-black text-slate-800">
-        <span className="text-3xl">{emoji}</span>
-        {title}
-      </h1>
-      <p className="mt-1.5 text-sm font-semibold text-slate-500">{subtitle}</p>
+      <p className="text-xs font-black uppercase tracking-wider text-[var(--text-muted)]">{label}</p>
+      <p className="text-3xl font-black" style={{ color }}>{value}</p>
     </div>
-  );
-}
+  </div>
+);
 
-function MetricCard({ label, value, color, emoji, bg }: { label: string; value: number; color: string; emoji: string; bg: string }) {
-  return (
-    <div className="metric-card">
-      <div className={`metric-card-header bg-gradient-to-r ${bg}`} style={{ background: `linear-gradient(90deg, ${color}22, ${color}11)`, height: '5px' }} />
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-black uppercase tracking-wider text-slate-500">{label}</p>
-          <span className="text-2xl">{emoji}</span>
-        </div>
-        <p className="text-4xl font-black animate-count-up" style={{ color }}>{value}</p>
-      </div>
-    </div>
-  );
-}
+const Field = ({ label, type = "text", value, onChange, required, placeholder }: any) => (
+  <div className="space-y-2">
+    <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)]">{label}</label>
+    <input type={type} value={value} onChange={(e) => onChange(e.target.value)} required={required} placeholder={placeholder} className="w-full px-5 py-4 rounded-2xl text-lg font-bold bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-main)] outline-none focus:border-purple-400" />
+  </div>
+);
 
-function QuestRow({ quest, childName, onEdit, onDelete }: { quest: any; childName: string; onEdit: () => void; onDelete: () => void }) {
-  const diffColor = quest.difficulty === 'easy' ? '#22c55e' : quest.difficulty === 'medium' ? '#f59e0b' : '#ef4444';
-  return (
-    <div className="row-card">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0" style={{ background: `${diffColor}15`, border: `1px solid ${diffColor}30` }}>
-          ⚔️
-        </div>
-        <div className="min-w-0">
-          <p className="font-black text-slate-800 text-sm truncate">{quest.adventureTitle || quest.title}</p>
-          <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5 flex-wrap">
-            <span>{childName}</span>
-            <span className="font-black" style={{ color: diffColor }}>· {quest.difficulty}</span>
-            <span>· {quest.repetition}</span>
-            <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase ${quest.status === 'active' ? 'bg-green-50 text-green-600' : quest.status === 'completed' ? 'bg-amber-50 text-amber-600' : 'bg-slate-100 text-slate-500'}`}>
-              {quest.status}
-            </span>
-          </p>
-        </div>
+const QuestRow = ({ quest, childName, onEdit, onDelete }: any) => (
+  <div className="bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-3xl p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex items-center gap-4">
+      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl border-2 ${quest.difficulty === 'easy' ? 'bg-green-100 border-green-300' : quest.difficulty === 'medium' ? 'bg-amber-100 border-amber-300' : 'bg-red-100 border-red-300'}`}>
+        ⚔️
       </div>
-      <div className="flex gap-2 shrink-0">
-        <button type="button" onClick={onEdit} className="icon-button"><Edit2 className="h-3.5 w-3.5" /></button>
-        <button type="button" onClick={onDelete} className="icon-button danger"><Trash2 className="h-3.5 w-3.5" /></button>
+      <div>
+        <h4 className="font-black text-xl text-[var(--text-main)]">{quest.title}</h4>
+        <p className="text-sm font-bold text-[var(--text-muted)]">Hero: {childName}</p>
       </div>
     </div>
-  );
-}
-
-function RewardRow({ reward, childName, onApprove, onReject }: { reward: any; childName: string; onApprove: () => void; onReject: () => void }) {
-  const statusMap: Record<string, { label: string; color: string; bg: string }> = {
-    active: { label: 'Active', color: '#64748b', bg: '#f1f5f9' },
-    requested: { label: '⏳ Pending', color: '#d97706', bg: '#fffbeb' },
-    approved: { label: '✅ Approved', color: '#16a34a', bg: '#f0fdf4' },
-    rejected: { label: '❌ Rejected', color: '#dc2626', bg: '#fef2f2' },
-  };
-  const status = statusMap[reward.status] || statusMap.active;
-  return (
-    <div className="row-card">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0" style={{ background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.25)' }}>
-          🎁
-        </div>
-        <div className="min-w-0">
-          <p className="font-black text-slate-800 text-sm truncate">{reward.title}</p>
-          <p className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
-            {childName} · <span className="text-amber-500 font-black">🪙 {reward.coinsCost} coins</span>
-            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase" style={{ color: status.color, background: status.bg }}>
-              {status.label}
-            </span>
-          </p>
-        </div>
-      </div>
-      {reward.status === "requested" && (
-        <div className="flex gap-2 shrink-0">
-          <button type="button" onClick={onApprove} className="small-green">Approve</button>
-          <button type="button" onClick={onReject} className="small-red">Reject</button>
-        </div>
-      )}
+    <div className="flex gap-2">
+      <button onClick={onEdit} className="p-3 bg-[var(--input-bg)] border-2 border-[var(--input-border)] rounded-xl text-[var(--text-muted)] hover:bg-purple-100 hover:text-purple-600 transition">
+        <Edit2 className="w-5 h-5" />
+      </button>
+      <button onClick={onDelete} className="p-3 bg-red-50 border-2 border-red-200 rounded-xl text-red-500 hover:bg-red-100 transition">
+        <Trash2 className="w-5 h-5" />
+      </button>
     </div>
-  );
-}
+  </div>
+);
 
-function ModalHeader({ title, emoji, onClose }: { title: string; emoji: string; onClose: () => void }) {
-  return (
-    <div className="flex items-center justify-between mb-5 pb-4" style={{ borderBottom: '2px solid #f1f5f9' }}>
-      <div className="flex items-center gap-2.5">
-        <span className="text-2xl">{emoji}</span>
-        <h2 className="text-lg font-black uppercase text-slate-800 tracking-tight">{title}</h2>
+const RewardRow = ({ reward, childName, onApprove, onReject }: any) => (
+  <div className="bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-3xl p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex items-center gap-4">
+      <div className="text-4xl">🎁</div>
+      <div>
+        <h4 className="font-black text-xl text-[var(--text-main)]">{reward.title}</h4>
+        <p className="text-sm font-bold text-[var(--text-muted)]">Hero: {childName} · Cost: {reward.coinsCost} 🪙</p>
       </div>
-      <button type="button" onClick={onClose} className="icon-button"><X className="h-4 w-4" /></button>
     </div>
-  );
-}
-
-function Field({ label, value, onChange, type = "text", required, placeholder, min }: { label: string; value: string; onChange: (value: string) => void; type?: string; required?: boolean; placeholder?: string; min?: number }) {
-  return (
-    <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-      {label}
-      <input type={type} required={required} placeholder={placeholder} min={min} value={value} onChange={(e) => onChange(e.target.value)} className="field mt-2" />
-    </label>
-  );
-}
-
-function SelectField({ label, value, onChange, options, required }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; required?: boolean }) {
-  return (
-    <label className="block text-xs font-black uppercase tracking-wider text-slate-500">
-      {label}
-      <select required={required} value={value} onChange={(e) => onChange(e.target.value)} className="field mt-2">
-        <option value="">Choose...</option>
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function ModalShell({ children: modalChildren }: { children: React.ReactNode }) {
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-start justify-center overflow-y-auto bg-slate-900/60 px-4 py-6 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-3xl border-2 border-b-4 border-[#E2E8F0] bg-white p-6 shadow-2xl max-h-[calc(100dvh-3rem)] overflow-y-auto animate-scale-in">
-        {modalChildren}
+    {reward.status === "requested" && (
+      <div className="flex gap-2 w-full sm:w-auto">
+        <button onClick={onApprove} className="flex-1 sm:flex-none py-3 px-5 rounded-xl font-black text-sm uppercase bg-green-500 hover:bg-green-600 text-white border-b-4 border-green-700 active:translate-y-1 active:border-b-0">Approve</button>
+        <button onClick={onReject} className="flex-1 sm:flex-none py-3 px-5 rounded-xl font-black text-sm uppercase bg-red-500 hover:bg-red-600 text-white border-b-4 border-red-700 active:translate-y-1 active:border-b-0">Reject</button>
       </div>
-    </div>,
-    document.body
-  );
-}
+    )}
+  </div>
+);
+
+// Minimal Modal Wrapper
+const ModalShell = ({ title, emoji, children, onClose }: any) => createPortal(
+  <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div className="bg-[var(--bg-card)] border-4 border-[var(--border-color)] rounded-[2.5rem] w-full max-w-md p-6 shadow-2xl relative animate-scale-in max-h-[90vh] overflow-y-auto">
+      <button onClick={onClose} className="absolute top-5 right-5 w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--input-bg)] border-2 border-[var(--input-border)] text-[var(--text-muted)] hover:text-red-500">
+        <X className="w-5 h-5" />
+      </button>
+      <div className="text-6xl mb-4 text-center">{emoji}</div>
+      <h3 className="text-2xl font-black text-center uppercase tracking-wide text-[var(--text-main)] mb-6">{title}</h3>
+      {children}
+    </div>
+  </div>,
+  document.body
+);
