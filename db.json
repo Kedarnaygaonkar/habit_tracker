@@ -17,6 +17,18 @@
       "email": "codextest20260719165940@example.com",
       "passwordHash": "$2b$10$s.zELSkmUXp7CMv9YWYBAu5Arn.OBx6BjMK3lN/E9Tf7u8roO25Q.",
       "familyName": "CodexTest20260719165940"
+    },
+    {
+      "id": "p-il45irqlm",
+      "email": "kedar@g.com",
+      "passwordHash": "$2b$10$MYWqmXOp28jhf8ODNogZ.O5vEzqJn.ISH2QVFbqfLWEtBPThzDYeO",
+      "familyName": "kedar"
+    },
+    {
+      "id": "p-ht24dngo5",
+      "email": "vishal@g.com",
+      "passwordHash": "$2b$10$wEktZcKo9lB4cITJuYRHgevBoJOK/igNgY1i2nZRHjB8LGtEszoqa",
+      "familyName": "Vishal"
     }
   ],
   "children": [
@@ -27,17 +39,17 @@
       "passcode": "1234",
       "avatar": "avatar_knight",
       "xp": 450,
-      "coins": 120,
+      "coins": 60,
       "level": 2,
       "streak": 5,
       "longestStreak": 12,
       "pet": {
         "name": "Sparky the Dragon",
         "level": 2,
-        "xp": 150,
-        "happiness": 85,
+        "xp": 180,
+        "happiness": 100,
         "status": "happy",
-        "lastFedAt": "2026-07-19T10:23:40.282Z"
+        "lastFedAt": "2026-07-19T15:21:16.316Z"
       },
       "loginId": "leo",
       "passwordHash": "$2b$10$cBInZVKo68Qp9TmcX70JCOdRFkDCakb20kWhkqtPFCgxwm7EVNuKK"
@@ -126,6 +138,27 @@
         "status": "happy",
         "lastFedAt": "2026-07-19T11:49:25.833Z"
       }
+    },
+    {
+      "id": "c-cxin5mi3h",
+      "parentId": "p-ht24dngo5",
+      "name": "atharv",
+      "loginId": "atharv",
+      "passwordHash": "$2b$10$e.67Lw/6lFsAHBL..MT03u6zpaPGyILzrGWeLV2IuRy3rqcbp5A6G",
+      "avatar": "avatar_knight",
+      "xp": 0,
+      "coins": 0,
+      "level": 1,
+      "streak": 0,
+      "longestStreak": 0,
+      "pet": {
+        "name": "Mochi the Bunny",
+        "level": 1,
+        "xp": 0,
+        "happiness": 100,
+        "status": "happy",
+        "lastFedAt": "2026-07-19T17:14:29.734Z"
+      }
     }
   ],
   "quests": [
@@ -141,8 +174,9 @@
       "coins": 5,
       "reminderTime": "08:00",
       "requireProof": "none",
-      "status": "pending",
-      "verified": false
+      "status": "completed",
+      "verified": false,
+      "proofData": ""
     },
     {
       "id": "q-2",
@@ -218,6 +252,21 @@
       "requireProof": "text",
       "status": "pending",
       "verified": false
+    },
+    {
+      "id": "q-ycm2yfaiv",
+      "parentId": "p-ht24dngo5",
+      "childId": "c-cxin5mi3h",
+      "title": "g",
+      "adventureTitle": "Quest: g",
+      "difficulty": "medium",
+      "repetition": "daily",
+      "xp": 50,
+      "coins": 15,
+      "reminderTime": "08:00",
+      "requireProof": "none",
+      "status": "pending",
+      "verified": false
     }
   ],
   "rewards": [
@@ -235,7 +284,7 @@
       "childId": "c-leo",
       "title": "Ice Cream Treat",
       "coinsCost": 50,
-      "status": "available"
+      "status": "approved"
     },
     {
       "id": "r-3",
@@ -304,7 +353,32 @@
       "status": "verified"
     }
   ],
-  "notifications": [],
+  "notifications": [
+    {
+      "id": "notif-63e3t35x6",
+      "userId": "p-sample",
+      "role": "parent",
+      "message": "🎁 Leo has claimed the reward \"Ice Cream Treat\"! They spent 50 coins. Please approve it!",
+      "createdAt": "2026-07-19T15:47:14.005Z",
+      "read": false
+    },
+    {
+      "id": "notif-cfcyta2xm",
+      "userId": "p-sample",
+      "role": "parent",
+      "message": "✨ Leo completed quest \"Brush Teeth\" and is waiting for your verification!",
+      "createdAt": "2026-07-19T17:09:55.635Z",
+      "read": false
+    },
+    {
+      "id": "notif-zwkxv71re",
+      "userId": "c-leo",
+      "role": "child",
+      "message": "🎁 Your reward was approved! Parent says: Enjoy your \"Ice Cream Treat\"!",
+      "createdAt": "2026-07-19T17:21:01.810Z",
+      "read": false
+    }
+  ],
   "aiReports": [
     {
       "id": "rep-1",
@@ -349,6 +423,28 @@
       ],
       "bestTimeOfDay": "Morning",
       "parentSummary": "testchild1 has made incredible progress this week! With an overall habit consistency score of 20%, they are showing real growth, particularly in brushing teeth and reading. Keep reinforcing their awesome streak!"
+    },
+    {
+      "id": "rep-dq3x12b3o",
+      "childId": "c-leo",
+      "parentId": "p-sample",
+      "createdAt": "2026-07-19T15:44:45.286Z",
+      "habitScore": 30,
+      "completionRate": 20,
+      "strengths": [
+        "Excellent persistence with a streak of 5 days",
+        "Leo is highly consistent with morning quests"
+      ],
+      "weaknesses": [
+        "Bedtime routines are occasionally missed",
+        "Completing tasks without parents requiring multiple reminders"
+      ],
+      "recommendations": [
+        "Set a bedtime quest 30 minutes earlier",
+        "Convert difficult tasks into team adventures with parents"
+      ],
+      "bestTimeOfDay": "Morning",
+      "parentSummary": "Leo has made incredible progress this week! With an overall habit consistency score of 30%, they are showing real growth, particularly in brushing teeth and reading. Keep reinforcing their awesome streak!"
     }
   ]
 }
