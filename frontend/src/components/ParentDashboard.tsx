@@ -107,6 +107,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
 
   const deleteChild = async (id: string) => { if (!confirm("Delete this child?")) return; const r = await fetch(`/api/parent/children/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
   const deleteQuest = async (id: string) => { if (!confirm("Delete this task?")) return; const r = await fetch(`/api/parent/quests/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
+  const deleteReward = async (id: string) => { if (!confirm("Delete this reward?")) return; const r = await fetch(`/api/parent/rewards/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
   const verifyQuest = async (id: string) => { const r = await fetch(`/api/parent/quests/${id}/verify`, { method: "POST", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Verified! ✅"); } else { const d = await r.json(); setError(d.error); } };
   const rejectQuest = async (e: React.FormEvent) => { e.preventDefault(); const r = await fetch(`/api/parent/quests/${rejectModal.questId}/reject`, { method: "POST", headers, body: JSON.stringify({ comment: rejectModal.comment }) }); if (r.ok) { setRejectModal({ open: false, questId: "", comment: "" }); await fetchData(); showMsg("Sent back."); } };
   const approveReward = async (id: string) => { const r = await fetch(`/api/parent/rewards/${id}/approve`, { method: "POST", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Approved! 🎉"); } };
@@ -258,8 +259,13 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                           </div>
                         </div>
                       </div>
-                      <div className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-1 rounded-full">
-                        +{q.xp} XP
+                      <div className="flex items-center gap-2">
+                        <div className="bg-red-100 text-red-500 p-1.5 rounded-full cursor-pointer hover:bg-red-200 transition-colors" onClick={(e) => { e.stopPropagation(); deleteQuest(q.id); }}>
+                           <Trash2 className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-1.5 rounded-full">
+                          +{q.xp} XP
+                        </div>
                       </div>
                     </div>
                   ))}
