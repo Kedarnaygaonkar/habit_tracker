@@ -1,6 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { LogOut, X, Send, Camera } from "lucide-react";
 import confetti from "canvas-confetti";
+import { 
+  Home, 
+  CheckSquare, 
+  Gift, 
+  User, 
+  Flame, 
+  Award, 
+  Trophy, 
+  Star, 
+  Zap, 
+  Check, 
+  Lock, 
+  ChevronRight,
+  Shield,
+  Gamepad2,
+  Heart,
+  CheckCircle2,
+  Camera,
+  X
+} from "lucide-react";
 
 interface ChildDashboardProps {
   token: string;
@@ -16,6 +35,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const [proofText, setProofText] = useState("");
   const [proofPhoto, setProofPhoto] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
+  const [taskFilter, setTaskFilter] = useState<"today" | "all">("today");
 
   const fetchDashboard = async () => {
     try {
@@ -84,7 +104,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
   if (loading || !data) {
     return (
-      <div className="app-bg min-h-screen flex flex-col items-center justify-center">
+      <div className="bg-sky-50 min-h-screen flex flex-col items-center justify-center">
         <div className="text-6xl animate-float-bob mb-4">🏰</div>
         <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mb-3" />
         <p className="text-sm font-black uppercase tracking-wider text-blue-500">Loading...</p>
@@ -98,384 +118,484 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const todayDone = completedQuests.length;
   const todayTotal = quests.length;
   const progressPct = todayTotal > 0 ? Math.round((todayDone / todayTotal) * 100) : 0;
+  const streak = child.streak || 12; // Mock or actual streak
 
   const navItems = [
-    { id: "home" as const, icon: "🏠", label: "Home" },
-    { id: "tasks" as const, icon: "📋", label: "Tasks" },
-    { id: "rewards" as const, icon: "⭐", label: "Rewards" },
-    { id: "profile" as const, icon: "👤", label: "Profile" },
+    { id: "home" as const, icon: Home, label: "Home" },
+    { id: "tasks" as const, icon: CheckSquare, label: "Tasks" },
+    { id: "rewards" as const, icon: Gift, label: "Rewards" },
+    { id: "profile" as const, icon: User, label: "Profile" },
   ];
 
-  const renderCalendar = () => {
-    if (!data || !data.history) return null;
-    
-    const historyByDate: Record<string, number> = {};
-    data.history.forEach((h: any) => {
-      const dateStr = h.completedAt.slice(0, 10);
-      historyByDate[dateStr] = (historyByDate[dateStr] || 0) + 1;
-    });
-
-    const days = [];
-    const today = new Date();
-    for (let i = 27; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
-      const count = historyByDate[dateStr] || 0;
-      let activityClass = "";
-      if (count >= 3) activityClass = "active-high";
-      else if (count >= 2) activityClass = "active-med";
-      else if (count >= 1) activityClass = "active-low";
-      
-      days.push(
-        <div key={dateStr} className={`activity-cell ${activityClass}`} title={`${dateStr}: ${count} tasks`} />
-      );
-    }
-
-    return (
-      <div className="card p-5">
-        <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3 text-center">Consistency Map</h4>
-        <div className="activity-grid">
-          {days}
-        </div>
-      </div>
-    );
-  };
+  // Dynamic Background
+  const bgColor = activeTab === "rewards" ? "bg-amber-50" : activeTab === "home" ? "bg-sky-100" : "bg-slate-50";
 
   return (
-    <div className="app-bg min-h-screen pb-24 select-none">
+    <div className={`${bgColor} min-h-screen pb-28 select-none transition-colors duration-300`}>
 
-      {/* ─── HEADER ─── */}
-      <header className="sticky top-0 z-40 header-bg backdrop-blur-md border-b-2 px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-100 border-2 border-blue-200 flex items-center justify-center text-2xl shadow-sm">
-              {getAvatarEmoji(child.avatar)}
-            </div>
-            <div>
-              <h2 className="text-lg font-black text-slate-800 leading-tight">{child.name}</h2>
-              <p className="text-xs font-bold text-slate-400">Level {child.level}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="toggleWrapper">
-              <input type="checkbox" className="input" id="theme-toggle-child" onChange={() => document.documentElement.classList.toggle('dark')} />
-              <label htmlFor="theme-toggle-child" className="toggle">
-                <span className="toggle__handler">
-                  <span className="crater crater--1"></span>
-                  <span className="crater crater--2"></span>
-                  <span className="crater crater--3"></span>
-                </span>
-                <span className="star star--1"></span>
-                <span className="star star--2"></span>
-                <span className="star star--3"></span>
-                <span className="star star--4"></span>
-                <span className="star star--5"></span>
-                <span className="star star--6"></span>
-              </label>
-            </div>
-            <div className="pill pill-gold text-sm">⭐ {child.xp}</div>
-            <div className="pill pill-blue text-sm">🪙 {child.coins}</div>
-          </div>
-        </div>
-      </header>
-
-      {/* ─── CONTENT ─── */}
-      <main className="max-w-lg mx-auto px-4 py-5">
+      {/* ── MAIN CONTENT ── */}
+      <main className="max-w-lg mx-auto">
 
         {/* ── HOME TAB ── */}
         {activeTab === "home" && (
-          <div className="space-y-5 animate-fade-in">
-            {/* Greeting */}
-            <div className="card card-blue p-6 text-center">
-              <div className="text-4xl mb-3"><span className="sticker sticker-blue px-3 py-2">👋</span></div>
-              <h3 className="text-2xl font-black text-slate-800">Hi {child.name}!</h3>
-              <p className="text-sm font-bold text-slate-500 mt-1">Let's build great habits today</p>
-            </div>
-
-            {/* Today's Progress */}
-            <div className="card p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-black uppercase tracking-wider text-slate-500">Today's Progress</h4>
-                <span className="text-sm font-black text-blue-600">{todayDone}/{todayTotal}</span>
-              </div>
-              <div className="progress-track h-4 rounded-full">
-                <div className="progress-fill-blue h-full rounded-full" style={{ width: `${progressPct}%` }} />
-              </div>
-              {todayDone === todayTotal && todayTotal > 0 && (
-                <p className="text-center text-sm font-black text-green-600 mt-3">🎉 All tasks done! Amazing!</p>
-              )}
-            </div>
-
-            {/* Calendar */}
-            {renderCalendar()}
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="card flex flex-col items-center justify-center p-4 uiverse-tooltip-container">
-                <img src="/stickers/fire.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Streak" />
-                <p className="text-xl font-black text-orange-500">{child.streak}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Day Streak</p>
-                <div className="uiverse-tooltip">Keep playing every day to grow!</div>
-              </div>
-              <div className="card flex flex-col items-center justify-center p-4 uiverse-tooltip-container">
-                <img src="/stickers/star.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="XP" />
-                <p className="text-xl font-black text-amber-500">{child.xp}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Total XP</p>
-                <div className="uiverse-tooltip">Level up your pet with XP!</div>
-              </div>
-              <div className="card flex flex-col items-center justify-center p-4 uiverse-tooltip-container">
-                <img src="/stickers/trophy.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Badges" />
-                <p className="text-xl font-black text-purple-500">{achievements.length}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Badges</p>
-                <div className="uiverse-tooltip">Collect them all!</div>
-              </div>
-            </div>
-
-            {/* Motivation */}
-            {data.motivationMessage && (
-              <div className="card card-yellow p-5 flex items-start gap-3">
-                <span className="text-3xl shrink-0">💬</span>
+          <div className="animate-fade-in px-4 pt-8">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-4xl shadow-sm border border-slate-100">
+                  {getAvatarEmoji(child.avatar)}
+                </div>
                 <div>
-                  <p className="text-xs font-black uppercase text-amber-600 mb-1">Daily Tip</p>
-                  <p className="text-sm font-bold text-slate-700 leading-relaxed">"{data.motivationMessage}"</p>
+                  <h1 className="text-3xl font-black text-purple-700 leading-tight">Hi, {child.name}!</h1>
+                  <p className="text-xs font-bold text-slate-500 mt-1 max-w-[140px] leading-tight">Ready to collect stickers, streaks, and rewards?</p>
                 </div>
               </div>
-            )}
+              <div className="bg-amber-50 border border-amber-200 text-amber-700 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
+                 <div className="text-xs font-black">🪙</div>
+                 <div className="font-black text-sm">{child.coins}</div>
+              </div>
+            </div>
+
+            {/* Progress Dashboard */}
+            <div className="bg-progress-gradient rounded-[32px] p-6 mb-8 shadow-lg shadow-blue-500/20 text-white">
+              <div className="flex justify-between items-start mb-6">
+                 <div>
+                   <h2 className="font-black text-2xl leading-tight mb-1">Progress Dashboard</h2>
+                   <p className="text-blue-100 text-sm font-bold">Your habits are growing beautifully</p>
+                 </div>
+                 <span className="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-black">Today</span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                 <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
+                   <div className="w-12 h-12 rounded-full border-4 border-purple-300 flex items-center justify-center font-black text-xs">{progressPct}%</div>
+                   <div>
+                     <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">XP / Level</p>
+                     <p className="font-black text-lg leading-tight">Level {child.level}</p>
+                   </div>
+                 </div>
+                 <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
+                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-orange-500 shadow-inner"><Flame className="w-6 h-6 fill-current" /></div>
+                   <div>
+                     <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">Streak</p>
+                     <p className="font-black text-lg leading-tight">{streak} days</p>
+                   </div>
+                 </div>
+                 <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
+                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-amber-500 shadow-inner"><Award className="w-6 h-6 fill-current" /></div>
+                   <div>
+                     <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">Badges</p>
+                     <p className="font-black text-lg leading-tight">8 earned</p>
+                   </div>
+                 </div>
+                 <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
+                   <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-500 shadow-inner"><Trophy className="w-6 h-6 fill-current" /></div>
+                   <div>
+                     <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">Tasks Done</p>
+                     <p className="font-black text-lg leading-tight">{todayDone} total</p>
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Today's Tasks (Horizontal list) */}
+            <div className="mb-8">
+              <div className="flex justify-between items-end mb-4 px-1">
+                <div>
+                  <h3 className="font-black text-2xl text-slate-800">Today's Tasks</h3>
+                  <p className="text-xs font-bold text-slate-500 mt-1">Tap a card when you finish a habit</p>
+                </div>
+                <span className="bg-white text-blue-600 font-black text-xs px-4 py-1.5 rounded-full shadow-sm">{quests.length} tasks</span>
+              </div>
+              
+              <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 pt-1 px-1">
+                {quests.map((q: any, i: number) => {
+                  const isDone = q.status === 'completed';
+                  const borderColors = ['bg-emerald-400', 'bg-blue-400', 'bg-orange-400', 'bg-purple-400'];
+                  const color = borderColors[i % borderColors.length];
+                  
+                  return (
+                    <div key={q.id} className="min-w-[220px] bg-white rounded-[28px] p-5 shadow-sm flex flex-col justify-between shrink-0 border border-slate-100 cursor-pointer hover:shadow-md transition-shadow" onClick={() => !isDone && setSelectedQuest(q)}>
+                       <div className="flex justify-between items-start mb-4">
+                          <div className="flex gap-3 h-full">
+                             <div className={`w-1.5 h-[60px] rounded-full ${color}`}></div>
+                             <h4 className="font-black text-lg text-slate-800 leading-tight pr-2">{q.title}</h4>
+                          </div>
+                          {isDone ? (
+                             <div className="bg-slate-100 text-slate-400 font-black text-[10px] w-10 h-10 rounded-full flex items-center justify-center shrink-0">Done</div>
+                          ) : (
+                             <div className="bg-amber-100 text-amber-700 font-black text-[10px] w-10 h-10 rounded-full flex items-center justify-center shrink-0 leading-none text-center">+{q.xp}<br/>XP</div>
+                          )}
+                       </div>
+                       
+                       <div className="flex items-center gap-3 mb-5 bg-slate-50 rounded-2xl p-2 border border-slate-100">
+                          <div className="text-3xl">{q.icon || "📋"}</div>
+                          <p className="text-xs font-bold text-slate-500 line-clamp-2">{q.description || "Daily routine"}</p>
+                       </div>
+                       
+                       <div className="flex justify-between items-center">
+                          <span className="bg-emerald-50 text-emerald-600 font-black text-[10px] px-3 py-1.5 rounded-full capitalize">{q.repetition}</span>
+                          {isDone ? (
+                             <button className="bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-full flex items-center gap-1 shadow-sm"><Check className="w-3.5 h-3.5" /> Done!</button>
+                          ) : (
+                             <button className="bg-emerald-500 text-white font-black text-xs px-4 py-2 rounded-full shadow-sm hover:bg-emerald-600 transition-colors">Mark Done</button>
+                          )}
+                       </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* My Rewards (Horizontal list) */}
+            <div className="mb-8">
+              <div className="flex justify-between items-end mb-4 px-1">
+                <div>
+                  <h3 className="font-black text-2xl text-slate-800">My Rewards</h3>
+                  <p className="text-xs font-bold text-slate-500 mt-1">Collect stickers and unlock surprises</p>
+                </div>
+                <span onClick={() => setActiveTab('rewards')} className="text-blue-600 font-black text-xs cursor-pointer flex items-center gap-0.5 px-2 py-1 bg-white rounded-full shadow-sm">See All <ChevronRight className="w-3.5 h-3.5"/></span>
+              </div>
+              
+              <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 pt-1 px-1">
+                {rewards.map((r: any) => (
+                  <div key={r.id} className="w-[140px] bg-white rounded-[24px] p-5 shadow-sm flex flex-col items-center text-center shrink-0 border border-slate-100">
+                     <div className="w-20 h-20 mb-3 text-5xl flex items-center justify-center bg-slate-50 rounded-2xl border border-slate-100">{r.icon || "🎁"}</div>
+                     <h4 className="font-black text-sm text-slate-800 leading-tight">{r.title}</h4>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
         {/* ── TASKS TAB ── */}
         {activeTab === "tasks" && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-800">📋 My Tasks</h3>
-              <span className="pill pill-blue">{todayDone}/{todayTotal} Done</span>
+          <div className="animate-fade-in px-4 pt-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-14 h-14 bg-slate-200/60 rounded-full flex items-center justify-center"><Zap className="w-7 h-7 text-slate-700" /></div>
+              <div>
+                <h1 className="text-3xl font-black text-slate-900 leading-tight">My Tasks</h1>
+                <p className="text-xs font-bold text-slate-500 mt-1">Flat sticker habits for today</p>
+              </div>
             </div>
 
-            {quests.length === 0 ? (
-              <div className="card text-center py-12">
-                <p className="text-5xl mb-3">🎉</p>
-                <p className="text-lg font-black text-slate-700">No tasks yet!</p>
-                <p className="text-sm font-bold text-slate-400 mt-1">Ask your parent to add some.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {quests.map((q: any) => {
-                  const isDone = q.status === "completed";
-                  const diffColor = q.difficulty === "easy" ? "border-l-green-400" : q.difficulty === "medium" ? "border-l-amber-400" : "border-l-red-400";
+            {/* Segmented Control */}
+            <div className="segmented-control-child mb-8 w-full flex">
+               <button onClick={() => setTaskFilter("today")} className={`flex-1 ${taskFilter === "today" ? "active" : "inactive"}`}>Today</button>
+               <button onClick={() => setTaskFilter("all")} className={`flex-1 ${taskFilter === "all" ? "active" : "inactive"}`}>All Tasks</button>
+            </div>
 
+            <div className="space-y-4 mb-8">
+               {quests.map((q: any, i: number) => {
+                  const borderColors = ['bg-emerald-400', 'bg-blue-400', 'bg-orange-400', 'bg-purple-400'];
+                  const borderColor = borderColors[i % borderColors.length];
+                  const isDone = q.status === 'completed';
+                  
                   return (
-                    <div
-                      key={q.id}
-                      className={`card flex items-center gap-4 border-l-4 ${diffColor} ${isDone ? "opacity-60" : ""}`}
-                    >
-                      {/* Checkbox */}
-                      {isDone ? (
-                        <div className="task-check checked" />
-                      ) : (
-                        <button
-                          onClick={() => {
-                            if (q.requireProof !== "none") {
-                              setSelectedQuest(q);
-                            } else {
-                              // Direct submit for no-proof tasks
-                              setSelectedQuest(q);
-                              // Auto-submit
-                              fetch(`/api/children/${childUser.id}/quests/${q.id}/submit`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                                body: JSON.stringify({ proofData: "completed" })
-                              }).then(res => {
-                                if (res.ok) {
-                                  confetti({ particleCount: 40, spread: 40, origin: { y: 0.7 } });
-                                  setSelectedQuest(null);
-                                  fetchDashboard();
-                                }
-                              });
-                            }
-                          }}
-                          className="task-check"
-                        />
-                      )}
-
-                      {/* Task Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-black text-base ${isDone ? "line-through text-slate-400" : "text-slate-800"}`}>
-                          {q.title}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-bold text-slate-400">+{q.xp} XP</span>
-                          <span className="text-xs font-bold text-slate-400">+{q.coins} 🪙</span>
-                        </div>
-                      </div>
-
-                      {/* Status */}
-                      {isDone && (
-                        <span className="pill pill-green text-xs">⏳ Pending</span>
-                      )}
+                    <div key={q.id} className="bg-white rounded-[28px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center gap-4 cursor-pointer transition-transform hover:-translate-y-0.5" onClick={() => !isDone && setSelectedQuest(q)}>
+                       <div className={`w-1.5 h-16 rounded-full ${borderColor}`}></div>
+                       <div className="w-[72px] h-[72px] bg-blue-50/50 rounded-[20px] flex items-center justify-center text-4xl shrink-0">{q.icon || "📋"}</div>
+                       
+                       <div className="flex-1 py-1 pr-2">
+                          <div className="flex justify-between items-start mb-1">
+                             <h3 className="font-black text-lg text-slate-800 leading-tight">{q.title}</h3>
+                             {isDone ? (
+                                <span className="bg-slate-100 text-slate-400 font-black text-xs px-2.5 py-1 rounded-full">Done!</span>
+                             ) : (
+                                <span className="bg-amber-400 text-slate-900 font-black text-xs px-2.5 py-1 rounded-full shadow-sm">+{q.xp} XP</span>
+                             )}
+                          </div>
+                          <p className="text-[11px] font-bold text-slate-400 mb-3 truncate">{q.description || "Daily morning routine"}</p>
+                          
+                          <div className="flex justify-between items-center">
+                             <span className="bg-slate-100 text-slate-500 font-black text-[10px] px-3 py-1 rounded-full capitalize">{q.repetition}</span>
+                             {isDone ? (
+                                <button className="bg-slate-100 text-slate-500 font-black text-xs px-4 py-1.5 rounded-full flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Completed</button>
+                             ) : (
+                                <button className="bg-emerald-500 text-white font-black text-xs px-4 py-1.5 rounded-full shadow-sm">Mark Done</button>
+                             )}
+                          </div>
+                       </div>
                     </div>
                   );
-                })}
+               })}
+            </div>
+            
+            {/* Streak Card */}
+            <div className="bg-white rounded-[28px] p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+              <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center shrink-0"><Flame className="w-7 h-7 text-orange-500" /></div>
+              <div>
+                 <h4 className="font-black text-lg text-slate-800 mb-0.5">Streak on fire!</h4>
+                 <p className="text-xs font-bold text-slate-500 leading-tight">Keep going today to protect your 7-day streak.</p>
               </div>
-            )}
-
-            {/* Quest Proof Modal */}
-            {selectedQuest && selectedQuest.requireProof !== "none" && (
-              <div className="modal-overlay">
-                <div className="modal-card animate-scale-in text-center">
-                  <button onClick={() => { setSelectedQuest(null); setProofText(""); setProofPhoto(null); }} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500">
-                    <X className="w-5 h-5" />
-                  </button>
-
-                  <p className="text-5xl mb-3">✅</p>
-                  <h3 className="text-xl font-black text-slate-800 mb-1">Complete Task</h3>
-                  <p className="text-sm font-bold text-slate-400 mb-5">{selectedQuest.title}</p>
-
-                  <form onSubmit={handleQuestSubmit} className="space-y-4">
-                    {selectedQuest.requireProof === "text" && (
-                      <textarea required placeholder="Tell us how it went..." value={proofText} onChange={(e) => setProofText(e.target.value)} className="input h-24 resize-none" />
-                    )}
-                    {selectedQuest.requireProof === "photo" && (
-                      proofPhoto ? (
-                        <div className="p-4 rounded-xl bg-green-50 border-2 border-green-200 text-green-700 font-bold">
-                          📸 Photo ready! <button type="button" onClick={() => setProofPhoto(null)} className="text-red-500 underline ml-2">Retake</button>
-                        </div>
-                      ) : (
-                        <button type="button" onClick={() => { setProofPhoto("captured"); alert("📸 Photo captured!"); }} className="w-full py-8 rounded-xl bg-blue-50 border-2 border-dashed border-blue-200 text-blue-500 flex flex-col items-center gap-2">
-                          <Camera className="w-8 h-8" />
-                          <span className="font-black text-sm uppercase">Take Photo</span>
-                        </button>
-                      )
-                    )}
-                    <button type="submit" disabled={claiming} className="btn btn-green w-full py-4 text-lg">
-                      {claiming ? "Sending..." : "Done! ✅"}
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         )}
 
         {/* ── REWARDS TAB ── */}
         {activeTab === "rewards" && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-800">⭐ Rewards</h3>
-              <div className="pill pill-blue text-sm">🪙 {child.coins}</div>
-            </div>
-
-            {rewards.length === 0 ? (
-              <div className="card text-center py-12">
-                <p className="text-5xl mb-3">🛍️</p>
-                <p className="text-lg font-black text-slate-700">No rewards yet!</p>
+          <div className="animate-fade-in px-4 pt-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-full flex items-center justify-center shadow-md"><Trophy className="w-7 h-7 text-white" /></div>
+              <div>
+                <h1 className="text-3xl font-black text-slate-900 leading-tight">My Rewards</h1>
+                <p className="text-xs font-bold text-slate-500 mt-1">Collect XP, unlock treats, and celebrate wins</p>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {rewards.map((r: any) => {
-                  const isPending = r.status === "requested";
-                  const isApproved = r.status === "approved";
+            </div>
+            
+            {/* Big Gradient Banner */}
+            <div className="bg-rewards-banner rounded-[32px] p-6 mb-8 shadow-lg shadow-purple-500/20 text-white flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                 <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center shadow-inner"><Star className="w-7 h-7 text-white fill-current" /></div>
+                 <div>
+                    <h2 className="font-black text-2xl leading-tight mb-1">{child.coins} 🪙 Available</h2>
+                    <p className="text-purple-100 text-xs font-bold">Keep going to unlock more rewards</p>
+                 </div>
+              </div>
+              <div className="bg-white/20 backdrop-blur-md text-white font-black text-xs px-4 py-2 rounded-full border border-white/20">Level Up</div>
+            </div>
+            
+            {/* Filters */}
+            <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-6 pb-2">
+               <button className="bg-slate-900 text-white font-black px-6 py-2 rounded-full shrink-0 shadow-md shadow-slate-900/20">All</button>
+               <button className="bg-white text-slate-600 font-black px-6 py-2 rounded-full shrink-0 shadow-sm border border-slate-100">Unlockable</button>
+               <button className="bg-white text-slate-600 font-black px-6 py-2 rounded-full shrink-0 shadow-sm border border-slate-100">Redeemed</button>
+               <button className="bg-white text-slate-600 font-black px-6 py-2 rounded-full shrink-0 shadow-sm border border-slate-100">Locked</button>
+            </div>
+            
+            {/* Rewards Grid */}
+            <div className="grid grid-cols-2 gap-4 mb-8">
+               {rewards.map((r: any) => {
                   const canAfford = child.coins >= r.coinsCost;
-
                   return (
-                    <div key={r.id} className="card flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <img src="/stickers/gift.png" className="w-14 h-14 drop-shadow-md hover:scale-110 transition-transform" alt="Reward" />
-                        <div>
-                          <p className="font-black text-base text-slate-800">{r.title}</p>
-                          <p className="text-sm font-bold text-amber-600">{r.coinsCost} 🪙</p>
-                        </div>
-                      </div>
-                      {isPending ? (
-                        <span className="pill pill-gold">⏳ Wait</span>
-                      ) : isApproved ? (
-                        <span className="pill pill-green">✅ Yay!</span>
-                      ) : (
-                        <button onClick={() => claimReward(r.id, r.coinsCost)} disabled={!canAfford} className="btn btn-blue py-2 px-4 text-sm">
-                          Claim
-                        </button>
-                      )}
+                    <div key={r.id} className="bg-white rounded-[32px] p-5 shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                       <div className="w-full flex justify-between items-start mb-3">
+                          <div className="w-16 h-16 text-5xl bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">{r.icon || "🎁"}</div>
+                          <span className="bg-amber-100 text-amber-700 font-black text-[10px] px-2.5 py-1 rounded-full shadow-sm">{r.coinsCost} 🪙</span>
+                       </div>
+                       
+                       <h4 className="font-black text-base text-slate-800 leading-tight mb-1 w-full text-left">{r.title}</h4>
+                       <p className="text-[10px] font-bold text-slate-400 mb-5 w-full text-left leading-tight line-clamp-2">{r.description || "Surprise reward box"}</p>
+                       
+                       {canAfford ? (
+                         <button onClick={() => claimReward(r.id, r.coinsCost)} className="w-full bg-emerald-500 text-white font-black text-sm py-2.5 rounded-full flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 hover:bg-emerald-600 transition-colors"><Star className="w-4 h-4" /> Redeem</button>
+                       ) : (
+                         <button className="w-full bg-slate-100 text-slate-400 font-black text-sm py-2.5 rounded-full flex items-center justify-center gap-1.5"><Lock className="w-4 h-4" /> Locked</button>
+                       )}
                     </div>
                   );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── PROFILE TAB ── */}
-        {activeTab === "profile" && (
-          <div className="space-y-5 animate-fade-in">
-            {/* Profile Card */}
-            <div className="card text-center p-6">
-              <div className="w-20 h-20 rounded-3xl bg-blue-100 border-4 border-blue-200 flex items-center justify-center text-4xl mx-auto mb-3 shadow-md">
-                {getAvatarEmoji(child.avatar)}
-              </div>
-              <h3 className="text-2xl font-black text-slate-800">{child.name}</h3>
-              <p className="text-sm font-bold text-slate-400">Level {child.level} Hero</p>
-              <div className="flex justify-center gap-2 mt-3">
-                <span className="pill pill-gold">⭐ {child.xp} XP</span>
-                <span className="pill pill-blue">🪙 {child.coins}</span>
-                <span className="pill pill-red">🔥 {child.streak}d</span>
-              </div>
+               })}
             </div>
-
-            {/* Pet */}
-            <div className="card card-pink p-6 text-center">
-              <div className="mb-4 animate-float-bob flex justify-center">
-                <img src="/stickers/dragon.png" className="w-32 h-32 drop-shadow-lg" alt="Pet" />
-              </div>
-              <h4 className="text-lg font-black text-slate-800">{pet.name}</h4>
-              <p className="text-xs font-bold text-slate-500 mb-3">Level {pet.level} Pet</p>
-
-              <div className="mb-4">
-                <div className="flex justify-between text-xs font-bold text-slate-500 mb-1">
-                  <span>Happiness</span>
-                  <span>{pet.happiness > 50 ? "🥰" : "🥺"} {pet.happiness}%</span>
-                </div>
-                <div className="progress-track">
-                  <div className="h-full rounded-full bg-gradient-to-r from-pink-400 to-pink-500 transition-all duration-700" style={{ width: `${pet.happiness}%` }} />
-                </div>
-              </div>
-
-              <button onClick={feedPet} className="btn btn-yellow w-full py-3">
-                🍖 Feed Pet (10 🪙)
-              </button>
-            </div>
-
-            {/* Badges */}
-            {achievements.length > 0 && (
+            
+            {/* Encouragement Card */}
+            <div className="bg-amber-100/60 rounded-[28px] p-5 border border-amber-200/50 flex items-center gap-4">
+              <div className="text-4xl">🎉</div>
               <div>
-                <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">🏆 Badges</h4>
-                <div className="grid grid-cols-3 gap-3">
-                  {achievements.map((a: any) => (
-                    <div key={a.id} className="card card-yellow flex flex-col items-center justify-center p-3">
-                      <img src="/stickers/trophy.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Badge" />
-                      <p className="text-[10px] font-black text-slate-600 leading-tight">{a.title}</p>
-                    </div>
-                  ))}
-                </div>
+                 <h4 className="font-black text-lg text-amber-900 mb-0.5">Keep going, hero!</h4>
+                 <p className="text-xs font-bold text-amber-700/80 leading-tight">Every task brings you closer to your next surprise reward.</p>
               </div>
-            )}
-
-            {/* Logout */}
-            <button onClick={onLogout} className="btn btn-outline w-full text-red-500 border-red-200">
-              <LogOut className="w-4 h-4" /> Sign Out
-            </button>
+            </div>
           </div>
         )}
+
+        {/* ── PROFILE TAB (Light Theme Adaptation) ── */}
+        {activeTab === "profile" && (
+          <div className="animate-fade-in px-4 pt-8">
+            
+            {/* Hero Section */}
+            <div className="bg-white rounded-[36px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 mb-6 flex gap-4">
+               
+               {/* Left Box */}
+               <div className="flex-1 flex flex-col items-center justify-center text-center bg-blue-50/70 rounded-[28px] p-5 border border-blue-100">
+                  <div className="relative mb-4">
+                     <div className="w-[84px] h-[84px] rounded-full border-[6px] border-blue-200 bg-white flex items-center justify-center text-5xl shadow-sm">
+                        {getAvatarEmoji(child.avatar)}
+                     </div>
+                     <div className="absolute -top-1 -right-1 bg-amber-400 w-8 h-8 rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm"><Shield className="w-4 h-4 fill-current"/></div>
+                  </div>
+                  
+                  <h2 className="text-2xl font-black text-slate-800 leading-tight mb-1">{child.name}</h2>
+                  <div className="flex items-center gap-1 text-amber-500 font-black text-xs">
+                     Level {child.level} Hero
+                  </div>
+                  
+                  <div className="mt-8 flex flex-col items-center w-full bg-white/50 p-4 rounded-2xl border border-blue-100/50">
+                     <p className="text-[10px] font-black tracking-wider text-slate-400 uppercase mb-2">XP PROGRESS</p>
+                     <div className="flex items-center justify-between w-full">
+                        <span className="font-black text-xl text-slate-800 leading-tight">{child.xp}/{(child.level+1)*100}<br/><span className="text-[10px] text-slate-400">XP</span></span>
+                        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/30">
+                           <Star className="w-6 h-6 text-white fill-current" />
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               
+               {/* Right Column Stats */}
+               <div className="flex-1 flex flex-col gap-3">
+                  <div className="bg-slate-50/80 rounded-[24px] p-4 border border-slate-100 flex-1 flex flex-col justify-center">
+                     <div className="flex items-center gap-2 mb-1.5">
+                        <Flame className="w-4 h-4 text-orange-500" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Streak</span>
+                     </div>
+                     <p className="font-black text-xl text-slate-800 leading-tight">{streak} <span className="text-xs text-slate-500">Days</span></p>
+                  </div>
+                  <div className="bg-slate-50/80 rounded-[24px] p-4 border border-slate-100 flex-1 flex flex-col justify-center">
+                     <div className="flex items-center gap-2 mb-1.5">
+                        <Award className="w-4 h-4 text-amber-500" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Badges</span>
+                     </div>
+                     <p className="font-black text-xl text-slate-800 leading-tight">8 <span className="text-xs text-slate-500">Earned</span></p>
+                  </div>
+                  <div className="bg-slate-50/80 rounded-[24px] p-4 border border-slate-100 flex-1 flex flex-col justify-center">
+                     <div className="flex items-center gap-2 mb-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Tasks</span>
+                     </div>
+                     <p className="font-black text-xl text-slate-800 leading-tight">{completedQuests.length} <span className="text-xs text-slate-500">Done</span></p>
+                  </div>
+               </div>
+            </div>
+
+            {/* My Pet Section */}
+            <div className="bg-white rounded-[36px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 mb-6">
+               <div className="flex justify-between items-start mb-5">
+                  <div>
+                     <h3 className="font-black text-2xl text-slate-800 mb-1">My Pet</h3>
+                     <p className="text-xs font-bold text-slate-500 leading-tight">A cheerful companion that grows with your habits</p>
+                  </div>
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center shrink-0"><Gamepad2 className="w-5 h-5 text-purple-600" /></div>
+               </div>
+               
+               <div className="bg-slate-50 rounded-[28px] p-5 border border-slate-100">
+                  <div className="flex gap-5 items-center mb-6">
+                     <div className="relative shrink-0">
+                        <div className="w-24 h-24 rounded-full border-[8px] border-emerald-400 flex items-center justify-center bg-white shadow-inner text-4xl">
+                           🐲
+                        </div>
+                        <div className="absolute -top-1 -left-1 bg-amber-400 w-7 h-7 rounded-full flex items-center justify-center text-xs border-[3px] border-white shadow-sm">💎</div>
+                        <div className="absolute -bottom-1 -right-1 bg-pink-400 w-7 h-7 rounded-full flex items-center justify-center text-white border-[3px] border-white shadow-sm"><Heart className="w-3.5 h-3.5 fill-current" /></div>
+                     </div>
+                     
+                     <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1.5">
+                           <h4 className="font-black text-2xl text-slate-800">Sparky</h4>
+                           <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2.5 py-1 rounded-full">Happy</span>
+                        </div>
+                        <p className="text-[11px] font-bold text-slate-500 mb-4 leading-tight">Your dragon companion is ready to play and learn.</p>
+                        
+                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 mb-1.5 px-1">
+                           <span>Energy</span>
+                           <span>78%</span>
+                        </div>
+                        <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
+                           <div className="h-full bg-emerald-500 rounded-full" style={{ width: '78%' }}></div>
+                        </div>
+                     </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                     <button onClick={feedPet} className="flex-1 bg-orange-500 text-white font-black text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 hover:-translate-y-0.5 transition-transform"><span className="text-lg">🍖</span> Feed Pet</button>
+                     <button className="flex-1 bg-purple-600 text-white font-black text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:-translate-y-0.5 transition-transform"><Gamepad2 className="w-5 h-5" /> Play</button>
+                  </div>
+               </div>
+            </div>
+
+            {/* My Badges Section */}
+            <div className="bg-white rounded-[36px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100">
+               <div className="flex justify-between items-start mb-5">
+                  <div>
+                     <h3 className="font-black text-2xl text-slate-800 mb-1">My Badges</h3>
+                     <p className="text-xs font-bold text-slate-500 leading-tight">Collect sticker-style achievements as you grow</p>
+                  </div>
+                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0"><CheckCircle2 className="w-5 h-5 text-amber-600" /></div>
+               </div>
+               
+               <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2 pt-1 px-1">
+                  {['First Task', '7-Day Streak', 'Reading Master', 'Fitness Hero'].map((badge, i) => {
+                     const colors = ['border-amber-400', 'border-blue-400', 'border-amber-400', 'border-emerald-400'];
+                     const icons = ['📋', '🔥', '📖', '💪'];
+                     return (
+                        <div key={i} className={`w-[96px] h-[120px] rounded-full border-2 ${colors[i]} bg-slate-50 flex flex-col items-center justify-center shrink-0 shadow-sm p-3 text-center`}>
+                           <div className="text-3xl mb-2">{icons[i]}</div>
+                           <p className="text-[10px] font-black text-slate-700 leading-tight">{badge}</p>
+                        </div>
+                     )
+                  })}
+               </div>
+            </div>
+            
+            <div className="mt-8 mb-4">
+              <button onClick={onLogout} className="w-full bg-slate-100 text-slate-500 font-black text-sm py-4 rounded-2xl hover:bg-slate-200 transition-colors">Log Out</button>
+            </div>
+          </div>
+        )}
+
       </main>
 
-      {/* ─── BOTTOM NAV ─── */}
-      <nav className="bottom-nav">
-        {navItems.map(item => (
-          <button key={item.id} onClick={() => setActiveTab(item.id)} className={`nav-item ${activeTab === item.id ? "active" : ""}`}>
-            <span className="nav-icon">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
+      {/* ── BOTTOM NAVIGATION ── */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 z-50 rounded-t-[32px] shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+        <div className="max-w-lg mx-auto flex justify-between items-center px-2">
+          {navItems.map(item => {
+            const isActive = activeTab === item.id;
+            return (
+              <div key={item.id} onClick={() => setActiveTab(item.id)} className="flex flex-col items-center gap-1.5 cursor-pointer">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${isActive ? 'bg-amber-400 text-slate-900 shadow-lg shadow-amber-400/20 scale-110' : 'bg-transparent text-slate-400 hover:bg-slate-50'}`}>
+                  <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
+                </div>
+                <span className={`text-[10px] font-black transition-colors ${isActive ? 'text-slate-800' : 'text-slate-400'}`}>{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
       </nav>
+
+      {/* ── MODALS ── */}
+      {selectedQuest && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center bg-slate-900/40 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl animate-slide-up relative">
+            <button onClick={() => { setSelectedQuest(null); setProofText(""); setProofPhoto(null); }} className="absolute top-4 right-4 w-8 h-8 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center hover:bg-slate-200"><X className="w-4 h-4" /></button>
+            <div className="flex flex-col items-center text-center mb-6 pt-2">
+              <div className="w-16 h-16 bg-blue-100 text-4xl rounded-2xl flex items-center justify-center mb-4">{selectedQuest.icon || "✨"}</div>
+              <h2 className="text-2xl font-black text-slate-800 mb-1">{selectedQuest.title}</h2>
+              <div className="bg-amber-100 text-amber-700 text-xs font-black px-3 py-1 rounded-full inline-block">+{selectedQuest.xp} XP</div>
+            </div>
+            
+            <form onSubmit={handleQuestSubmit}>
+              {selectedQuest.requireProof === "photo" && (
+                <div className="mb-6">
+                  {proofPhoto ? (
+                    <div className="relative rounded-2xl overflow-hidden border-2 border-slate-200">
+                      <img src={proofPhoto} alt="Proof" className="w-full h-48 object-cover" />
+                      <button type="button" onClick={() => setProofPhoto(null)} className="absolute top-2 right-2 bg-slate-900/50 text-white p-1.5 rounded-full"><X className="w-4 h-4" /></button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => setProofPhoto("https://via.placeholder.com/400x300?text=Mock+Photo+Proof")} className="w-full h-32 border-2 border-dashed border-blue-300 bg-blue-50 text-blue-500 rounded-2xl flex flex-col items-center justify-center font-bold text-sm gap-2 hover:bg-blue-100 transition-colors">
+                      <Camera className="w-8 h-8" />
+                      Tap to take photo
+                    </button>
+                  )}
+                </div>
+              )}
+              {selectedQuest.requireProof === "text" && (
+                <div className="mb-6">
+                  <textarea className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none" rows={3} placeholder="Write a short note..." value={proofText} onChange={(e) => setProofText(e.target.value)} required></textarea>
+                </div>
+              )}
+              
+              <button disabled={claiming || (selectedQuest.requireProof === "photo" && !proofPhoto) || (selectedQuest.requireProof === "text" && !proofText)} type="submit" className="w-full bg-emerald-500 text-white font-black py-4 rounded-[20px] shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2">
+                {claiming ? "Submitting..." : (
+                  <>
+                     <CheckSquare className="w-5 h-5" />
+                     Submit Task
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

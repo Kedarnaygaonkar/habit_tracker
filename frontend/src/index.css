@@ -773,3 +773,47 @@ html.dark .uiverse-tooltip::after {
   border-color: white transparent transparent transparent;
 }
 
+/* CHILD PORTAL UTILITIES */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.bg-progress-gradient {
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+}
+
+.bg-rewards-banner {
+  background: linear-gradient(135deg, #7c3aed 0%, #eab308 100%);
+}
+
+.segmented-control-child {
+  display: inline-flex;
+  background-color: white;
+  border-radius: 9999px;
+  padding: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.segmented-control-child button {
+  padding: 8px 24px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 800;
+  transition: 0.2s ease;
+}
+
+.segmented-control-child button.active {
+  background-color: #fbbf24;
+  color: #1e293b;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+}
+.segmented-control-child button.inactive {
+  background-color: transparent;
+  color: #64748b;
+}
+
