@@ -84,6 +84,14 @@ html.dark {
   --card-border: #334155;
 }
 
+html.dark .text-slate-800, 
+html.dark .text-slate-700, 
+html.dark .text-slate-600, 
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: var(--text-color) !important;
+}
+
 /* ========================
    BASE STYLES
 ======================== */
@@ -94,11 +102,13 @@ html.dark {
 
 body {
   font-family: "Nunito", sans-serif;
-  background: linear-gradient(180deg, var(--bg-color-top) 0%, var(--bg-color-mid) 40%, var(--bg-color-bottom) 100%);
+  background-color: var(--bg-color-top);
+  background-image: radial-gradient(var(--card-border) 2px, transparent 2px);
+  background-size: 24px 24px;
   color: var(--text-color);
   min-height: 100vh;
   overscroll-behavior: none;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ========================
@@ -106,9 +116,11 @@ body {
 ======================== */
 
 .app-bg {
-  background: linear-gradient(180deg, var(--bg-color-top) 0%, var(--bg-color-mid) 40%, var(--bg-color-bottom) 100%);
+  background-color: var(--bg-color-top);
+  background-image: radial-gradient(var(--card-border) 2px, transparent 2px);
+  background-size: 24px 24px;
   min-height: 100vh;
-  transition: background 0.3s ease;
+  transition: background-color 0.3s ease;
 }
 
 .header-bg {
@@ -216,47 +228,7 @@ html.dark .card-pink { background: #500724; border-color: #831843; }
    FORM INPUTS
 ======================== */
 
-.input {
-  width: 100%;
-  padding: 0.875rem 1.25rem;
-  border-radius: 1rem;
-  border: 2px solid #e2e8f0;
-  background: #f8fafc;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1e293b;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.input:focus {
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-  background: white;
-}
-
-.input::placeholder {
-  color: #94a3b8;
-  font-weight: 600;
-}
-
-.select {
-  width: 100%;
-  padding: 0.875rem 1.25rem;
-  border-radius: 1rem;
-  border: 2px solid #e2e8f0;
-  background: #f8fafc;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #1e293b;
-  outline: none;
-  appearance: none;
-  transition: border-color 0.2s ease;
-}
-
-.select:focus {
-  border-color: #93c5fd;
-}
+/* Old inputs replaced by Uiverse at the bottom */
 
 /* ========================
    TASK CHECKBOX
@@ -636,5 +608,173 @@ html.dark .theme-toggle::before {
   content: "🌙";
   left: calc(100% - 1.25rem - 2px);
   background: #0f172a;
+}
+
+/* ========================
+   UIVERSE LOADER
+======================== */
+.uiverse-loader {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+.uiverse-loader div {
+  width: 10px;
+  height: 10px;
+  background-color: #3b82f6;
+  border-radius: 50%;
+  animation: loaderBounce 0.5s infinite alternate;
+}
+.uiverse-loader div:nth-child(2) { animation-delay: 0.15s; }
+.uiverse-loader div:nth-child(3) { animation-delay: 0.3s; }
+
+html.dark .uiverse-loader div { background-color: #60a5fa; }
+
+@keyframes loaderBounce {
+  to { transform: translateY(-10px); }
+}
+
+/* ========================
+   UIVERSE INPUTS & FORMS
+======================== */
+.input, .select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #1e293b;
+  font-weight: 700;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.input:focus, .select:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+html.dark .input, html.dark .select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+html.dark .input:focus, html.dark .select:focus {
+  border-color: #60a5fa;
+  background: #1e293b;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
+}
+
+.modal-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-radius: 1.5rem;
+  border: 2px solid white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+}
+html.dark .modal-card {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: #334155;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================
+   UIVERSE RADIO BUTTONS
+======================== */
+.uiverse-radio-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.uiverse-radio {
+  display: none;
+}
+.uiverse-radio-label {
+  padding: 10px 16px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 800;
+  color: #64748b;
+  transition: all 0.2s;
+  background: white;
+  display: inline-block;
+  user-select: none;
+}
+.uiverse-radio:checked + .uiverse-radio-label {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+html.dark .uiverse-radio-label {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+html.dark .uiverse-radio:checked + .uiverse-radio-label {
+  border-color: #60a5fa;
+  color: #60a5fa;
+  background: #172554;
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+}
+
+/* ========================
+   UIVERSE TOOLTIP
+======================== */
+.uiverse-tooltip-container {
+  position: relative;
+  display: inline-flex;
+}
+.uiverse-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: #1e293b;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  pointer-events: none;
+  z-index: 50;
+}
+.uiverse-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+}
+.uiverse-tooltip-container:hover .uiverse-tooltip {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+html.dark .uiverse-tooltip {
+  background: white;
+  color: #1e293b;
+}
+html.dark .uiverse-tooltip::after {
+  border-color: white transparent transparent transparent;
 }
 

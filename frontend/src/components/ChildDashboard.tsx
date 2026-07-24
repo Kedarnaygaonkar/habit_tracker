@@ -197,20 +197,23 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="card flex flex-col items-center justify-center p-4">
+              <div className="card flex flex-col items-center justify-center p-4 uiverse-tooltip-container">
                 <img src="/stickers/fire.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Streak" />
                 <p className="text-xl font-black text-orange-500">{child.streak}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Day Streak</p>
+                <div className="uiverse-tooltip">Keep playing every day to grow!</div>
               </div>
-              <div className="card flex flex-col items-center justify-center p-4">
+              <div className="card flex flex-col items-center justify-center p-4 uiverse-tooltip-container">
                 <img src="/stickers/star.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="XP" />
                 <p className="text-xl font-black text-amber-500">{child.xp}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Total XP</p>
+                <div className="uiverse-tooltip">Level up your pet with XP!</div>
               </div>
-              <div className="card flex flex-col items-center justify-center p-4">
+              <div className="card flex flex-col items-center justify-center p-4 uiverse-tooltip-container">
                 <img src="/stickers/trophy.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Badges" />
                 <p className="text-xl font-black text-purple-500">{achievements.length}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Badges</p>
+                <div className="uiverse-tooltip">Collect them all!</div>
               </div>
             </div>
 

@@ -139,9 +139,13 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => document.documentElement.classList.toggle('dark')} className="theme-toggle mr-2" aria-label="Toggle Dark Mode"></button>
-            <button onClick={fetchData} className="p-2 rounded-xl bg-slate-100 text-slate-500 active:bg-slate-200">
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            </button>
+            {loading ? (
+              <div className="uiverse-loader mr-2"><div></div><div></div><div></div></div>
+            ) : (
+              <button onClick={fetchData} className="p-2 rounded-xl bg-slate-100 text-slate-500 active:bg-slate-200">
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -373,22 +377,28 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               </select>
             </div>
             <FormField label="Task Name" value={questForm.title} onChange={v => setQuestForm({ ...questForm, title: v })} placeholder="e.g. Brush Teeth" required />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-4">
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Difficulty</label>
-                <select value={questForm.difficulty} onChange={e => setQuestForm({ ...questForm, difficulty: e.target.value })} className="select">
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
+                <div className="uiverse-radio-container">
+                  {["easy", "medium", "hard"].map(diff => (
+                    <div key={diff}>
+                      <input type="radio" id={`diff-${diff}`} name="difficulty" value={diff} checked={questForm.difficulty === diff} onChange={e => setQuestForm({ ...questForm, difficulty: e.target.value })} className="uiverse-radio" />
+                      <label htmlFor={`diff-${diff}`} className="uiverse-radio-label capitalize">{diff}</label>
+                    </div>
+                  ))}
+                </div>
               </div>
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Proof</label>
-                <select value={questForm.requireProof} onChange={e => setQuestForm({ ...questForm, requireProof: e.target.value })} className="select">
-                  <option value="none">None</option>
-                  <option value="photo">Photo</option>
-                  <option value="text">Text</option>
-                </select>
+                <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Proof Required</label>
+                <div className="uiverse-radio-container">
+                  {["none", "photo", "text"].map(p => (
+                    <div key={p}>
+                      <input type="radio" id={`proof-${p}`} name="proof" value={p} checked={questForm.requireProof === p} onChange={e => setQuestForm({ ...questForm, requireProof: e.target.value })} className="uiverse-radio" />
+                      <label htmlFor={`proof-${p}`} className="uiverse-radio-label capitalize">{p}</label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
             <button disabled={saving} type="submit" className="btn btn-green w-full py-4">{saving ? "Saving..." : "Save"}</button>
