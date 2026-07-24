@@ -128,7 +128,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
       {message && <div className="toast flex items-center gap-2"><Check className="w-4 h-4 text-green-600" /> {message}</div>}
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-slate-100 px-4 py-3">
+      <header className="sticky top-0 z-40 header-bg backdrop-blur-md border-b-2 px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-xl text-white shadow-md">🏰</div>
@@ -138,6 +138,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={() => document.documentElement.classList.toggle('dark')} className="theme-toggle mr-2" aria-label="Toggle Dark Mode"></button>
             <button onClick={fetchData} className="p-2 rounded-xl bg-slate-100 text-slate-500 active:bg-slate-200">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>

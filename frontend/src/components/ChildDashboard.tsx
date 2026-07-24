@@ -146,7 +146,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     <div className="app-bg min-h-screen pb-24 select-none">
 
       {/* ─── HEADER ─── */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b-2 border-slate-100 px-4 py-3">
+      <header className="sticky top-0 z-40 header-bg backdrop-blur-md border-b-2 px-4 py-3">
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-blue-100 border-2 border-blue-200 flex items-center justify-center text-2xl shadow-sm">
@@ -158,6 +158,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={() => document.documentElement.classList.toggle('dark')} className="theme-toggle mr-2" aria-label="Toggle Dark Mode"></button>
             <div className="pill pill-gold text-sm">⭐ {child.xp}</div>
             <div className="pill pill-blue text-sm">🪙 {child.coins}</div>
           </div>
