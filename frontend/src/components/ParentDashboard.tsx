@@ -349,8 +349,15 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <textarea value={assistantQ} onChange={(e) => setAssistantQ(e.target.value)} className="input h-24 resize-none text-sm" />
               <button className="btn btn-blue w-full py-3 text-sm" type="submit"><Sparkles className="w-4 h-4" /> Ask</button>
               {aiAdvice && (
-                <div className="ai-advice-container">
-                  <div className="ai-advice-card">
+                <div className="glowing-card-container">
+                  <div className="canvas">
+                    {Array.from({ length: 25 }).map((_, i) => (
+                      <div key={i} className={`tracker tr-${i + 1}`}></div>
+                    ))}
+                  </div>
+                  <div id="card">
+                    <p id="prompt">ADVICE</p>
+                    <div className="title">AI<br/>READY</div>
                     <div className="glowing-elements">
                       <div className="glow-1"></div>
                       <div className="glow-2"></div>
@@ -359,7 +366,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                     <div className="card-particles">
                       <span></span><span></span><span></span><span></span><span></span><span></span>
                     </div>
-                    <div className="card-content text-sm font-medium whitespace-pre-wrap">
+                    <div className="card-content">
                       {aiAdvice}
                     </div>
                   </div>

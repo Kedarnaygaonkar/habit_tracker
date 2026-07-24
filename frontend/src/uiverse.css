@@ -1,13 +1,10 @@
-/* ========================
-   UIVERSE CODE EDITOR (For JSON Plans)
-======================== */
+/* From Uiverse.io by Yaya12085 */ 
 .code-editor {
-  width: 100%;
+  max-width: 100%;
   background-color: #1d1e22;
   box-shadow: 0px 4px 30px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
   padding: 2px;
-  margin-top: 1rem;
 }
 
 .code-editor .header {
@@ -25,29 +22,64 @@
   color: rgb(212 212 212);
 }
 
+.code-editor .icon {
+  width: 20px;
+  transition: .2s ease;
+}
+
+.code-editor .icon:hover {
+  cursor: pointer;
+  border-radius: 50px;
+  background-color: #6e7281;
+}
+
 .code-editor .editor-content {
   margin: 0 10px 10px;
   color: white;
+  white-space: pre-wrap;
   font-family: monospace;
   font-size: 12px;
-  max-height: 300px;
+  max-height: 400px;
   overflow: auto;
-  white-space: pre-wrap;
-  text-align: left;
 }
 
-/* ========================
-   UIVERSE GLOWING CARD (For AI Advice)
-======================== */
-.ai-advice-container {
+.code-editor .property {
+  margin-left: 30px;
+}
+
+.code-editor .property:hover {
+  cursor: text;
+}
+
+.code-editor .editor-content .color-0 { color: rgb(86 156 214); }
+.code-editor .editor-content .color-1 { color: rgb(182 206 168); }
+.code-editor .editor-content .color-2 { color: rgb(156 220 254); }
+.code-editor .editor-content .color-3 { color: rgb(207 146 120); }
+
+.code-editor .color-preview-1, .code-editor .color-preview-2 {
+  height: 8px;
+  width: 8px;
+  border: 1px solid #fff;
+  display: inline-block;
+  margin-right: 3px;
+}
+.code-editor .color-preview-1 { background-color: rgba(0, 0, 0, 0.5); }
+
+
+/* From Uiverse.io by 00Kubi */ 
+.glowing-card-container {
   position: relative;
   width: 100%;
-  min-height: 200px;
+  height: auto;
+  min-height: 254px;
   transition: 200ms;
-  margin-top: 1rem;
 }
 
-.ai-advice-card {
+.glowing-card-container:active {
+  transform: scale(0.98);
+}
+
+.glowing-card-container #card {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -64,26 +96,42 @@
     inset 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
-.ai-advice-card .card-content {
+.glowing-card-container .card-content {
   position: relative;
   width: 100%;
   height: 100%;
-  padding: 20px;
-  color: white;
   z-index: 20;
+  padding: 20px;
   overflow: auto;
+  color: rgba(255, 255, 255, 0.9);
   text-align: left;
+  font-size: 14px;
 }
 
-.ai-advice-card .glowing-elements {
+.glowing-card-container #prompt {
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  transition: 300ms ease-in-out;
+  position: absolute;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.glowing-card-container .glowing-elements {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.ai-advice-card .glow-1,
-.ai-advice-card .glow-2,
-.ai-advice-card .glow-3 {
+.glowing-card-container .glow-1,
+.glowing-card-container .glow-2,
+.glowing-card-container .glow-3 {
   position: absolute;
   width: 100px;
   height: 100px;
@@ -94,23 +142,28 @@
     rgba(0, 255, 170, 0) 70%
   );
   filter: blur(15px);
-  opacity: 0.8;
+  opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.ai-advice-card .glow-1 { top: -20px; left: -20px; }
-.ai-advice-card .glow-2 { top: 50%; right: -30px; transform: translateY(-50%); }
-.ai-advice-card .glow-3 { bottom: -20px; left: 30%; }
+.glowing-card-container .glow-1 { top: -20px; left: -20px; }
+.glowing-card-container .glow-2 { top: 50%; right: -30px; transform: translateY(-50%); }
+.glowing-card-container .glow-3 { bottom: -20px; left: 30%; }
 
-.ai-advice-card .card-particles span {
+.glowing-card-container .card-particles span {
   position: absolute;
   width: 3px;
   height: 3px;
   background: #00ffaa;
   border-radius: 50%;
-  opacity: 1;
-  animation: particleFloat 3s infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
+
+/* Hover effects */
+.glowing-card-container:hover #card .title { opacity: 1; transform: translateY(-10px); }
+.glowing-card-container:hover #card .glowing-elements div { opacity: 1; }
+.glowing-card-container:hover #card .card-particles span { animation: particleFloat 2s infinite; }
 
 @keyframes particleFloat {
   0% { transform: translate(0, 0); opacity: 0; }
@@ -118,22 +171,105 @@
   100% { transform: translate(calc(var(--x, 0) * 30px), calc(var(--y, 0) * 30px)); opacity: 0; }
 }
 
-.ai-advice-card .card-particles span:nth-child(1) { --x: 1; --y: -1; top: 40%; left: 20%; }
-.ai-advice-card .card-particles span:nth-child(2) { --x: -1; --y: -1; top: 60%; right: 20%; }
-.ai-advice-card .card-particles span:nth-child(3) { --x: 0.5; --y: 1; top: 20%; left: 40%; }
-.ai-advice-card .card-particles span:nth-child(4) { --x: -0.5; --y: 1; top: 80%; right: 40%; }
-.ai-advice-card .card-particles span:nth-child(5) { --x: 1; --y: 0.5; top: 30%; left: 60%; }
-.ai-advice-card .card-particles span:nth-child(6) { --x: -1; --y: 0.5; top: 70%; right: 60%; }
+.glowing-card-container .card-particles span:nth-child(1) { --x: 1; --y: -1; top: 40%; left: 20%; }
+.glowing-card-container .card-particles span:nth-child(2) { --x: -1; --y: -1; top: 60%; right: 20%; }
+.glowing-card-container .card-particles span:nth-child(3) { --x: 0.5; --y: 1; top: 20%; left: 40%; }
+.glowing-card-container .card-particles span:nth-child(4) { --x: -0.5; --y: 1; top: 80%; right: 40%; }
+.glowing-card-container .card-particles span:nth-child(5) { --x: 1; --y: 0.5; top: 30%; left: 60%; }
+.glowing-card-container .card-particles span:nth-child(6) { --x: -1; --y: 0.5; top: 70%; right: 60%; }
+
+.glowing-card-container #card::before {
+  content: "";
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 255, 170, 0.1) 0%,
+    rgba(0, 162, 255, 0.05) 50%,
+    transparent 100%
+  );
+  filter: blur(20px);
+  opacity: 0;
+  width: 150%;
+  height: 150%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease;
+}
+
+.glowing-card-container:hover #card::before { opacity: 1; }
+.glowing-card-container:hover #card #prompt { opacity: 0; }
+.glowing-card-container:hover #card { transition: 300ms; filter: brightness(1.1); }
+.glowing-card-container:hover #card::before { transition: 200ms; opacity: 80%; }
+
+.glowing-card-container .canvas {
+  perspective: 800px;
+  inset: 0;
+  z-index: 200;
+  position: absolute;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+  gap: 0px 0px;
+  grid-template-areas:
+    "tr-1 tr-2 tr-3 tr-4 tr-5"
+    "tr-6 tr-7 tr-8 tr-9 tr-10"
+    "tr-11 tr-12 tr-13 tr-14 tr-15"
+    "tr-16 tr-17 tr-18 tr-19 tr-20"
+    "tr-21 tr-22 tr-23 tr-24 tr-25";
+}
+
+.glowing-card-container .tr-1 { grid-area: tr-1; } .glowing-card-container .tr-2 { grid-area: tr-2; } .glowing-card-container .tr-3 { grid-area: tr-3; } .glowing-card-container .tr-4 { grid-area: tr-4; } .glowing-card-container .tr-5 { grid-area: tr-5; }
+.glowing-card-container .tr-6 { grid-area: tr-6; } .glowing-card-container .tr-7 { grid-area: tr-7; } .glowing-card-container .tr-8 { grid-area: tr-8; } .glowing-card-container .tr-9 { grid-area: tr-9; } .glowing-card-container .tr-10 { grid-area: tr-10; }
+.glowing-card-container .tr-11 { grid-area: tr-11; } .glowing-card-container .tr-12 { grid-area: tr-12; } .glowing-card-container .tr-13 { grid-area: tr-13; } .glowing-card-container .tr-14 { grid-area: tr-14; } .glowing-card-container .tr-15 { grid-area: tr-15; }
+.glowing-card-container .tr-16 { grid-area: tr-16; } .glowing-card-container .tr-17 { grid-area: tr-17; } .glowing-card-container .tr-18 { grid-area: tr-18; } .glowing-card-container .tr-19 { grid-area: tr-19; } .glowing-card-container .tr-20 { grid-area: tr-20; }
+.glowing-card-container .tr-21 { grid-area: tr-21; } .glowing-card-container .tr-22 { grid-area: tr-22; } .glowing-card-container .tr-23 { grid-area: tr-23; } .glowing-card-container .tr-24 { grid-area: tr-24; } .glowing-card-container .tr-25 { grid-area: tr-25; }
+
+.glowing-card-container .tr-1:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(-10deg) rotateZ(0deg); }
+.glowing-card-container .tr-2:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(-5deg) rotateZ(0deg); }
+.glowing-card-container .tr-3:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(0deg) rotateZ(0deg); }
+.glowing-card-container .tr-4:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(5deg) rotateZ(0deg); }
+.glowing-card-container .tr-5:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(10deg) rotateZ(0deg); }
+.glowing-card-container .tr-6:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(-10deg) rotateZ(0deg); }
+.glowing-card-container .tr-7:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(-5deg) rotateZ(0deg); }
+.glowing-card-container .tr-8:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(0deg) rotateZ(0deg); }
+.glowing-card-container .tr-9:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(5deg) rotateZ(0deg); }
+.glowing-card-container .tr-10:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(10deg) rotateZ(0deg); }
+.glowing-card-container .tr-11:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(-10deg) rotateZ(0deg); }
+.glowing-card-container .tr-12:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(-5deg) rotateZ(0deg); }
+.glowing-card-container .tr-13:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+.glowing-card-container .tr-14:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(5deg) rotateZ(0deg); }
+.glowing-card-container .tr-15:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(10deg) rotateZ(0deg); }
+.glowing-card-container .tr-16:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(-10deg) rotateZ(0deg); }
+.glowing-card-container .tr-17:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(-5deg) rotateZ(0deg); }
+.glowing-card-container .tr-18:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(0deg) rotateZ(0deg); }
+.glowing-card-container .tr-19:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(5deg) rotateZ(0deg); }
+.glowing-card-container .tr-20:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(10deg) rotateZ(0deg); }
+.glowing-card-container .tr-21:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(-10deg) rotateZ(0deg); }
+.glowing-card-container .tr-22:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(-5deg) rotateZ(0deg); }
+.glowing-card-container .tr-23:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(0deg) rotateZ(0deg); }
+.glowing-card-container .tr-24:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(5deg) rotateZ(0deg); }
+.glowing-card-container .tr-25:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(10deg) rotateZ(0deg); }
+
+.glowing-card-container .tracker {
+  position: absolute;
+  z-index: 200;
+  width: 100%;
+  height: 100%;
+}
+
+.glowing-card-container .tracker:hover { cursor: pointer; }
 
 
 /* ========================
-   UIVERSE SUN/MOON TOGGLE
+   UIVERSE SUN/MOON TOGGLE (from mobinkakei)
 ======================== */
 .toggleWrapper {
   overflow: hidden;
-  transform: scale(0.6);
   color: white;
   display: inline-block;
+  transform: scale(0.6);
+  transform-origin: center right;
 }
 
 .toggleWrapper .input {
@@ -150,6 +286,23 @@
   border-radius: 84px;
   transition: background-color 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
   margin: 0;
+}
+
+.toggleWrapper .toggle:before {
+  content: "AM";
+  position: absolute;
+  left: -50px;
+  top: 15px;
+  font-size: 18px;
+  color: #749ed7;
+}
+
+.toggleWrapper .toggle:after {
+  content: "PM";
+  position: absolute;
+  right: -48px;
+  top: 15px;
+  font-size: 18px;
 }
 
 .toggleWrapper .toggle__handler {
@@ -202,6 +355,9 @@
 .toggleWrapper .star--6 { top: 36px; left: 28px; z-index: 0; width: 2px; height: 2px; transform: translate3d(3px, 0, 0); }
 
 .toggleWrapper .input:checked + .toggle { background-color: #749dd6; }
+.toggleWrapper .input:checked + .toggle:before { color: #fff; }
+.toggleWrapper .input:checked + .toggle:after { color: #749ed7; }
+
 .toggleWrapper .input:checked + .toggle .toggle__handler {
   background-color: #ffe5b5;
   transform: translate3d(40px, 0, 0) rotate(0);

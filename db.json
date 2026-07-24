@@ -39,17 +39,17 @@
       "passcode": "1234",
       "avatar": "avatar_knight",
       "xp": 520,
-      "coins": 50,
+      "coins": 30,
       "level": 3,
       "streak": 5,
       "longestStreak": 12,
       "pet": {
         "name": "Sparky the Dragon",
         "level": 3,
-        "xp": 45,
+        "xp": 105,
         "happiness": 100,
         "status": "happy",
-        "lastFedAt": "2026-07-24T07:02:48.004Z"
+        "lastFedAt": "2026-07-24T16:39:22.218Z"
       },
       "loginId": "leo",
       "passwordHash": "$2b$10$cBInZVKo68Qp9TmcX70JCOdRFkDCakb20kWhkqtPFCgxwm7EVNuKK"
@@ -294,7 +294,7 @@
       "childId": "c-leo",
       "title": "30 Minutes TV Time",
       "coinsCost": 20,
-      "status": "requested"
+      "status": "approved"
     },
     {
       "id": "r-2",
@@ -506,6 +506,14 @@
       "role": "parent",
       "message": "✨ Leo completed quest \"Brush Teeth\" and is waiting for your verification!",
       "createdAt": "2026-07-23T16:54:17.530Z",
+      "read": false
+    },
+    {
+      "id": "notif-gobeixryr",
+      "userId": "c-leo",
+      "role": "child",
+      "message": "🎁 Your reward was approved! Parent says: Enjoy your \"30 Minutes TV Time\"!",
+      "createdAt": "2026-07-24T15:37:36.828Z",
       "read": false
     }
   ],
