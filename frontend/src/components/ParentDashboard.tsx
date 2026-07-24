@@ -127,7 +127,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   ];
 
   return (
-    <div className="min-h-screen pb-24 select-none">
+    <div className="parent-portal-bg min-h-screen pb-24 select-none">
       {/* Toast */}
       {message && <div className="toast flex items-center gap-2 z-50"><Check className="w-4 h-4 text-green-600" /> {message}</div>}
 
@@ -139,64 +139,64 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
           <div className="animate-fade-in pb-10">
             <header className="flex items-center justify-between px-6 pt-10 pb-6">
               <div>
-                <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100">My Heroes</h1>
+                <h1 className="text-3xl font-black text-slate-900 ">My Heroes</h1>
                 <p className="text-sm font-semibold text-slate-500 mt-1">Manage your children's profiles</p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-slate-900 dark:bg-slate-800 text-white flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center">
                  <Shield className="w-6 h-6" />
               </div>
             </header>
 
             <div className="px-6 flex gap-3 mb-8">
-              <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex flex-col items-center">
-                <Users className="w-5 h-5 text-slate-700 dark:text-slate-300 mb-2" strokeWidth={2.5} />
-                <span className="text-xl font-black text-slate-900 dark:text-slate-100">{children.length}</span>
+              <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex flex-col items-center">
+                <Users className="w-5 h-5 text-slate-700 mb-2" strokeWidth={2.5} />
+                <span className="text-xl font-black text-slate-900 ">{children.length}</span>
                 <span className="text-xs text-slate-400 font-semibold mt-1">Heroes</span>
               </div>
-              <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex flex-col items-center">
+              <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex flex-col items-center">
                 <Zap className="w-5 h-5 text-amber-500 mb-2" strokeWidth={2.5} />
-                <span className="text-xl font-black text-slate-900 dark:text-slate-100">{children.reduce((acc, c) => acc + (c.xp || 0), 0).toLocaleString()}</span>
+                <span className="text-xl font-black text-slate-900 ">{children.reduce((acc, c) => acc + (c.xp || 0), 0).toLocaleString()}</span>
                 <span className="text-xs text-slate-400 font-semibold mt-1">Total XP</span>
               </div>
-              <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex flex-col items-center">
+              <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex flex-col items-center">
                 <Flame className="w-5 h-5 text-red-500 mb-2" strokeWidth={2.5} />
-                <span className="text-xl font-black text-slate-900 dark:text-slate-100">{Math.max(...children.map(c => c.streak || 0), 0)}</span>
+                <span className="text-xl font-black text-slate-900 ">{Math.max(...children.map(c => c.streak || 0), 0)}</span>
                 <span className="text-xs text-slate-400 font-semibold mt-1">Day Streak</span>
               </div>
             </div>
 
             <div className="px-6 flex items-center justify-between mb-4">
-              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">Your Children</h3>
+              <h3 className="text-lg font-black text-slate-900 ">Your Children</h3>
               <span className="text-xs font-semibold text-slate-400">Swipe to browse</span>
             </div>
 
             <div className="px-6 flex overflow-x-auto gap-4 pb-4 snap-x hide-scroll">
               {children.map(c => (
-                <div key={c.id} className="snap-start shrink-0 w-[180px] bg-[#f4f7fc] dark:bg-slate-800 rounded-[2rem] p-5 flex flex-col relative cursor-pointer hover:bg-[#eaf0fb] dark:hover:bg-slate-700 transition-colors" onClick={() => setChildForm({ open: true, isEdit: true, id: c.id, name: c.name, loginId: c.loginId || "", password: "", avatar: c.avatar })}>
+                <div key={c.id} className="snap-start shrink-0 w-[180px] bg-[#f4f7fc] rounded-[2rem] p-5 flex flex-col relative cursor-pointer hover:bg-[#eaf0fb] :bg-slate-700 transition-colors" onClick={() => setChildForm({ open: true, isEdit: true, id: c.id, name: c.name, loginId: c.loginId || "", password: "", avatar: c.avatar })}>
                   {/* Top Left Pills */}
                   <div className="flex flex-col items-start gap-1">
                      <div className="bg-blue-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm">Level {c.level || 1}</div>
-                     <Star className="w-6 h-6 text-slate-800 dark:text-slate-300 ml-1 mt-1" strokeWidth={2.5} />
+                     <Star className="w-6 h-6 text-slate-800 ml-1 mt-1" strokeWidth={2.5} />
                   </div>
 
                   {/* Avatar Progress */}
                   <div className="mt-4 mb-4 flex justify-center">
                      <div className="progress-ring-container">
                        <div className="progress-ring" style={{"--progress": c.xp ? Math.min(100, (c.xp % 1000) / 10) : 0} as any}>
-                          <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden border-[3px] border-white dark:border-slate-800 flex items-center justify-center text-3xl z-10 relative">
+                          <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden border-[3px] border-white flex items-center justify-center text-3xl z-10 relative">
                              {getEmoji(c.avatar)}
                           </div>
                        </div>
-                       <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 z-20 shadow-sm">
+                       <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white z-20 shadow-sm">
                          {c.xp ? Math.min(100, Math.floor((c.xp % 1000) / 10)) : 0}%
                        </div>
                      </div>
                   </div>
 
                   <div className="text-center mt-2">
-                    <h4 className="text-xl font-black text-slate-900 dark:text-slate-100">{c.name}</h4>
+                    <h4 className="text-xl font-black text-slate-900 ">{c.name}</h4>
                     <p className="text-[11px] text-slate-400 font-bold mb-3">7 years old</p>
-                    <div className="inline-flex items-center gap-1 bg-white dark:bg-slate-900 px-3 py-1 rounded-full shadow-sm text-xs font-black text-slate-700 dark:text-slate-300">
+                    <div className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full shadow-sm text-xs font-black text-slate-700 ">
                       <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
                       {c.xp || 0} XP
                     </div>
@@ -220,10 +220,10 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Portal</p>
-                  <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100">Manage</h1>
+                  <h1 className="text-3xl font-black text-slate-900 ">Manage</h1>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                  <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-slate-600 " />
                 </div>
               </div>
               <div className="segmented-control">
@@ -240,20 +240,20 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <div className="px-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider">Active Tasks</h3>
-                  <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-3 py-1 rounded-full">{quests.length} tasks</span>
+                  <span className="bg-slate-200 text-slate-700 text-[10px] font-black px-3 py-1 rounded-full">{quests.length} tasks</span>
                 </div>
                 
                 <div className="space-y-3">
                   {quests.map(q => (
-                    <div key={q.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setQuestForm({ open: true, isEdit: true, id: q.id, childId: q.childId, title: q.title, difficulty: q.difficulty, repetition: q.repetition, reminderTime: q.reminderTime, requireProof: q.requireProof })}>
+                    <div key={q.id} className="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setQuestForm({ open: true, isEdit: true, id: q.id, childId: q.childId, title: q.title, difficulty: q.difficulty, repetition: q.repetition, reminderTime: q.reminderTime, requireProof: q.requireProof })}>
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
                           <CheckCircle className="w-6 h-6 text-blue-500" strokeWidth={2.5} />
                         </div>
                         <div>
-                          <p className="font-black text-base text-slate-900 dark:text-slate-100 leading-tight mb-1">{q.title}</p>
+                          <p className="font-black text-base text-slate-900 leading-tight mb-1">{q.title}</p>
                           <div className="flex items-center gap-2">
-                             <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs flex items-center justify-center border border-white dark:border-slate-800">{getEmoji(childAvatar(q.childId))}</div>
+                             <div className="w-5 h-5 rounded-full bg-slate-200 text-xs flex items-center justify-center border border-white ">{getEmoji(childAvatar(q.childId))}</div>
                              <span className="text-[10px] font-bold text-slate-400">↻ {q.repetition}</span>
                           </div>
                         </div>
@@ -274,20 +274,20 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <div className="px-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider">Available Rewards</h3>
-                  <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-3 py-1 rounded-full">{rewards.length} rewards</span>
+                  <span className="bg-slate-200 text-slate-700 text-[10px] font-black px-3 py-1 rounded-full">{rewards.length} rewards</span>
                 </div>
                 
                 <div className="space-y-3">
                   {rewards.map(r => (
-                    <div key={r.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setRewardForm({ open: true, childId: r.childId, title: r.title, coinsCost: r.coinsCost })}>
+                    <div key={r.id} className="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setRewardForm({ open: true, childId: r.childId, title: r.title, coinsCost: r.coinsCost })}>
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center">
                           <Sparkles className="w-6 h-6 text-purple-500" strokeWidth={2.5} />
                         </div>
                         <div>
-                          <p className="font-black text-base text-slate-900 dark:text-slate-100 leading-tight mb-1">{r.title}</p>
+                          <p className="font-black text-base text-slate-900 leading-tight mb-1">{r.title}</p>
                           <div className="flex items-center gap-2">
-                             <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs flex items-center justify-center border border-white dark:border-slate-800">{getEmoji(childAvatar(r.childId))}</div>
+                             <div className="w-5 h-5 rounded-full bg-slate-200 text-xs flex items-center justify-center border border-white ">{getEmoji(childAvatar(r.childId))}</div>
                              <span className="text-[10px] font-bold text-slate-400">{childName(r.childId)}</span>
                           </div>
                         </div>
@@ -310,12 +310,12 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {/* ── VERIFY ── */}
         {activeTab === "verify" && (
           <div className="animate-fade-in pb-10">
-            <header className="flex items-center justify-between px-6 pt-10 pb-6 border-b border-slate-100 dark:border-slate-800">
+            <header className="flex items-center justify-between px-6 pt-10 pb-6 border-b border-slate-100 ">
               <div className="flex gap-3">
-                 <Shield className="w-5 h-5 text-slate-600 dark:text-slate-400 mt-1" />
+                 <Shield className="w-5 h-5 text-slate-600 mt-1" />
                  <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Portal</p>
-                    <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Pending Verifications</h1>
+                    <h1 className="text-2xl font-black text-slate-900 ">Pending Verifications</h1>
                  </div>
               </div>
             </header>
@@ -326,26 +326,26 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                {pendingQuests.length === 0 ? (
                   <div className="text-center py-10">
                      <CheckCircle className="w-16 h-16 text-green-200 mx-auto mb-4" />
-                     <p className="text-lg font-black text-slate-700 dark:text-slate-300">All caught up!</p>
+                     <p className="text-lg font-black text-slate-700 ">All caught up!</p>
                   </div>
                ) : (
                   <div className="space-y-6">
                     {pendingQuests.map(q => (
-                       <div key={q.id} className="bg-white dark:bg-slate-800 rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50 dark:border-slate-700">
+                       <div key={q.id} className="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50 ">
                          {/* Header */}
                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center text-xl">{getEmoji(childAvatar(q.childId))}</div>
+                            <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center text-xl">{getEmoji(childAvatar(q.childId))}</div>
                             <div>
-                               <p className="font-black text-sm text-slate-900 dark:text-slate-100 leading-tight">{childName(q.childId)}</p>
+                               <p className="font-black text-sm text-slate-900 leading-tight">{childName(q.childId)}</p>
                                <p className="text-[10px] text-slate-400 font-semibold">🕒 Just now</p>
                             </div>
                          </div>
                          {/* Body */}
-                         <h4 className="font-black text-base text-slate-900 dark:text-slate-100 mb-1">{q.title}</h4>
+                         <h4 className="font-black text-base text-slate-900 mb-1">{q.title}</h4>
                          <p className="text-xs text-slate-500 font-medium mb-3">Completed quest marked as done.</p>
                          {q.proofImage && (
                             <div className="mb-3">
-                               <img src={q.proofImage} alt="proof" className="w-full h-32 object-cover rounded-xl bg-slate-100 dark:bg-slate-700" />
+                               <img src={q.proofImage} alt="proof" className="w-full h-32 object-cover rounded-xl bg-slate-100 " />
                                <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><ImageIcon className="w-3 h-3" /> 1 photo proof attached</p>
                             </div>
                          )}
@@ -354,7 +354,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                             <button onClick={() => verifyQuest(q.id)} className="flex-1 bg-[#00b85c] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-600 active:scale-95 transition-all">
                                <Check className="w-4 h-4" strokeWidth={3} /> Approve
                             </button>
-                            <button onClick={() => setRejectModal({ open: true, questId: q.id, comment: "" })} className="flex-1 bg-slate-50 dark:bg-slate-700 text-red-500 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-100 dark:border-slate-600 hover:bg-red-50 dark:hover:bg-slate-600 active:scale-95 transition-all">
+                            <button onClick={() => setRejectModal({ open: true, questId: q.id, comment: "" })} className="flex-1 bg-slate-50 text-red-500 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-100 hover:bg-red-50 :bg-slate-600 active:scale-95 transition-all">
                                <X className="w-4 h-4" strokeWidth={3} /> Reject
                             </button>
                          </div>
@@ -370,21 +370,21 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
         {activeTab === "settings" && (
           <div className="animate-fade-in pb-10">
             <header className="px-6 pt-10 pb-6">
-              <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100">Settings</h1>
+              <h1 className="text-3xl font-black text-slate-900 ">Settings</h1>
               <p className="text-sm font-semibold text-slate-500 mt-1">Manage your account and preferences</p>
             </header>
 
             <div className="px-6 space-y-6">
                {/* Profile Card */}
-               <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700">
+               <div className="bg-white rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 ">
                   <div className="flex items-center gap-4 mb-4">
-                     <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center text-2xl">👩</div>
+                     <div className="w-14 h-14 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center text-2xl">👩</div>
                      <div>
-                        <h4 className="font-black text-base text-slate-900 dark:text-slate-100">{parent.name}</h4>
+                        <h4 className="font-black text-base text-slate-900 ">{parent.name}</h4>
                         <p className="text-xs text-slate-500 font-medium">{parent.email}</p>
                      </div>
                   </div>
-                  <button className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center justify-center gap-2">
+                  <button className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-sm flex items-center justify-center gap-2">
                      <Edit2 className="w-4 h-4" /> Edit Profile
                   </button>
                </div>
@@ -392,28 +392,28 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                {/* Account List */}
                <div>
                   <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3 ml-1">Account</h3>
-                  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
-                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                  <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 divide-y divide-slate-100 ">
+                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 :bg-slate-700 transition-colors">
                         <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"><LogOut className="w-4 h-4 text-slate-600 dark:text-slate-300" /></div>
-                           <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">Sign Up / Log In</span>
+                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><LogOut className="w-4 h-4 text-slate-600 " /></div>
+                           <span className="font-bold text-slate-700 text-sm">Sign Up / Log In</span>
                         </div>
                         <ArrowRight className="w-4 h-4 text-slate-400" />
                      </div>
-                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 :bg-slate-700 transition-colors">
                         <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"><Lock className="w-4 h-4 text-slate-600 dark:text-slate-300" /></div>
-                           <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">Change Password</span>
+                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><Lock className="w-4 h-4 text-slate-600 " /></div>
+                           <span className="font-bold text-slate-700 text-sm">Change Password</span>
                         </div>
                         <ArrowRight className="w-4 h-4 text-slate-400" />
                      </div>
-                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 :bg-slate-700 transition-colors">
                         <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"><Users className="w-4 h-4 text-slate-600 dark:text-slate-300" /></div>
-                           <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">Linked Children</span>
+                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><Users className="w-4 h-4 text-slate-600 " /></div>
+                           <span className="font-bold text-slate-700 text-sm">Linked Children</span>
                         </div>
                         <div className="flex items-center gap-2">
-                           <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-black px-2 py-0.5 rounded-full">{children.length}</span>
+                           <span className="bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-0.5 rounded-full">{children.length}</span>
                            <ArrowRight className="w-4 h-4 text-slate-400" />
                         </div>
                      </div>
@@ -449,7 +449,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                </div>
 
                {/* Logout */}
-               <button onClick={onLogout} className="w-full py-3.5 mt-4 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-100 transition-colors">
+               <button onClick={onLogout} className="w-full py-3.5 mt-4 rounded-xl bg-red-50 text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-100 transition-colors">
                  <LogOut className="w-4 h-4" /> Log Out
                </button>
             </div>
