@@ -138,7 +138,22 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => document.documentElement.classList.toggle('dark')} className="theme-toggle mr-2" aria-label="Toggle Dark Mode"></button>
+            <div className="toggleWrapper">
+              <input type="checkbox" className="input" id="theme-toggle" onChange={() => document.documentElement.classList.toggle('dark')} />
+              <label htmlFor="theme-toggle" className="toggle">
+                <span className="toggle__handler">
+                  <span className="crater crater--1"></span>
+                  <span className="crater crater--2"></span>
+                  <span className="crater crater--3"></span>
+                </span>
+                <span className="star star--1"></span>
+                <span className="star star--2"></span>
+                <span className="star star--3"></span>
+                <span className="star star--4"></span>
+                <span className="star star--5"></span>
+                <span className="star star--6"></span>
+              </label>
+            </div>
             {loading ? (
               <div className="uiverse-loader mr-2"><div></div><div></div><div></div></div>
             ) : (
@@ -316,7 +331,16 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">🤖 AI Habit Planner</h4>
               <textarea value={plannerPrompt} onChange={(e) => setPlannerPrompt(e.target.value)} className="input h-24 resize-none text-sm" />
               <button className="btn btn-purple w-full py-3 text-sm" type="submit"><Sparkles className="w-4 h-4" /> Generate Plan</button>
-              {aiPlanResult && <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-600 whitespace-pre-wrap max-h-48 overflow-auto">{JSON.stringify(aiPlanResult, null, 2)}</div>}
+              {aiPlanResult && (
+                <div className="code-editor">
+                  <div className="header">
+                    <span className="title">AI_PLAN.json</span>
+                  </div>
+                  <div className="editor-content">
+                    {JSON.stringify(aiPlanResult, null, 2)}
+                  </div>
+                </div>
+              )}
             </form>
 
             {/* AI Assistant */}
@@ -324,7 +348,23 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">💬 Parent Assistant</h4>
               <textarea value={assistantQ} onChange={(e) => setAssistantQ(e.target.value)} className="input h-24 resize-none text-sm" />
               <button className="btn btn-blue w-full py-3 text-sm" type="submit"><Sparkles className="w-4 h-4" /> Ask</button>
-              {aiAdvice && <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600 whitespace-pre-wrap max-h-48 overflow-auto">{aiAdvice}</div>}
+              {aiAdvice && (
+                <div className="ai-advice-container">
+                  <div className="ai-advice-card">
+                    <div className="glowing-elements">
+                      <div className="glow-1"></div>
+                      <div className="glow-2"></div>
+                      <div className="glow-3"></div>
+                    </div>
+                    <div className="card-particles">
+                      <span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div className="card-content text-sm font-medium whitespace-pre-wrap">
+                      {aiAdvice}
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
 
             {/* Logout */}

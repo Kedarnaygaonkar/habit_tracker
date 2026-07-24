@@ -158,7 +158,22 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => document.documentElement.classList.toggle('dark')} className="theme-toggle mr-2" aria-label="Toggle Dark Mode"></button>
+            <div className="toggleWrapper">
+              <input type="checkbox" className="input" id="theme-toggle-child" onChange={() => document.documentElement.classList.toggle('dark')} />
+              <label htmlFor="theme-toggle-child" className="toggle">
+                <span className="toggle__handler">
+                  <span className="crater crater--1"></span>
+                  <span className="crater crater--2"></span>
+                  <span className="crater crater--3"></span>
+                </span>
+                <span className="star star--1"></span>
+                <span className="star star--2"></span>
+                <span className="star star--3"></span>
+                <span className="star star--4"></span>
+                <span className="star star--5"></span>
+                <span className="star star--6"></span>
+              </label>
+            </div>
             <div className="pill pill-gold text-sm">⭐ {child.xp}</div>
             <div className="pill pill-blue text-sm">🪙 {child.coins}</div>
           </div>
