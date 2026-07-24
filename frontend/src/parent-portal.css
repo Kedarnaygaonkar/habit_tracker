@@ -1,0 +1,192 @@
+/* ========================
+   PARENT PORTAL CUSTOM UI
+======================== */
+
+/* Reset background for exact match */
+body {
+  background-color: #f8fafc; /* Very light gray/white */
+}
+html.dark body {
+  background-color: #0f172a;
+}
+
+/* --- BOTTOM NAV --- */
+.bottom-nav-white {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 10px;
+  border-top: 1px solid #e2e8f0;
+  z-index: 50;
+}
+html.dark .bottom-nav-white {
+  background: #1e293b;
+  border-top-color: #334155;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.bottom-nav-item.active {
+  color: #3b82f6;
+}
+html.dark .bottom-nav-item.active {
+  color: #60a5fa;
+}
+
+/* --- ADD HERO CARD --- */
+.add-hero-card {
+  border: 2px dashed #93c5fd;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  background: transparent;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.add-hero-card:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+.add-hero-icon {
+  width: 40px;
+  height: 40px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+html.dark .add-hero-card {
+  border-color: #3b82f6;
+}
+html.dark .add-hero-card:hover {
+  background: #1e3a8a;
+}
+
+/* --- SEGMENTED CONTROL --- */
+.segmented-control {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 99px;
+  padding: 4px;
+  margin: 10px 0 20px 0;
+}
+.segmented-btn {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 99px;
+  color: #64748b;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.segmented-btn.active {
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+html.dark .segmented-control {
+  background: #334155;
+}
+html.dark .segmented-btn {
+  color: #94a3b8;
+}
+html.dark .segmented-btn.active {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+/* --- CIRCULAR PROGRESS RING --- */
+.progress-ring-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+}
+.progress-ring {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(#3b82f6 calc(var(--progress) * 1%), #e2e8f0 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress-ring::before {
+  content: "";
+  position: absolute;
+  inset: 4px; /* inner ring thickness */
+  background: white;
+  border-radius: 50%;
+}
+html.dark .progress-ring {
+  background: conic-gradient(#3b82f6 calc(var(--progress) * 1%), #334155 0);
+}
+html.dark .progress-ring::before {
+  background: #1e293b; /* or whatever card bg is */
+}
+
+/* --- FAB BUTTON --- */
+.fab-button {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 40;
+}
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+/* --- GRADIENT SETTINGS CARDS --- */
+.gradient-card-purple {
+  background: linear-gradient(135deg, #a855f7, #c084fc);
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 10px 20px rgba(168, 85, 247, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.gradient-card-orange {
+  background: linear-gradient(135deg, #f9a8d4, #f59e0b); /* Matches design: light purple to orange */
+  border-radius: 16px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.gradient-card-purple:hover, .gradient-card-orange:hover {
+  transform: translateY(-2px);
+}

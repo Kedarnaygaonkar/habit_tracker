@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, Edit2, LogOut, Plus, RefreshCw, Sparkles, Trash2, X } from "lucide-react";
+import { Check, Edit2, LogOut, Plus, Sparkles, Trash2, X, Shield, Users, Zap, Flame, Star, Bell, Image as ImageIcon, CheckCircle, ArrowRight, Lock, User } from "lucide-react";
 
 interface ParentDashboardProps {
   token: string;
@@ -16,6 +16,7 @@ const emptyRewardForm = { open: false, childId: "", title: "", coinsCost: "30" }
 
 export default function ParentDashboard({ token, parent, onLogout }: ParentDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("heroes");
+  const [manageSubTab, setManageSubTab] = useState<"tasks" | "rewards">("tasks");
   const [children, setChildren] = useState<any[]>([]);
   const [quests, setQuests] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
@@ -34,6 +35,8 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const [aiPlanResult, setAiPlanResult] = useState<any | null>(null);
   const [assistantQ, setAssistantQ] = useState("How do I encourage homework?");
   const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+  const [showAiPlannerModal, setShowAiPlannerModal] = useState(false);
+  const [showAiAssistantModal, setShowAiAssistantModal] = useState(false);
 
   const avatars = [
     { key: "avatar_knight", name: "Knight", icon: "🛡️" },
@@ -49,6 +52,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const showMsg = (t: string) => { setMessage(t); setTimeout(() => setMessage(""), 3500); };
   const getEmoji = (key: string) => avatars.find(a => a.key === key)?.icon || "👤";
   const childName = (id: string) => children.find(c => c.id === id)?.name || "Unknown";
+  const childAvatar = (id: string) => children.find(c => c.id === id)?.avatar || "avatar_knight";
 
   const fetchData = async () => {
     setLoading(true); setError("");
@@ -115,171 +119,189 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const requestedRewards = rewards.filter(r => r.status === "requested");
 
   const navItems = [
-    { id: "heroes" as Tab, icon: "👨‍👩‍👧", label: "Heroes", alert: false },
-    { id: "tasks" as Tab, icon: "📋", label: "Tasks", alert: false },
-    { id: "rewards" as Tab, icon: "🎁", label: "Rewards", alert: requestedRewards.length > 0 },
-    { id: "verify" as Tab, icon: "✅", label: "Verify", alert: pendingQuests.length > 0 },
-    { id: "settings" as Tab, icon: "⚙️", label: "More", alert: false },
+    { id: "heroes" as Tab, icon: <Users size={22} />, label: "Heroes", alert: false },
+    { id: "tasks" as Tab, icon: <CheckCircle size={22} />, label: "Tasks", alert: false },
+    { id: "rewards" as Tab, icon: <Sparkles size={22} />, label: "Rewards", alert: requestedRewards.length > 0 },
+    { id: "verify" as Tab, icon: <CheckCircle size={22} />, label: "Verify", alert: pendingQuests.length > 0 },
+    { id: "settings" as Tab, icon: <User size={22} />, label: "Settings", alert: false },
   ];
 
   return (
-    <div className="app-bg min-h-screen pb-24 select-none">
+    <div className="min-h-screen pb-24 select-none">
       {/* Toast */}
-      {message && <div className="toast flex items-center gap-2"><Check className="w-4 h-4 text-green-600" /> {message}</div>}
+      {message && <div className="toast flex items-center gap-2 z-50"><Check className="w-4 h-4 text-green-600" /> {message}</div>}
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 header-bg backdrop-blur-md border-b-2 px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-xl text-white shadow-md">🏰</div>
-            <div>
-              <h2 className="text-base font-black text-slate-800 leading-tight">HabitQuest</h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Parent Portal</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="toggleWrapper">
-              <input type="checkbox" className="input" id="theme-toggle" onChange={() => document.documentElement.classList.toggle('dark')} />
-              <label htmlFor="theme-toggle" className="toggle">
-                <span className="toggle__handler">
-                  <span className="crater crater--1"></span>
-                  <span className="crater crater--2"></span>
-                  <span className="crater crater--3"></span>
-                </span>
-                <span className="star star--1"></span>
-                <span className="star star--2"></span>
-                <span className="star star--3"></span>
-                <span className="star star--4"></span>
-                <span className="star star--5"></span>
-                <span className="star star--6"></span>
-              </label>
-            </div>
-            {loading ? (
-              <div className="uiverse-loader mr-2"><div></div><div></div><div></div></div>
-            ) : (
-              <button onClick={fetchData} className="p-2 rounded-xl bg-slate-100 text-slate-500 active:bg-slate-200">
-                <RefreshCw className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-2xl mx-auto px-4 py-5">
-        {error && <div className="mb-4 p-3 rounded-xl text-sm font-bold bg-red-50 border-2 border-red-200 text-red-600 flex items-center gap-2">⚠️ {error}</div>}
+      <main className="max-w-2xl mx-auto">
+        {error && <div className="m-4 p-3 rounded-xl text-sm font-bold bg-red-50 border-2 border-red-200 text-red-600 flex items-center gap-2">⚠️ {error}</div>}
 
         {/* ── HEROES ── */}
         {activeTab === "heroes" && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-800">👨‍👩‍👧 My Heroes</h3>
-              <button onClick={() => setChildForm({ ...emptyChildForm, open: true })} className="btn btn-blue py-2 px-4 text-sm">
-                <Plus className="w-4 h-4" /> Add
-              </button>
+          <div className="animate-fade-in pb-10">
+            <header className="flex items-center justify-between px-6 pt-10 pb-6">
+              <div>
+                <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100">My Heroes</h1>
+                <p className="text-sm font-semibold text-slate-500 mt-1">Manage your children's profiles</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-slate-900 dark:bg-slate-800 text-white flex items-center justify-center">
+                 <Shield className="w-6 h-6" />
+              </div>
+            </header>
+
+            <div className="px-6 flex gap-3 mb-8">
+              <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex flex-col items-center">
+                <Users className="w-5 h-5 text-slate-700 dark:text-slate-300 mb-2" strokeWidth={2.5} />
+                <span className="text-xl font-black text-slate-900 dark:text-slate-100">{children.length}</span>
+                <span className="text-xs text-slate-400 font-semibold mt-1">Heroes</span>
+              </div>
+              <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex flex-col items-center">
+                <Zap className="w-5 h-5 text-amber-500 mb-2" strokeWidth={2.5} />
+                <span className="text-xl font-black text-slate-900 dark:text-slate-100">{children.reduce((acc, c) => acc + (c.xp || 0), 0).toLocaleString()}</span>
+                <span className="text-xs text-slate-400 font-semibold mt-1">Total XP</span>
+              </div>
+              <div className="flex-1 bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex flex-col items-center">
+                <Flame className="w-5 h-5 text-red-500 mb-2" strokeWidth={2.5} />
+                <span className="text-xl font-black text-slate-900 dark:text-slate-100">{Math.max(...children.map(c => c.streak || 0), 0)}</span>
+                <span className="text-xs text-slate-400 font-semibold mt-1">Day Streak</span>
+              </div>
             </div>
 
-            {children.length === 0 ? (
-              <div className="card text-center py-12"><p className="text-5xl mb-3">👨‍👩‍👧</p><p className="text-lg font-black text-slate-700">No children yet!</p></div>
-            ) : (
-              <div className="space-y-3">
-                {children.map(c => (
-                  <div key={c.id} className="card flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-blue-100 border-2 border-blue-200 flex items-center justify-center text-3xl shadow-sm shrink-0">
-                      <span className="sticker bg-white/50">{getEmoji(c.avatar)}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-black text-lg text-slate-800">{c.name}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        <span className="pill pill-purple text-xs">Lvl {c.level}</span>
-                        <span className="pill pill-gold text-xs">⭐ {c.xp || 0}</span>
-                        <span className="pill pill-red text-xs">🔥 {c.streak || 0}d</span>
-                      </div>
-                      <p className="text-xs font-bold text-slate-400 mt-1">ID: {c.loginId}</p>
-                    </div>
-                    <div className="flex flex-col gap-1.5 shrink-0">
-                      <button onClick={() => setChildForm({ open: true, isEdit: true, id: c.id, name: c.name, loginId: c.loginId || "", password: "", avatar: c.avatar })} className="p-2 rounded-lg bg-slate-100 text-slate-500 active:bg-slate-200">
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => deleteChild(c.id)} className="p-2 rounded-lg bg-red-50 text-red-500 active:bg-red-100">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+            <div className="px-6 flex items-center justify-between mb-4">
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">Your Children</h3>
+              <span className="text-xs font-semibold text-slate-400">Swipe to browse</span>
+            </div>
+
+            <div className="px-6 flex overflow-x-auto gap-4 pb-4 snap-x hide-scroll">
+              {children.map(c => (
+                <div key={c.id} className="snap-start shrink-0 w-[180px] bg-[#f4f7fc] dark:bg-slate-800 rounded-[2rem] p-5 flex flex-col relative cursor-pointer hover:bg-[#eaf0fb] dark:hover:bg-slate-700 transition-colors" onClick={() => setChildForm({ open: true, isEdit: true, id: c.id, name: c.name, loginId: c.loginId || "", password: "", avatar: c.avatar })}>
+                  {/* Top Left Pills */}
+                  <div className="flex flex-col items-start gap-1">
+                     <div className="bg-blue-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm">Level {c.level || 1}</div>
+                     <Star className="w-6 h-6 text-slate-800 dark:text-slate-300 ml-1 mt-1" strokeWidth={2.5} />
+                  </div>
+
+                  {/* Avatar Progress */}
+                  <div className="mt-4 mb-4 flex justify-center">
+                     <div className="progress-ring-container">
+                       <div className="progress-ring" style={{"--progress": c.xp ? Math.min(100, (c.xp % 1000) / 10) : 0} as any}>
+                          <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden border-[3px] border-white dark:border-slate-800 flex items-center justify-center text-3xl z-10 relative">
+                             {getEmoji(c.avatar)}
+                          </div>
+                       </div>
+                       <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-800 z-20 shadow-sm">
+                         {c.xp ? Math.min(100, Math.floor((c.xp % 1000) / 10)) : 0}%
+                       </div>
+                     </div>
+                  </div>
+
+                  <div className="text-center mt-2">
+                    <h4 className="text-xl font-black text-slate-900 dark:text-slate-100">{c.name}</h4>
+                    <p className="text-[11px] text-slate-400 font-bold mb-3">7 years old</p>
+                    <div className="inline-flex items-center gap-1 bg-white dark:bg-slate-900 px-3 py-1 rounded-full shadow-sm text-xs font-black text-slate-700 dark:text-slate-300">
+                      <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+                      {c.xp || 0} XP
                     </div>
                   </div>
-                ))}
+                </div>
+              ))}
+              
+              <div onClick={() => setChildForm({ ...emptyChildForm, open: true })} className="snap-start shrink-0 w-[180px] add-hero-card">
+                 <div className="add-hero-icon"><Plus className="w-6 h-6" strokeWidth={3} /></div>
+                 <h4 className="text-sm font-bold text-blue-600 mb-1">Add a Hero</h4>
+                 <p className="text-[10px] font-semibold text-blue-400 text-center px-2 leading-tight">Create a new child profile</p>
               </div>
-            )}
+            </div>
           </div>
         )}
 
-        {/* ── TASKS ── */}
-        {activeTab === "tasks" && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-800">📋 All Tasks</h3>
-              <button onClick={() => setQuestForm({ ...emptyQuestForm, open: true, childId: children[0]?.id || "" })} className="btn btn-green py-2 px-4 text-sm">
-                <Plus className="w-4 h-4" /> Add
-              </button>
-            </div>
+        {/* ── MANAGE (Tasks & Rewards) ── */}
+        {(activeTab === "tasks" || activeTab === "rewards") && (
+          <div className="animate-fade-in pb-10 relative min-h-[80vh]">
+            <header className="px-6 pt-10 pb-4">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Portal</p>
+                  <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100">Manage</h1>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                </div>
+              </div>
+              <div className="segmented-control">
+                <div className={`segmented-btn ${manageSubTab === "tasks" ? "active" : ""}`} onClick={() => { setManageSubTab("tasks"); setActiveTab("tasks"); }}>
+                  <CheckCircle className="w-4 h-4 inline-block mr-1 -mt-0.5" /> Tasks
+                </div>
+                <div className={`segmented-btn ${manageSubTab === "rewards" ? "active" : ""}`} onClick={() => { setManageSubTab("rewards"); setActiveTab("rewards"); }}>
+                  <Sparkles className="w-4 h-4 inline-block mr-1 -mt-0.5" /> Rewards
+                </div>
+              </div>
+            </header>
 
-            {quests.length === 0 ? (
-              <div className="card text-center py-12"><p className="text-5xl mb-3">📋</p><p className="text-lg font-black text-slate-700">No tasks yet!</p></div>
-            ) : (
-              <div className="space-y-3">
-                {quests.map(q => {
-                  const dc = q.difficulty === "easy" ? "border-l-green-400" : q.difficulty === "medium" ? "border-l-amber-400" : "border-l-red-400";
-                  return (
-                    <div key={q.id} className={`card flex items-center justify-between border-l-4 ${dc}`}>
-                      <div>
-                        <p className="font-black text-base text-slate-800">{q.title}</p>
-                        <p className="text-xs font-bold text-slate-400 mt-0.5">{childName(q.childId)} · {q.difficulty} · +{q.xp}XP</p>
+            {manageSubTab === "tasks" && (
+              <div className="px-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider">Active Tasks</h3>
+                  <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-3 py-1 rounded-full">{quests.length} tasks</span>
+                </div>
+                
+                <div className="space-y-3">
+                  {quests.map(q => (
+                    <div key={q.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setQuestForm({ open: true, isEdit: true, id: q.id, childId: q.childId, title: q.title, difficulty: q.difficulty, repetition: q.repetition, reminderTime: q.reminderTime, requireProof: q.requireProof })}>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+                          <CheckCircle className="w-6 h-6 text-blue-500" strokeWidth={2.5} />
+                        </div>
+                        <div>
+                          <p className="font-black text-base text-slate-900 dark:text-slate-100 leading-tight mb-1">{q.title}</p>
+                          <div className="flex items-center gap-2">
+                             <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs flex items-center justify-center border border-white dark:border-slate-800">{getEmoji(childAvatar(q.childId))}</div>
+                             <span className="text-[10px] font-bold text-slate-400">↻ {q.repetition}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex gap-1.5 shrink-0">
-                        <button onClick={() => setQuestForm({ open: true, isEdit: true, id: q.id, childId: q.childId, title: q.title, difficulty: q.difficulty, repetition: q.repetition, reminderTime: q.reminderTime, requireProof: q.requireProof })} className="p-2 rounded-lg bg-slate-100 text-slate-500">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => deleteQuest(q.id)} className="p-2 rounded-lg bg-red-50 text-red-500">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <div className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-1 rounded-full">
+                        +{q.xp} XP
                       </div>
                     </div>
-                  );
-                })}
+                  ))}
+                </div>
+                <div className="fab-button" onClick={() => setQuestForm({ ...emptyQuestForm, open: true, childId: children[0]?.id || "" })}>
+                  <Plus className="w-8 h-8" strokeWidth={3} />
+                </div>
               </div>
             )}
-          </div>
-        )}
 
-        {/* ── REWARDS ── */}
-        {activeTab === "rewards" && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-black text-slate-800">🎁 Rewards</h3>
-              <button onClick={() => setRewardForm({ ...emptyRewardForm, open: true, childId: children[0]?.id || "" })} className="btn btn-yellow py-2 px-4 text-sm">
-                <Plus className="w-4 h-4" /> Add
-              </button>
-            </div>
-
-            {rewards.length === 0 ? (
-              <div className="card text-center py-12"><p className="text-5xl mb-3">🎁</p><p className="text-lg font-black text-slate-700">No rewards yet!</p></div>
-            ) : (
-              <div className="space-y-3">
-                {rewards.map(r => (
-                  <div key={r.id} className="card flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-base text-slate-800">{r.title}</p>
-                      <p className="text-xs font-bold text-slate-400">{childName(r.childId)} · {r.coinsCost} 🪙</p>
-                    </div>
-                    {r.status === "requested" && (
-                      <div className="flex gap-1.5">
-                        <button onClick={() => approveReward(r.id)} className="btn btn-green py-1.5 px-3 text-xs">✅</button>
-                        <button onClick={() => rejectReward(r.id)} className="btn btn-red py-1.5 px-3 text-xs">❌</button>
+            {manageSubTab === "rewards" && (
+              <div className="px-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider">Available Rewards</h3>
+                  <span className="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-black px-3 py-1 rounded-full">{rewards.length} rewards</span>
+                </div>
+                
+                <div className="space-y-3">
+                  {rewards.map(r => (
+                    <div key={r.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setRewardForm({ open: true, childId: r.childId, title: r.title, coinsCost: r.coinsCost })}>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center">
+                          <Sparkles className="w-6 h-6 text-purple-500" strokeWidth={2.5} />
+                        </div>
+                        <div>
+                          <p className="font-black text-base text-slate-900 dark:text-slate-100 leading-tight mb-1">{r.title}</p>
+                          <div className="flex items-center gap-2">
+                             <div className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs flex items-center justify-center border border-white dark:border-slate-800">{getEmoji(childAvatar(r.childId))}</div>
+                             <span className="text-[10px] font-bold text-slate-400">{childName(r.childId)}</span>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    {r.status === "approved" && <span className="pill pill-green">Approved</span>}
-                    {r.status === "available" && <span className="pill pill-blue">Active</span>}
-                  </div>
-                ))}
+                      <div className="bg-blue-100 text-blue-600 text-[10px] font-black px-2 py-1 rounded-full flex gap-1 items-center">
+                         <Trash2 className="w-3 h-3 cursor-pointer" onClick={(e) => { e.stopPropagation(); deleteReward(r.id); }}/>
+                        {r.coinsCost} 🪙
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="fab-button" onClick={() => setRewardForm({ ...emptyRewardForm, open: true, childId: children[0]?.id || "" })}>
+                  <Plus className="w-8 h-8" strokeWidth={3} />
+                </div>
               </div>
             )}
           </div>
@@ -287,115 +309,232 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
 
         {/* ── VERIFY ── */}
         {activeTab === "verify" && (
-          <div className="space-y-4 animate-fade-in">
-            <h3 className="text-xl font-black text-slate-800">✅ Verify Tasks</h3>
-
-            {pendingQuests.length === 0 ? (
-              <div className="card text-center py-12"><p className="text-5xl mb-3">🎉</p><p className="text-lg font-black text-slate-700">All caught up!</p><p className="text-sm font-bold text-slate-400 mt-1">No tasks waiting for approval</p></div>
-            ) : (
-              <div className="space-y-3">
-                {pendingQuests.map(q => (
-                  <div key={q.id} className="card">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="text-3xl">📸</div>
-                      <div className="flex-1">
-                        <p className="font-black text-base text-slate-800">{q.title}</p>
-                        <p className="text-xs font-bold text-slate-400">{childName(q.childId)}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => verifyQuest(q.id)} className="btn btn-green flex-1 py-2.5 text-sm">Approve</button>
-                      <button onClick={() => setRejectModal({ open: true, questId: q.id, comment: "" })} className="btn btn-red flex-1 py-2.5 text-sm">Reject</button>
-                    </div>
-                  </div>
-                ))}
+          <div className="animate-fade-in pb-10">
+            <header className="flex items-center justify-between px-6 pt-10 pb-6 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex gap-3">
+                 <Shield className="w-5 h-5 text-slate-600 dark:text-slate-400 mt-1" />
+                 <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Portal</p>
+                    <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">Pending Verifications</h1>
+                 </div>
               </div>
-            )}
+            </header>
+
+            <div className="px-6 py-4">
+               <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-4 shadow-sm">Pending</div>
+               
+               {pendingQuests.length === 0 ? (
+                  <div className="text-center py-10">
+                     <CheckCircle className="w-16 h-16 text-green-200 mx-auto mb-4" />
+                     <p className="text-lg font-black text-slate-700 dark:text-slate-300">All caught up!</p>
+                  </div>
+               ) : (
+                  <div className="space-y-6">
+                    {pendingQuests.map(q => (
+                       <div key={q.id} className="bg-white dark:bg-slate-800 rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50 dark:border-slate-700">
+                         {/* Header */}
+                         <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center text-xl">{getEmoji(childAvatar(q.childId))}</div>
+                            <div>
+                               <p className="font-black text-sm text-slate-900 dark:text-slate-100 leading-tight">{childName(q.childId)}</p>
+                               <p className="text-[10px] text-slate-400 font-semibold">🕒 Just now</p>
+                            </div>
+                         </div>
+                         {/* Body */}
+                         <h4 className="font-black text-base text-slate-900 dark:text-slate-100 mb-1">{q.title}</h4>
+                         <p className="text-xs text-slate-500 font-medium mb-3">Completed quest marked as done.</p>
+                         {q.proofImage && (
+                            <div className="mb-3">
+                               <img src={q.proofImage} alt="proof" className="w-full h-32 object-cover rounded-xl bg-slate-100 dark:bg-slate-700" />
+                               <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><ImageIcon className="w-3 h-3" /> 1 photo proof attached</p>
+                            </div>
+                         )}
+                         {/* Actions */}
+                         <div className="flex gap-3 mt-4">
+                            <button onClick={() => verifyQuest(q.id)} className="flex-1 bg-[#00b85c] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-600 active:scale-95 transition-all">
+                               <Check className="w-4 h-4" strokeWidth={3} /> Approve
+                            </button>
+                            <button onClick={() => setRejectModal({ open: true, questId: q.id, comment: "" })} className="flex-1 bg-slate-50 dark:bg-slate-700 text-red-500 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-100 dark:border-slate-600 hover:bg-red-50 dark:hover:bg-slate-600 active:scale-95 transition-all">
+                               <X className="w-4 h-4" strokeWidth={3} /> Reject
+                            </button>
+                         </div>
+                       </div>
+                    ))}
+                  </div>
+               )}
+            </div>
           </div>
         )}
 
         {/* ── SETTINGS ── */}
         {activeTab === "settings" && (
-          <div className="space-y-5 animate-fade-in">
-            <h3 className="text-xl font-black text-slate-800">⚙️ Settings & AI Tools</h3>
+          <div className="animate-fade-in pb-10">
+            <header className="px-6 pt-10 pb-6">
+              <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100">Settings</h1>
+              <p className="text-sm font-semibold text-slate-500 mt-1">Manage your account and preferences</p>
+            </header>
 
-            {/* Family Info */}
-            <div className="card p-5">
-              <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Family</p>
-              <p className="text-lg font-black text-slate-800">The {parent.name} Family</p>
-              <p className="text-sm font-bold text-slate-400">{parent.email}</p>
+            <div className="px-6 space-y-6">
+               {/* Profile Card */}
+               <div className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700">
+                  <div className="flex items-center gap-4 mb-4">
+                     <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-800 shadow-sm flex items-center justify-center text-2xl">👩</div>
+                     <div>
+                        <h4 className="font-black text-base text-slate-900 dark:text-slate-100">{parent.name}</h4>
+                        <p className="text-xs text-slate-500 font-medium">{parent.email}</p>
+                     </div>
+                  </div>
+                  <button className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-bold text-sm flex items-center justify-center gap-2">
+                     <Edit2 className="w-4 h-4" /> Edit Profile
+                  </button>
+               </div>
+
+               {/* Account List */}
+               <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3 ml-1">Account</h3>
+                  <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-700">
+                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"><LogOut className="w-4 h-4 text-slate-600 dark:text-slate-300" /></div>
+                           <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">Sign Up / Log In</span>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-slate-400" />
+                     </div>
+                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"><Lock className="w-4 h-4 text-slate-600 dark:text-slate-300" /></div>
+                           <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">Change Password</span>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-slate-400" />
+                     </div>
+                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center"><Users className="w-4 h-4 text-slate-600 dark:text-slate-300" /></div>
+                           <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">Linked Children</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-black px-2 py-0.5 rounded-full">{children.length}</span>
+                           <ArrowRight className="w-4 h-4 text-slate-400" />
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               {/* AI Recommendations */}
+               <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3 ml-1 flex items-center gap-1">✨ AI Recommendations</h3>
+                  <div className="space-y-4">
+                     <div className="gradient-card-purple flex items-center gap-4" onClick={() => setShowAiPlannerModal(true)}>
+                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                           <Sparkles className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                           <h4 className="font-black text-base text-white flex items-center gap-1">AI Habit Planner <Sparkles className="w-3 h-3 text-yellow-300" /></h4>
+                           <p className="text-xs text-white/90 mt-1 leading-tight font-medium">Get personalized habit plans for your child based on age and goals</p>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-white/50" />
+                     </div>
+                     
+                     <div className="gradient-card-orange flex items-center gap-4" onClick={() => setShowAiAssistantModal(true)}>
+                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+                           <CheckCircle className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                           <h4 className="font-black text-base text-white flex items-center gap-1">Parent Assistance <Sparkles className="w-3 h-3 text-yellow-100" /></h4>
+                           <p className="text-xs text-white/90 mt-1 leading-tight font-medium">Ask our AI assistant for parenting tips and habit guidance</p>
+                        </div>
+                        <ArrowRight className="w-5 h-5 text-white/50" />
+                     </div>
+                  </div>
+               </div>
+
+               {/* Logout */}
+               <button onClick={onLogout} className="w-full py-3.5 mt-4 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-100 transition-colors">
+                 <LogOut className="w-4 h-4" /> Log Out
+               </button>
             </div>
-
-            {/* AI Planner */}
-            <form onSubmit={handleAIPlan} className="card p-5 space-y-3">
-              <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">🤖 AI Habit Planner</h4>
-              <textarea value={plannerPrompt} onChange={(e) => setPlannerPrompt(e.target.value)} className="input h-24 resize-none text-sm" />
-              <button className="btn btn-purple w-full py-3 text-sm" type="submit"><Sparkles className="w-4 h-4" /> Generate Plan</button>
-              {aiPlanResult && (
-                <div className="code-editor">
-                  <div className="header">
-                    <span className="title">AI_PLAN.json</span>
-                  </div>
-                  <div className="editor-content">
-                    {JSON.stringify(aiPlanResult, null, 2)}
-                  </div>
-                </div>
-              )}
-            </form>
-
-            {/* AI Assistant */}
-            <form onSubmit={handleAIAdvice} className="card p-5 space-y-3">
-              <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 flex items-center gap-2">💬 Parent Assistant</h4>
-              <textarea value={assistantQ} onChange={(e) => setAssistantQ(e.target.value)} className="input h-24 resize-none text-sm" />
-              <button className="btn btn-blue w-full py-3 text-sm" type="submit"><Sparkles className="w-4 h-4" /> Ask</button>
-              {aiAdvice && (
-                <div className="glowing-card-container">
-                  <div className="canvas">
-                    {Array.from({ length: 25 }).map((_, i) => (
-                      <div key={i} className={`tracker tr-${i + 1}`}></div>
-                    ))}
-                  </div>
-                  <div id="card">
-                    <p id="prompt">ADVICE</p>
-                    <div className="title">AI<br/>READY</div>
-                    <div className="glowing-elements">
-                      <div className="glow-1"></div>
-                      <div className="glow-2"></div>
-                      <div className="glow-3"></div>
-                    </div>
-                    <div className="card-particles">
-                      <span></span><span></span><span></span><span></span><span></span><span></span>
-                    </div>
-                    <div className="card-content">
-                      {aiAdvice}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </form>
-
-            {/* Logout */}
-            <button onClick={onLogout} className="btn btn-outline w-full text-red-500 border-red-200">
-              <LogOut className="w-4 h-4" /> Sign Out
-            </button>
           </div>
         )}
       </main>
 
       {/* Bottom Nav */}
-      <nav className="bottom-nav">
+      <nav className="bottom-nav-white">
         {navItems.map(item => (
-          <button key={item.id} onClick={() => setActiveTab(item.id)} className={`nav-item ${activeTab === item.id ? "active" : ""}`}>
-            <span className="nav-icon relative">
-              {item.icon}
-              {item.alert && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white" />}
-            </span>
-            <span>{item.label}</span>
-          </button>
+          <div key={item.id} onClick={() => { setActiveTab(item.id); if(item.id === "tasks" || item.id === "rewards") setManageSubTab(item.id as "tasks"|"rewards"); }} className={`bottom-nav-item ${activeTab === item.id || (item.id === "tasks" && activeTab === "rewards") || (item.id === "rewards" && activeTab === "tasks") ? "active" : ""}`}>
+             {item.icon}
+             <span>{item.label}</span>
+          </div>
         ))}
       </nav>
 
-      {/* ── MODALS ── */}
+      {/* ── AI MODALS (Full Screen Scrollable) ── */}
+      {showAiPlannerModal && createPortal(
+         <div className="fixed inset-0 z-50 bg-[#1d1e22]/90 backdrop-blur-sm flex justify-center p-4 overflow-y-auto pt-20 pb-20">
+            <button onClick={() => setShowAiPlannerModal(false)} className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-white/20"><X className="w-6 h-6" /></button>
+            <div className="w-full max-w-lg">
+               <h2 className="text-2xl font-black text-white mb-6">AI Habit Planner</h2>
+               <form onSubmit={handleAIPlan} className="space-y-4">
+                  <textarea value={plannerPrompt} onChange={(e) => setPlannerPrompt(e.target.value)} className="w-full h-24 bg-white/10 text-white rounded-xl p-4 font-medium outline-none border border-white/20 focus:border-purple-400 placeholder-white/50" placeholder="E.g. My child needs a better morning routine..." />
+                  <button disabled={saving} type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-black text-sm shadow-lg shadow-purple-500/30">Generate Plan</button>
+               </form>
+               
+               {aiPlanResult && (
+                  <div className="mt-8 animate-fade-in flex justify-center">
+                     <div className="code-editor">
+                        <div className="header">
+                           <span className="title">AI_PLAN.json</span>
+                        </div>
+                        <div className="editor-content">
+                           {JSON.stringify(aiPlanResult, null, 2)}
+                        </div>
+                     </div>
+                  </div>
+               )}
+            </div>
+         </div>, document.body
+      )}
+
+      {showAiAssistantModal && createPortal(
+         <div className="fixed inset-0 z-50 bg-[#1a1a1a]/95 backdrop-blur-md flex justify-center p-4 overflow-y-auto pt-20 pb-20">
+            <button onClick={() => setShowAiAssistantModal(false)} className="absolute top-6 right-6 p-2 rounded-full bg-white/10 text-white hover:bg-white/20"><X className="w-6 h-6" /></button>
+            <div className="w-full max-w-lg">
+               <h2 className="text-2xl font-black text-white mb-6">Parent Assistance</h2>
+               <form onSubmit={handleAIAdvice} className="space-y-4">
+                  <textarea value={assistantQ} onChange={(e) => setAssistantQ(e.target.value)} className="w-full h-24 bg-white/5 text-white rounded-xl p-4 font-medium outline-none border border-white/10 focus:border-orange-400 placeholder-white/30" placeholder="Ask a parenting question..." />
+                  <button disabled={saving} type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-pink-500 to-orange-500 text-white font-black text-sm shadow-lg shadow-orange-500/30">Ask AI</button>
+               </form>
+               
+               {aiAdvice && (
+                  <div className="mt-8 flex justify-center animate-fade-in">
+                     <div className="glowing-card-container" style={{ width: '100%', maxWidth: '350px' }}>
+                        <div className="canvas">
+                           {Array.from({ length: 25 }).map((_, i) => (
+                              <div key={i} className={`tracker tr-${i + 1}`}></div>
+                           ))}
+                        </div>
+                        <div id="card">
+                           <p id="prompt">ADVICE READY</p>
+                           <div className="title">AI<br/>ASSIST</div>
+                           <div className="glowing-elements">
+                              <div className="glow-1"></div>
+                              <div className="glow-2"></div>
+                              <div className="glow-3"></div>
+                           </div>
+                           <div className="card-particles">
+                              <span></span><span></span><span></span><span></span><span></span><span></span>
+                           </div>
+                           <div className="card-content">
+                              {aiAdvice}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               )}
+            </div>
+         </div>, document.body
+      )}
+
+      {/* ── FORMS MODALS (unchanged functionally) ── */}
       {childForm.open && (
         <Modal title={childForm.isEdit ? "Edit Hero" : "Add Hero"} emoji="🛡️" onClose={() => setChildForm(emptyChildForm)}>
           <form onSubmit={handleChildSubmit} className="space-y-4">
@@ -492,9 +631,9 @@ const FormField = ({ label, type = "text", value, onChange, placeholder, require
 );
 
 const Modal = ({ title, emoji, children, onClose }: any) => createPortal(
-  <div className="modal-overlay animate-fade-in">
-    <div className="modal-card relative">
-      <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 active:bg-slate-200">
+  <div className="modal-overlay animate-fade-in z-[60]">
+    <div className="modal-card relative max-w-sm w-full mx-4">
+      <button onClick={onClose} className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200">
         <X className="w-5 h-5" />
       </button>
       <div className="text-center mb-5">

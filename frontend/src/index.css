@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900;1000&display=swap');
 @import "tailwindcss";
 @import "./uiverse.css";
+@import "./parent-portal.css";
 
 @theme {
   --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
