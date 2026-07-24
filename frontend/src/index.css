@@ -481,3 +481,78 @@ body {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ========================
+   STICKERS & BADGES
+======================== */
+
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 3px solid #e2e8f0;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+
+.sticker:hover {
+  transform: translateY(-2px) scale(1.05) rotate(-2deg);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.sticker-gold {
+  border-color: #fde047;
+  background: linear-gradient(135deg, #fff, #fef9c3);
+}
+
+.sticker-blue {
+  border-color: #93c5fd;
+  background: linear-gradient(135deg, #fff, #eff6ff);
+}
+
+.sticker-green {
+  border-color: #86efac;
+  background: linear-gradient(135deg, #fff, #f0fdf4);
+}
+
+.sticker-purple {
+  border-color: #d8b4fe;
+  background: linear-gradient(135deg, #fff, #faf5ff);
+}
+
+/* ========================
+   CALENDAR HEATMAP
+======================== */
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.activity-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.activity-cell.active-low {
+  background: #bbf7d0;
+  border-color: #86efac;
+}
+
+.activity-cell.active-med {
+  background: #4ade80;
+  border-color: #22c55e;
+}
+
+.activity-cell.active-high {
+  background: #16a34a;
+  border-color: #15803d;
+}

@@ -106,6 +106,42 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     { id: "profile" as const, icon: "👤", label: "Profile" },
   ];
 
+  const renderCalendar = () => {
+    if (!data || !data.history) return null;
+    
+    const historyByDate: Record<string, number> = {};
+    data.history.forEach((h: any) => {
+      const dateStr = h.completedAt.slice(0, 10);
+      historyByDate[dateStr] = (historyByDate[dateStr] || 0) + 1;
+    });
+
+    const days = [];
+    const today = new Date();
+    for (let i = 27; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const count = historyByDate[dateStr] || 0;
+      let activityClass = "";
+      if (count >= 3) activityClass = "active-high";
+      else if (count >= 2) activityClass = "active-med";
+      else if (count >= 1) activityClass = "active-low";
+      
+      days.push(
+        <div key={dateStr} className={`activity-cell ${activityClass}`} title={`${dateStr}: ${count} tasks`} />
+      );
+    }
+
+    return (
+      <div className="card p-5">
+        <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3 text-center">Consistency Map</h4>
+        <div className="activity-grid">
+          {days}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="app-bg min-h-screen pb-24 select-none">
 
@@ -136,7 +172,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
           <div className="space-y-5 animate-fade-in">
             {/* Greeting */}
             <div className="card card-blue p-6 text-center">
-              <p className="text-4xl mb-2">👋</p>
+              <div className="text-4xl mb-3"><span className="sticker sticker-blue px-3 py-2">👋</span></div>
               <h3 className="text-2xl font-black text-slate-800">Hi {child.name}!</h3>
               <p className="text-sm font-bold text-slate-500 mt-1">Let's build great habits today</p>
             </div>
@@ -155,20 +191,23 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
               )}
             </div>
 
+            {/* Calendar */}
+            {renderCalendar()}
+
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3">
               <div className="card text-center p-4">
-                <p className="text-2xl mb-1">🔥</p>
+                <div className="text-2xl mb-2"><span className="sticker sticker-gold w-10 h-10">🔥</span></div>
                 <p className="text-xl font-black text-orange-500">{child.streak}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Day Streak</p>
               </div>
               <div className="card text-center p-4">
-                <p className="text-2xl mb-1">⭐</p>
+                <div className="text-2xl mb-2"><span className="sticker sticker-gold w-10 h-10">⭐</span></div>
                 <p className="text-xl font-black text-amber-500">{child.xp}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Total XP</p>
               </div>
               <div className="card text-center p-4">
-                <p className="text-2xl mb-1">🏆</p>
+                <div className="text-2xl mb-2"><span className="sticker sticker-purple w-10 h-10">🏆</span></div>
                 <p className="text-xl font-black text-purple-500">{achievements.length}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Badges</p>
               </div>
@@ -323,7 +362,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                   return (
                     <div key={r.id} className="card flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="text-3xl">🎁</div>
+                        <div className="text-3xl"><span className="sticker sticker-blue w-12 h-12">🎁</span></div>
                         <div>
                           <p className="font-black text-base text-slate-800">{r.title}</p>
                           <p className="text-sm font-bold text-amber-600">{r.coinsCost} 🪙</p>
@@ -365,7 +404,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
             {/* Pet */}
             <div className="card card-pink p-6 text-center">
-              <p className="text-6xl mb-3 animate-float-bob">{child.avatar === "avatar_knight" ? "🐉" : "🐰"}</p>
+              <div className="text-6xl mb-4 animate-float-bob"><span className="sticker w-24 h-24 bg-white/50">{child.avatar === "avatar_knight" ? "🐉" : "🐰"}</span></div>
               <h4 className="text-lg font-black text-slate-800">{pet.name}</h4>
               <p className="text-xs font-bold text-slate-500 mb-3">Level {pet.level} Pet</p>
 
@@ -391,7 +430,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                 <div className="grid grid-cols-3 gap-3">
                   {achievements.map((a: any) => (
                     <div key={a.id} className="card card-yellow text-center p-3">
-                      <p className="text-3xl mb-1">🏆</p>
+                      <div className="text-3xl mb-2"><span className="sticker sticker-gold w-12 h-12">🏆</span></div>
                       <p className="text-[10px] font-black text-slate-600 leading-tight">{a.title}</p>
                     </div>
                   ))}

@@ -385,12 +385,25 @@ export async function createApp() {
       });
     }
 
-    // Update Daily Streak — only once per calendar day
-    const today = new Date().toISOString().slice(0, 10);
-    const lastCompleted = quest.lastCompletedAt ? quest.lastCompletedAt.slice(0, 10) : null;
-    if (lastCompleted !== today) {
-      child.streak += 1;
+    // Update Daily Streak
+    const todayDate = new Date();
+    const todayStr = todayDate.toISOString().slice(0, 10);
+    const lastActiveStr = child.lastActiveDate;
+
+    if (lastActiveStr !== todayStr) {
+      if (lastActiveStr) {
+        const yesterdayDate = new Date(todayDate);
+        yesterdayDate.setDate(todayDate.getDate() - 1);
+        if (lastActiveStr === yesterdayDate.toISOString().slice(0, 10)) {
+          child.streak += 1;
+        } else {
+          child.streak = 1; // Reset streak
+        }
+      } else {
+        child.streak = 1;
+      }
       if (child.streak > child.longestStreak) child.longestStreak = child.streak;
+      child.lastActiveDate = todayStr;
     }
 
     if (child.pet) {
@@ -573,7 +586,8 @@ export async function createApp() {
       achievements,
       rewards,
       notifications,
-      motivationMessage
+      motivationMessage,
+      history
     });
   });
 

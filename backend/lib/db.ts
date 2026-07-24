@@ -33,6 +33,7 @@ export interface Child {
   level: number;
   streak: number;
   longestStreak: number;
+  lastActiveDate?: string;
   pet: VirtualPet;
 }
 

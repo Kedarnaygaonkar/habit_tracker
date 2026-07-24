@@ -166,7 +166,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                 {children.map(c => (
                   <div key={c.id} className="card flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-blue-100 border-2 border-blue-200 flex items-center justify-center text-3xl shadow-sm shrink-0">
-                      {getEmoji(c.avatar)}
+                      <span className="sticker bg-white/50">{getEmoji(c.avatar)}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-black text-lg text-slate-800">{c.name}</p>
