@@ -49,9 +49,10 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-indigo-300">
-        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-xs font-black uppercase tracking-wider">Restoring Family Portal...</p>
+      <div className="app-bg min-h-screen flex flex-col items-center justify-center">
+        <div className="text-6xl animate-float-bob mb-4">🏰</div>
+        <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-black uppercase tracking-wider text-blue-500">Loading HabitQuest...</p>
       </div>
     );
   }
@@ -78,4 +79,3 @@ export default function App() {
     />
   );
 }
-

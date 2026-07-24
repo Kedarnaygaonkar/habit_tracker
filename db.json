@@ -38,18 +38,18 @@
       "name": "Leo",
       "passcode": "1234",
       "avatar": "avatar_knight",
-      "xp": 450,
-      "coins": 60,
-      "level": 2,
+      "xp": 520,
+      "coins": 50,
+      "level": 3,
       "streak": 5,
       "longestStreak": 12,
       "pet": {
         "name": "Sparky the Dragon",
-        "level": 2,
-        "xp": 180,
+        "level": 3,
+        "xp": 45,
         "happiness": 100,
         "status": "happy",
-        "lastFedAt": "2026-07-19T15:21:16.316Z"
+        "lastFedAt": "2026-07-24T07:02:48.004Z"
       },
       "loginId": "leo",
       "passwordHash": "$2b$10$cBInZVKo68Qp9TmcX70JCOdRFkDCakb20kWhkqtPFCgxwm7EVNuKK"
@@ -175,8 +175,9 @@
       "reminderTime": "08:00",
       "requireProof": "none",
       "status": "completed",
-      "verified": false,
-      "proofData": ""
+      "verified": true,
+      "proofData": "",
+      "lastCompletedAt": "2026-07-22T15:06:52.105Z"
     },
     {
       "id": "q-2",
@@ -251,7 +252,9 @@
       "reminderTime": "08:00",
       "requireProof": "text",
       "status": "pending",
-      "verified": false
+      "verified": true,
+      "proofData": null,
+      "lastCompletedAt": "2026-07-22T15:06:48.751Z"
     },
     {
       "id": "q-ycm2yfaiv",
@@ -267,6 +270,21 @@
       "requireProof": "none",
       "status": "pending",
       "verified": false
+    },
+    {
+      "id": "q-0fm7yeu0m",
+      "parentId": "p-sample",
+      "childId": "c-emma",
+      "title": "Hug",
+      "adventureTitle": "Quest: Hug",
+      "difficulty": "hard",
+      "repetition": "daily",
+      "xp": 100,
+      "coins": 30,
+      "reminderTime": "08:00",
+      "requireProof": "none",
+      "status": "pending",
+      "verified": false
     }
   ],
   "rewards": [
@@ -276,7 +294,7 @@
       "childId": "c-leo",
       "title": "30 Minutes TV Time",
       "coinsCost": 20,
-      "status": "available"
+      "status": "requested"
     },
     {
       "id": "r-2",
@@ -327,6 +345,22 @@
       "description": "Maintained a quest streak for 18 days!",
       "icon": "flame",
       "unlockedAt": "2026-07-19T10:23:40.283Z"
+    },
+    {
+      "id": "ach-4jy2cmh7v",
+      "childId": "c-leo",
+      "title": "100 XP Club",
+      "description": "Earned a grand total of 100 XP!",
+      "icon": "sparkles",
+      "unlockedAt": "2026-07-22T15:06:48.751Z"
+    },
+    {
+      "id": "ach-yulnuifey",
+      "childId": "c-leo",
+      "title": "500 XP Super Star",
+      "description": "Earned a massive total of 500 XP!",
+      "icon": "trophy",
+      "unlockedAt": "2026-07-22T15:06:48.751Z"
     }
   ],
   "questHistory": [
@@ -351,6 +385,30 @@
       "coinsEarned": 2,
       "completedAt": "2026-07-19T10:23:40.283Z",
       "status": "verified"
+    },
+    {
+      "id": "h-3uzmtxf9j",
+      "childId": "c-leo",
+      "questId": "q-c4ilnl15b",
+      "title": "pushups",
+      "adventureTitle": "Quest: pushups",
+      "xpEarned": 50,
+      "coinsEarned": 15,
+      "completedAt": "2026-07-22T15:06:48.751Z",
+      "status": "verified",
+      "proofData": "10 push ups"
+    },
+    {
+      "id": "h-tz80a5t03",
+      "childId": "c-leo",
+      "questId": "q-1",
+      "title": "Brush Teeth",
+      "adventureTitle": "Defeat the Cavity Monster",
+      "xpEarned": 20,
+      "coinsEarned": 5,
+      "completedAt": "2026-07-22T15:06:52.105Z",
+      "status": "verified",
+      "proofData": ""
     }
   ],
   "notifications": [
@@ -376,6 +434,78 @@
       "role": "child",
       "message": "🎁 Your reward was approved! Parent says: Enjoy your \"Ice Cream Treat\"!",
       "createdAt": "2026-07-19T17:21:01.810Z",
+      "read": true
+    },
+    {
+      "id": "notif-l2ti0ct9y",
+      "userId": "p-sample",
+      "role": "parent",
+      "message": "✨ Leo completed quest \"pushups\" and is waiting for your verification!",
+      "createdAt": "2026-07-22T14:19:27.275Z",
+      "read": false
+    },
+    {
+      "id": "notif-y8bngs6yp",
+      "userId": "c-leo",
+      "role": "child",
+      "message": "🎉 LEVEL UP! You are now Level 3! You've gained magical strength!",
+      "createdAt": "2026-07-22T15:06:48.751Z",
+      "read": true
+    },
+    {
+      "id": "notif-qi0oern3x",
+      "userId": "c-leo",
+      "role": "child",
+      "message": "🐉 Your pet Sparky the Dragon leveled up to Level 3!",
+      "createdAt": "2026-07-22T15:06:48.751Z",
+      "read": true
+    },
+    {
+      "id": "notif-3oqk1vvup",
+      "userId": "c-leo",
+      "role": "child",
+      "message": "🏆 Achievement Unlocked: 100 XP Club!",
+      "createdAt": "2026-07-22T15:06:48.751Z",
+      "read": true
+    },
+    {
+      "id": "notif-o7tgta3to",
+      "userId": "c-leo",
+      "role": "child",
+      "message": "🏆 Achievement Unlocked: 500 XP Super Star!",
+      "createdAt": "2026-07-22T15:06:48.751Z",
+      "read": true
+    },
+    {
+      "id": "notif-qf431lz36",
+      "userId": "p-sample",
+      "role": "parent",
+      "message": "Verified quest \"pushups\" for Leo. Gained +50 XP / +15 Coins!",
+      "createdAt": "2026-07-22T15:06:48.752Z",
+      "read": false
+    },
+    {
+      "id": "notif-u159w07dh",
+      "userId": "p-sample",
+      "role": "parent",
+      "message": "Verified quest \"Brush Teeth\" for Leo. Gained +20 XP / +5 Coins!",
+      "createdAt": "2026-07-22T15:06:52.105Z",
+      "read": false
+    },
+    {
+      "id": "notif-6d3qvfmb9",
+      "userId": "p-sample",
+      "role": "parent",
+      "message": "🎁 Leo has claimed the reward \"30 Minutes TV Time\"! They spent 20 coins. Please approve it!",
+      "createdAt": "2026-07-23T05:25:46.261Z",
+      "read": false
+    },
+    {
+      "id": "notif-ym34gb0o3",
+      "userId": "p-sample",
+      "role": "parent",
+      "message": "✨ Leo completed quest \"Brush Teeth\" and is waiting for your verification!",
+      "createdAt": "2026-07-23T16:54:17.530Z",
       "read": false
     }
   ],
@@ -445,6 +575,25 @@
       ],
       "bestTimeOfDay": "Morning",
       "parentSummary": "Leo has made incredible progress this week! With an overall habit consistency score of 30%, they are showing real growth, particularly in brushing teeth and reading. Keep reinforcing their awesome streak!"
+    },
+    {
+      "id": "rep-mrcp7aepv",
+      "childId": "c-emma",
+      "parentId": "p-sample",
+      "createdAt": "2026-07-19T17:47:01.778Z",
+      "habitScore": 69,
+      "completionRate": 33,
+      "strengths": [
+        "Good consistency maintaining a streak of 18 days"
+      ],
+      "weaknesses": [
+        "Some evening quests are occasionally missed"
+      ],
+      "recommendations": [
+        "Encourage consistency with simple daily reminders"
+      ],
+      "bestTimeOfDay": "Morning",
+      "parentSummary": "Emma is doing very well overall, with a consistency score of 69%. Keep praising their efforts!"
     }
   ]
 }
