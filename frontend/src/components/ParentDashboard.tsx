@@ -237,7 +237,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
             </header>
 
             {manageSubTab === "tasks" && (
-              <div className="px-6">
+              <div className="px-6 pb-24">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider">Active Tasks</h3>
                   <span className="bg-slate-200 text-slate-700 text-[10px] font-black px-3 py-1 rounded-full">{quests.length} tasks</span>
@@ -271,7 +271,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
             )}
 
             {manageSubTab === "rewards" && (
-              <div className="px-6">
+              <div className="px-6 pb-24">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider">Available Rewards</h3>
                   <span className="bg-slate-200 text-slate-700 text-[10px] font-black px-3 py-1 rounded-full">{rewards.length} rewards</span>
@@ -392,24 +392,24 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                {/* Account List */}
                <div>
                   <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3 ml-1">Account</h3>
-                  <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 divide-y divide-slate-100 ">
-                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 :bg-slate-700 transition-colors">
+                  <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 divide-y divide-slate-100">
+                     <div onClick={onLogout} className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors">
                         <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><LogOut className="w-4 h-4 text-slate-600 " /></div>
+                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><LogOut className="w-4 h-4 text-slate-600" /></div>
                            <span className="font-bold text-slate-700 text-sm">Sign Up / Log In</span>
                         </div>
                         <ArrowRight className="w-4 h-4 text-slate-400" />
                      </div>
-                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 :bg-slate-700 transition-colors">
+                     <div onClick={() => showMsg("Change Password coming soon!")} className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors">
                         <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><Lock className="w-4 h-4 text-slate-600 " /></div>
+                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><Lock className="w-4 h-4 text-slate-600" /></div>
                            <span className="font-bold text-slate-700 text-sm">Change Password</span>
                         </div>
                         <ArrowRight className="w-4 h-4 text-slate-400" />
                      </div>
-                     <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 :bg-slate-700 transition-colors">
+                     <div onClick={() => setActiveTab("heroes")} className="flex items-center justify-between p-4 cursor-pointer hover:bg-slate-50 transition-colors">
                         <div className="flex items-center gap-3">
-                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><Users className="w-4 h-4 text-slate-600 " /></div>
+                           <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><Users className="w-4 h-4 text-slate-600" /></div>
                            <span className="font-bold text-slate-700 text-sm">Linked Children</span>
                         </div>
                         <div className="flex items-center gap-2">

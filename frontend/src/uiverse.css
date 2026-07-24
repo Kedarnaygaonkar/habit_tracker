@@ -108,6 +108,19 @@
   font-size: 14px;
 }
 
+.glowing-card-container #card .title {
+  z-index: 20;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #fff;
+  opacity: 0;
+  transition: 0.3s ease;
+  position: absolute;
+  top: 40px;
+  text-align: center;
+}
+
 .glowing-card-container #prompt {
   bottom: 100px;
   left: 50%;
