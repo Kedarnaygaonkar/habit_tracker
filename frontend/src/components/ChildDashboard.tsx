@@ -196,18 +196,18 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="card text-center p-4">
-                <div className="text-2xl mb-2"><span className="sticker sticker-gold w-10 h-10">🔥</span></div>
+              <div className="card flex flex-col items-center justify-center p-4">
+                <img src="/stickers/fire.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Streak" />
                 <p className="text-xl font-black text-orange-500">{child.streak}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Day Streak</p>
               </div>
-              <div className="card text-center p-4">
-                <div className="text-2xl mb-2"><span className="sticker sticker-gold w-10 h-10">⭐</span></div>
+              <div className="card flex flex-col items-center justify-center p-4">
+                <img src="/stickers/star.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="XP" />
                 <p className="text-xl font-black text-amber-500">{child.xp}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Total XP</p>
               </div>
-              <div className="card text-center p-4">
-                <div className="text-2xl mb-2"><span className="sticker sticker-purple w-10 h-10">🏆</span></div>
+              <div className="card flex flex-col items-center justify-center p-4">
+                <img src="/stickers/trophy.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Badges" />
                 <p className="text-xl font-black text-purple-500">{achievements.length}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase">Badges</p>
               </div>
@@ -362,7 +362,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                   return (
                     <div key={r.id} className="card flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="text-3xl"><span className="sticker sticker-blue w-12 h-12">🎁</span></div>
+                        <img src="/stickers/gift.png" className="w-14 h-14 drop-shadow-md hover:scale-110 transition-transform" alt="Reward" />
                         <div>
                           <p className="font-black text-base text-slate-800">{r.title}</p>
                           <p className="text-sm font-bold text-amber-600">{r.coinsCost} 🪙</p>
@@ -404,7 +404,9 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
             {/* Pet */}
             <div className="card card-pink p-6 text-center">
-              <div className="text-6xl mb-4 animate-float-bob"><span className="sticker w-24 h-24 bg-white/50">{child.avatar === "avatar_knight" ? "🐉" : "🐰"}</span></div>
+              <div className="mb-4 animate-float-bob flex justify-center">
+                <img src="/stickers/dragon.png" className="w-32 h-32 drop-shadow-lg" alt="Pet" />
+              </div>
               <h4 className="text-lg font-black text-slate-800">{pet.name}</h4>
               <p className="text-xs font-bold text-slate-500 mb-3">Level {pet.level} Pet</p>
 
@@ -429,8 +431,8 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                 <h4 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">🏆 Badges</h4>
                 <div className="grid grid-cols-3 gap-3">
                   {achievements.map((a: any) => (
-                    <div key={a.id} className="card card-yellow text-center p-3">
-                      <div className="text-3xl mb-2"><span className="sticker sticker-gold w-12 h-12">🏆</span></div>
+                    <div key={a.id} className="card card-yellow flex flex-col items-center justify-center p-3">
+                      <img src="/stickers/trophy.png" className="w-12 h-12 mb-2 drop-shadow-md hover:scale-110 transition-transform" alt="Badge" />
                       <p className="text-[10px] font-black text-slate-600 leading-tight">{a.title}</p>
                     </div>
                   ))}

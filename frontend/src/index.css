@@ -131,7 +131,7 @@ body {
 }
 
 /* ========================
-   BUTTONS
+   UIVERSE BUTTONS (MINIMALISTIC 3D)
 ======================== */
 
 .btn {
@@ -146,88 +146,91 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-  border: none;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
   outline: none;
-  -webkit-user-select: none;
   user-select: none;
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 4px 0 #cbd5e1, 0 8px 16px rgba(0, 0, 0, 0.05);
 }
 
 .btn:active {
-  transform: translateY(2px);
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #cbd5e1, 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .btn-green {
-  background: linear-gradient(135deg, #4ade80, #22c55e);
+  background: #22c55e;
   color: white;
-  border-bottom: 4px solid #15803d;
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+  border-color: #16a34a;
+  box-shadow: 0 4px 0 #15803d, 0 8px 16px rgba(34, 197, 94, 0.2);
 }
 
 .btn-green:active {
-  border-bottom-width: 1px;
+  box-shadow: 0 0 0 #15803d, 0 2px 4px rgba(34, 197, 94, 0.2);
 }
 
 .btn-blue {
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  background: #3b82f6;
   color: white;
-  border-bottom: 4px solid #1d4ed8;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  border-color: #2563eb;
+  box-shadow: 0 4px 0 #1d4ed8, 0 8px 16px rgba(59, 130, 246, 0.2);
 }
 
 .btn-blue:active {
-  border-bottom-width: 1px;
+  box-shadow: 0 0 0 #1d4ed8, 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .btn-purple {
-  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  background: #8b5cf6;
   color: white;
-  border-bottom: 4px solid #6d28d9;
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+  border-color: #7c3aed;
+  box-shadow: 0 4px 0 #6d28d9, 0 8px 16px rgba(139, 92, 246, 0.2);
 }
 
 .btn-purple:active {
-  border-bottom-width: 1px;
+  box-shadow: 0 0 0 #6d28d9, 0 2px 4px rgba(139, 92, 246, 0.2);
 }
 
 .btn-yellow {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  background: #fbbf24;
   color: #78350f;
-  border-bottom: 4px solid #b45309;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+  border-color: #f59e0b;
+  box-shadow: 0 4px 0 #d97706, 0 8px 16px rgba(245, 158, 11, 0.2);
 }
 
 .btn-yellow:active {
-  border-bottom-width: 1px;
+  box-shadow: 0 0 0 #d97706, 0 2px 4px rgba(245, 158, 11, 0.2);
 }
 
 .btn-red {
-  background: linear-gradient(135deg, #f87171, #ef4444);
+  background: #ef4444;
   color: white;
-  border-bottom: 4px solid #b91c1c;
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+  border-color: #dc2626;
+  box-shadow: 0 4px 0 #b91c1c, 0 8px 16px rgba(239, 68, 68, 0.2);
 }
 
 .btn-red:active {
-  border-bottom-width: 1px;
+  box-shadow: 0 0 0 #b91c1c, 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
 .btn-outline {
-  background: white;
-  color: #475569;
-  border: 2px solid #e2e8f0;
-  border-bottom-width: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background: transparent;
+  color: #64748b;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 0 #94a3b8;
 }
 
 .btn-outline:active {
-  border-bottom-width: 2px;
+  box-shadow: 0 0 0 #94a3b8;
 }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
+  transform: translateY(4px) !important;
+  box-shadow: 0 0 0 transparent !important;
 }
 
 /* ========================
@@ -555,4 +558,53 @@ body {
 .activity-cell.active-high {
   background: #16a34a;
   border-color: #15803d;
+}
+
+/* ========================
+   UIVERSE CHECKBOX
+======================== */
+.task-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  border: 3px solid #cbd5e1;
+  background-color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.task-check.checked {
+  background-color: #22c55e;
+  border-color: #16a34a;
+  animation: checkbox-pop 0.3s ease-out forwards;
+}
+
+.task-check::after {
+  content: "";
+  position: absolute;
+  width: 0.6rem;
+  height: 1.2rem;
+  border-bottom: 3px solid white;
+  border-right: 3px solid white;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition-delay: 0.1s;
+}
+
+.task-check.checked::after {
+  transform: rotate(45deg) scale(1);
+  margin-bottom: 0.25rem;
+}
+
+@keyframes checkbox-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.85); }
+  100% { transform: scale(1); }
 }
