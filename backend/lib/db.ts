@@ -113,6 +113,15 @@ export interface AIReport {
   parentSummary: string;
 }
 
+export interface Team {
+  id: string;
+  parentId: string;
+  name: string;
+  icon: string;
+  inviteCode: string;
+  members: string[]; // child IDs
+}
+
 export interface Schema {
   parents: Parent[];
   children: Child[];
@@ -122,6 +131,7 @@ export interface Schema {
   questHistory: QuestHistory[];
   notifications: Notification[];
   aiReports: AIReport[];
+  teams: Team[];
 }
 
 interface AppStateDocument {
@@ -364,6 +374,16 @@ function getInitialData(): Schema {
         bestTimeOfDay: "Morning",
         parentSummary: "Leo is responding extremely well to gamification. His reading habit has seen a massive 40% increase in consistency. Focus on evening routines to maintain the streak!"
       }
+    ],
+    teams: [
+      {
+        id: "t-1",
+        parentId: parentId,
+        name: "Family Heroes",
+        icon: "🏆",
+        inviteCode: "HERO12",
+        members: [child1Id, child2Id]
+      }
     ]
   };
 }
@@ -439,6 +459,7 @@ export class DBEngine {
     data.questHistory = data.questHistory || [];
     data.notifications = data.notifications || [];
     data.aiReports = data.aiReports || [];
+    data.teams = data.teams || [];
     return data;
   }
 
@@ -479,6 +500,7 @@ export class DBEngine {
       ["questHistory", data.questHistory],
       ["notifications", data.notifications],
       ["aiReports", data.aiReports],
+      ["teams", data.teams],
     ];
 
     await Promise.all(collections.map(async ([name, items]) => {

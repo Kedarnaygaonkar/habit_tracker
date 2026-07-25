@@ -20,6 +20,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const [children, setChildren] = useState<any[]>([]);
   const [quests, setQuests] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -27,6 +28,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const [childForm, setChildForm] = useState(emptyChildForm);
   const [questForm, setQuestForm] = useState(emptyQuestForm);
   const [rewardForm, setRewardForm] = useState(emptyRewardForm);
+  const [teamForm, setTeamForm] = useState({ open: false, name: "", icon: "🏆" });
   const [rejectModal, setRejectModal] = useState({ open: false, questId: "", comment: "" });
   const [saving, setSaving] = useState(false);
 
@@ -57,15 +59,17 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const fetchData = async () => {
     setLoading(true); setError("");
     try {
-      const [cR, qR, rR] = await Promise.all([
+      const [cR, qR, rR, tR] = await Promise.all([
         fetch("/api/parent/children", { headers: authHeaders }),
         fetch("/api/quests", { headers: authHeaders }),
         fetch("/api/rewards", { headers: authHeaders }),
+        fetch("/api/parent/teams", { headers: authHeaders }),
       ]);
-      if (!cR.ok || !qR.ok || !rR.ok) throw new Error("Failed to load data.");
+      if (!cR.ok || !qR.ok || !rR.ok || !tR.ok) throw new Error("Failed to load data.");
       setChildren(await cR.json());
       setQuests(await qR.json());
       setRewards(await rR.json());
+      setTeams(await tR.json());
     } catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -124,6 +128,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     { id: "tasks" as Tab, icon: <CheckCircle size={22} />, label: "Tasks", alert: false },
     { id: "rewards" as Tab, icon: <Sparkles size={22} />, label: "Rewards", alert: requestedRewards.length > 0 },
     { id: "verify" as Tab, icon: <CheckCircle size={22} />, label: "Verify", alert: pendingQuests.length > 0 },
+    { id: "teams" as Tab, icon: <Users size={22} />, label: "Teams", alert: false },
     { id: "settings" as Tab, icon: <User size={22} />, label: "Settings", alert: false },
   ];
 
@@ -372,6 +377,67 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
           </div>
         )}
 
+        {/* ── TEAMS ── */}
+        {activeTab === "teams" && (
+          <div className="animate-fade-in pb-10">
+            <header className="flex items-center justify-between px-6 pt-10 pb-6 border-b border-slate-100">
+              <div className="flex gap-3">
+                 <Users className="w-5 h-5 text-slate-600 mt-1" />
+                 <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Portal</p>
+                    <h1 className="text-2xl font-black text-slate-900">Teams</h1>
+                 </div>
+              </div>
+              <button onClick={() => setTeamForm({ open: true, name: "", icon: "🏆" })} className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-colors">
+                <Plus className="w-5 h-5" strokeWidth={3} />
+              </button>
+            </header>
+
+            <div className="px-6 py-4 space-y-4">
+              {teams.length === 0 ? (
+                <div className="text-center py-10">
+                   <Users className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                   <p className="text-lg font-black text-slate-700">No teams yet</p>
+                   <p className="text-sm font-medium text-slate-500 mt-1">Create a team to track peer progress!</p>
+                </div>
+              ) : (
+                teams.map(team => (
+                  <div key={team.id} className="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-indigo-50 border-2 border-indigo-100 rounded-xl flex items-center justify-center text-2xl shadow-sm">{team.icon}</div>
+                        <div>
+                          <h3 className="font-black text-lg text-slate-800 leading-tight">{team.name}</h3>
+                          <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Invite Code</p>
+                        </div>
+                      </div>
+                      <div className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-black tracking-widest shadow-sm">
+                        {team.inviteCode}
+                      </div>
+                    </div>
+
+                    {team.members.length > 0 && (
+                      <div className="flex items-center bg-slate-50 rounded-xl p-3">
+                        <div className="flex -space-x-3 mr-3">
+                          {team.members.map((member: any) => (
+                            <div key={member.id} className="w-8 h-8 rounded-full border-2 border-slate-50 bg-white flex items-center justify-center text-sm shadow-sm z-10" title={member.name}>
+                              {getEmoji(member.avatar)}
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-xs font-bold text-slate-600">{team.members.length} member{team.members.length !== 1 && 's'} joined</span>
+                      </div>
+                    )}
+                    {team.members.length === 0 && (
+                      <p className="text-xs font-bold text-slate-400 bg-slate-50 p-3 rounded-xl">Share the invite code to let members join!</p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ── SETTINGS ── */}
         {activeTab === "settings" && (
           <div className="animate-fade-in pb-10">
@@ -611,6 +677,23 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
             <FormField label="Reward" value={rewardForm.title} onChange={v => setRewardForm({ ...rewardForm, title: v })} placeholder="e.g. 30min TV" required />
             <FormField label="Cost (coins)" type="number" value={rewardForm.coinsCost} onChange={v => setRewardForm({ ...rewardForm, coinsCost: v })} placeholder="30" required />
             <button disabled={saving} type="submit" className="btn btn-yellow w-full py-4">{saving ? "Saving..." : "Save"}</button>
+          </form>
+        </Modal>
+      )}
+
+      {teamForm.open && (
+        <Modal title="New Team" emoji={teamForm.icon} onClose={() => setTeamForm({ ...teamForm, open: false })}>
+          <form onSubmit={handleTeamSubmit} className="space-y-4">
+            <FormField label="Team Name" value={teamForm.name} onChange={v => setTeamForm({ ...teamForm, name: v })} placeholder="e.g. Family Heroes" required />
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Icon</label>
+              <div className="grid grid-cols-6 gap-2">
+                {["🏆", "⭐", "🚀", "🛡️", "🔥", "💎"].map(icon => (
+                  <button key={icon} type="button" onClick={() => setTeamForm({ ...teamForm, icon })} className={`aspect-square rounded-xl text-2xl flex items-center justify-center transition-all ${teamForm.icon === icon ? 'bg-indigo-100 border-2 border-indigo-400 scale-110' : 'bg-slate-50 border-2 border-slate-100 hover:bg-slate-100'}`}>{icon}</button>
+                ))}
+              </div>
+            </div>
+            <button disabled={saving} type="submit" className="btn btn-indigo w-full py-4">{saving ? "Saving..." : "Create Team"}</button>
           </form>
         </Modal>
       )}

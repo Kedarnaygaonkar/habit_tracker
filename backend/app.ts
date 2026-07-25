@@ -725,5 +725,87 @@ export async function createApp() {
     res.json({ success: true });
   });
 
+  // ==========================================
+  // TEAMS & GROUPS API
+  // ==========================================
+
+  app.post("/api/teams", authenticateParent, (req: any, res) => {
+    const { name, icon } = req.body;
+    if (!name) return res.status(400).json({ error: "Team name is required." });
+    
+    // Generate 6 character alphanumeric code
+    const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    const newTeam = {
+      id: `t-${generateId()}`,
+      parentId: req.parent.id,
+      name,
+      icon: icon || "🏆",
+      inviteCode,
+      members: [] // No members initially
+    };
+    
+    db.get().teams.push(newTeam);
+    db.save();
+    res.json(newTeam);
+  });
+
+  app.get("/api/parent/teams", authenticateParent, (req: any, res) => {
+    const teams = db.get().teams.filter(t => t.parentId === req.parent.id);
+    // Populate members for parent view
+    const populatedTeams = teams.map(t => {
+      const members = t.members.map(memberId => {
+        const child = db.get().children.find(c => c.id === memberId);
+        return child ? { id: child.id, name: child.name, avatar: child.avatar, level: child.level, streak: child.streak } : null;
+      }).filter(Boolean);
+      return { ...t, members };
+    });
+    res.json(populatedTeams);
+  });
+
+  app.post("/api/children/:childId/join-team", authenticateChild, (req: any, res) => {
+    const { inviteCode } = req.body;
+    const { childId } = req.params;
+    
+    if (req.child.id !== childId) return res.status(403).json({ error: "Forbidden" });
+    if (!inviteCode) return res.status(400).json({ error: "Invite code is required." });
+    
+    const team = db.get().teams.find(t => t.inviteCode === inviteCode.trim().toUpperCase());
+    if (!team) return res.status(404).json({ error: "Invalid invite code. Team not found." });
+    
+    if (team.members.includes(childId)) {
+      return res.status(400).json({ error: "You are already in this team!" });
+    }
+    
+    team.members.push(childId);
+    db.save();
+    res.json({ success: true, team });
+  });
+
+  app.get("/api/children/:childId/teams", authenticateChild, (req: any, res) => {
+    const { childId } = req.params;
+    if (req.child.id !== childId) return res.status(403).json({ error: "Forbidden" });
+    
+    const teams = db.get().teams.filter(t => t.members.includes(childId));
+    
+    // Populate leaderboards for each team
+    const populatedTeams = teams.map(t => {
+      const members = t.members.map(memberId => {
+        const child = db.get().children.find(c => c.id === memberId);
+        return child ? { id: child.id, name: child.name, avatar: child.avatar, level: child.level, xp: child.xp, streak: child.streak } : null;
+      }).filter(Boolean);
+      
+      // Sort members by level (desc) then xp (desc)
+      members.sort((a: any, b: any) => {
+        if (b.level !== a.level) return b.level - a.level;
+        return b.xp - a.xp;
+      });
+      
+      return { ...t, members };
+    });
+    
+    res.json(populatedTeams);
+  });
+
   return app;
 }

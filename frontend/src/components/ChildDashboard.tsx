@@ -18,7 +18,8 @@ import {
   Heart,
   CheckCircle2,
   Camera,
-  X
+  X,
+  Users
 } from "lucide-react";
 
 interface ChildDashboardProps {
@@ -29,7 +30,8 @@ interface ChildDashboardProps {
 
 export default function ChildDashboard({ token, childUser, onLogout }: ChildDashboardProps) {
   const [data, setData] = useState<any | null>(null);
-  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "rewards" | "profile">("home");
+  const [teams, setTeams] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "rewards" | "teams" | "profile">("home");
   const [loading, setLoading] = useState(true);
   const [selectedQuest, setSelectedQuest] = useState<any | null>(null);
   const [proofText, setProofText] = useState("");
@@ -37,11 +39,17 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const [claiming, setClaiming] = useState(false);
   const [taskFilter, setTaskFilter] = useState<"today" | "all">("today");
 
+  const [joinTeamCode, setJoinTeamCode] = useState("");
+  const [joinTeamLoading, setJoinTeamLoading] = useState(false);
+
   const fetchDashboard = async () => {
     try {
-      const res = await fetch(`/api/children/${childUser.id}/dashboard`, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await res.json();
-      if (res.ok) setData(d);
+      const [res, teamRes] = await Promise.all([
+        fetch(`/api/children/${childUser.id}/dashboard`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/children/${childUser.id}/teams`, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+      if (res.ok) setData(await res.json());
+      if (teamRes.ok) setTeams(await teamRes.json());
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
@@ -90,6 +98,28 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     } catch (e) { console.error(e); }
   };
 
+  const handleJoinTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinTeamCode) return;
+    setJoinTeamLoading(true);
+    try {
+      const res = await fetch(`/api/children/${childUser.id}/join-team`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ inviteCode: joinTeamCode })
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        confetti({ particleCount: 50, spread: 60 });
+        setJoinTeamCode("");
+        fetchDashboard();
+      } else {
+        alert(resData.error || "Failed to join team.");
+      }
+    } catch (e) { console.error(e); }
+    finally { setJoinTeamLoading(false); }
+  };
+
   const claimReward = async (rewardId: string, cost: number) => {
     if (!data || data.child.coins < cost) { alert("Not enough coins! 🪙"); return; }
     try {
@@ -124,6 +154,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
     { id: "home" as const, icon: Home, label: "Home" },
     { id: "tasks" as const, icon: CheckSquare, label: "Tasks" },
     { id: "rewards" as const, icon: Gift, label: "Rewards" },
+    { id: "teams" as const, icon: Users, label: "Teams" },
     { id: "profile" as const, icon: User, label: "Profile" },
   ];
 
@@ -395,6 +426,87 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                  <h4 className="font-black text-lg text-amber-900 mb-0.5">Keep going, hero!</h4>
                  <p className="text-xs font-bold text-amber-700/80 leading-tight">Every task brings you closer to your next surprise reward.</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── TEAMS TAB ── */}
+        {activeTab === "teams" && (
+          <div className="animate-fade-in px-4 pt-8">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center shadow-md"><Users className="w-7 h-7 text-white" /></div>
+              <div>
+                <h1 className="text-3xl font-black text-slate-900 leading-tight">Teams</h1>
+                <p className="text-xs font-bold text-slate-500 mt-1">Join your friends and family!</p>
+              </div>
+            </div>
+
+            {/* Join Team Form */}
+            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-8">
+               <h3 className="font-black text-lg text-slate-800 mb-4 flex items-center gap-2"><Trophy className="w-5 h-5 text-amber-500"/> Join a Team</h3>
+               <form onSubmit={handleJoinTeam} className="flex gap-2">
+                 <input
+                   type="text"
+                   placeholder="Enter invite code"
+                   required
+                   value={joinTeamCode}
+                   onChange={e => setJoinTeamCode(e.target.value.toUpperCase())}
+                   className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 font-bold text-slate-700 outline-none focus:border-indigo-400 focus:bg-white transition-all uppercase placeholder:normal-case"
+                 />
+                 <button disabled={joinTeamLoading} type="submit" className="bg-indigo-600 text-white font-black px-6 rounded-2xl shadow-[0_4px_0_0_rgba(79,70,229,1)] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center">
+                   {joinTeamLoading ? "..." : "Join"}
+                 </button>
+               </form>
+            </div>
+
+            {/* Teams List */}
+            <div className="space-y-6">
+              {teams.length === 0 ? (
+                <div className="text-center py-10 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200">
+                   <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                   <p className="text-lg font-black text-slate-600">You haven't joined any teams yet.</p>
+                   <p className="text-sm font-bold text-slate-400 mt-1">Ask your parents for an invite code!</p>
+                </div>
+              ) : (
+                teams.map(team => (
+                  <div key={team.id} className="bg-white rounded-[32px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50">
+                    <div className="bg-indigo-50 p-5 flex items-center gap-4">
+                      <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-indigo-100">{team.icon}</div>
+                      <div>
+                        <h3 className="font-black text-xl text-slate-900 leading-tight">{team.name}</h3>
+                        <p className="text-xs font-bold text-indigo-600 mt-1 uppercase tracking-wider">{team.members.length} Members</p>
+                      </div>
+                    </div>
+                    
+                    {/* Leaderboard */}
+                    <div className="p-2">
+                       <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mx-4 mt-2 mb-3">Leaderboard</h4>
+                       <div className="space-y-1">
+                         {team.members.map((m: any, idx: number) => {
+                           const isMe = m.id === childUser.id;
+                           return (
+                             <div key={m.id} className={`flex items-center justify-between p-3 rounded-2xl ${isMe ? 'bg-amber-50 border border-amber-100' : 'bg-transparent'}`}>
+                               <div className="flex items-center gap-3">
+                                 <span className={`w-6 text-center font-black ${idx === 0 ? 'text-amber-500 text-lg' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-300'}`}>
+                                   {idx === 0 ? '👑' : `#${idx + 1}`}
+                                 </span>
+                                 <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center shadow-sm text-lg">
+                                   {getAvatarEmoji(m.avatar)}
+                                 </div>
+                                 <span className={`font-black ${isMe ? 'text-amber-900' : 'text-slate-700'}`}>{m.name} {isMe && '(You)'}</span>
+                               </div>
+                               <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+                                 <span className="font-black text-slate-700">{m.xp}</span>
+                                 <span className="text-[10px] font-bold text-slate-400">XP</span>
+                               </div>
+                             </div>
+                           );
+                         })}
+                       </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
