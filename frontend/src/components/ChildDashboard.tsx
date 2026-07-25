@@ -525,7 +525,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
             ) : (
               <div className="px-4 pt-8">
                 {/* Team Selector Dropdown */}
-                {teams.length > 1 && (
+                {teams.length > 0 && (
                   <div className="mb-8">
                     <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2 ml-2">Select Team</label>
                     <div className="relative">
