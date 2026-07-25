@@ -19,7 +19,11 @@ import {
   CheckCircle2,
   Camera,
   X,
-  Users
+  Users,
+  Flag,
+  Mail,
+  Key,
+  Rocket
 } from "lucide-react";
 
 interface ChildDashboardProps {
@@ -159,13 +163,27 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   ];
 
   // Dynamic Background
-  const bgColor = activeTab === "rewards" ? "bg-amber-50" : activeTab === "home" ? "bg-sky-100" : "bg-slate-50";
+  let bgColor = "bg-slate-50";
+  if (activeTab === "rewards") bgColor = "bg-amber-50";
+  else if (activeTab === "home") bgColor = "bg-sky-100";
+  else if (activeTab === "teams" && teams.length === 0) bgColor = "bg-gradient-to-b from-[#cbf1fb] via-[#e2ebf8] to-[#e4e1fb]";
+  else if (activeTab === "teams") bgColor = "bg-[#f0f6fa]";
 
   return (
-    <div className={`${bgColor} min-h-screen pb-28 select-none transition-colors duration-300`}>
+    <div className={`${bgColor} min-h-screen pb-28 select-none transition-colors duration-300 relative`}>
+
+      {/* Floating Background Circles for Empty Teams */}
+      {activeTab === "teams" && teams.length === 0 && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-10 left-4 w-12 h-12 bg-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
+          <div className="absolute top-32 right-10 w-16 h-16 bg-white rounded-full mix-blend-overlay filter blur-md opacity-60"></div>
+          <div className="absolute top-20 right-20 w-8 h-8 bg-cyan-300 rounded-full mix-blend-multiply filter blur-md opacity-50"></div>
+          <div className="absolute top-40 left-12 w-10 h-10 bg-purple-300 rounded-full mix-blend-multiply filter blur-lg opacity-60"></div>
+        </div>
+      )}
 
       {/* ── MAIN CONTENT ── */}
-      <main className="max-w-lg mx-auto">
+      <main className="max-w-lg mx-auto relative z-10">
 
         {/* ── HOME TAB ── */}
         {activeTab === "home" && (
@@ -432,82 +450,199 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
         {/* ── TEAMS TAB ── */}
         {activeTab === "teams" && (
-          <div className="animate-fade-in px-4 pt-8">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-full flex items-center justify-center shadow-md"><Users className="w-7 h-7 text-white" /></div>
-              <div>
-                <h1 className="text-3xl font-black text-slate-900 leading-tight">Teams</h1>
-                <p className="text-xs font-bold text-slate-500 mt-1">Join your friends and family!</p>
-              </div>
-            </div>
-
-            {/* Join Team Form */}
-            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 mb-8">
-               <h3 className="font-black text-lg text-slate-800 mb-4 flex items-center gap-2"><Trophy className="w-5 h-5 text-amber-500"/> Join a Team</h3>
-               <form onSubmit={handleJoinTeam} className="flex gap-2">
-                 <input
-                   type="text"
-                   placeholder="Enter invite code"
-                   required
-                   value={joinTeamCode}
-                   onChange={e => setJoinTeamCode(e.target.value.toUpperCase())}
-                   className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 py-3 font-bold text-slate-700 outline-none focus:border-indigo-400 focus:bg-white transition-all uppercase placeholder:normal-case"
-                 />
-                 <button disabled={joinTeamLoading} type="submit" className="bg-indigo-600 text-white font-black px-6 rounded-2xl shadow-[0_4px_0_0_rgba(79,70,229,1)] active:translate-y-1 active:shadow-none transition-all flex items-center justify-center">
-                   {joinTeamLoading ? "..." : "Join"}
-                 </button>
-               </form>
-            </div>
-
-            {/* Teams List */}
-            <div className="space-y-6">
-              {teams.length === 0 ? (
-                <div className="text-center py-10 bg-slate-50 rounded-[32px] border-2 border-dashed border-slate-200">
-                   <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                   <p className="text-lg font-black text-slate-600">You haven't joined any teams yet.</p>
-                   <p className="text-sm font-bold text-slate-400 mt-1">Ask your parents for an invite code!</p>
+          <div className="animate-fade-in w-full">
+            {teams.length === 0 ? (
+              <div className="px-5 pt-8">
+                <div className="flex items-start gap-4 mb-10">
+                  <div className="w-14 h-14 bg-gradient-to-br from-indigo-400 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 border-[3px] border-white shrink-0">
+                    <Flag className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl font-black text-slate-900 leading-tight tracking-tight">Join a Team</h1>
+                    <p className="text-sm font-bold text-slate-700/70 mt-1 leading-snug">Connect with friends and track peer progress</p>
+                  </div>
                 </div>
-              ) : (
-                teams.map(team => (
-                  <div key={team.id} className="bg-white rounded-[32px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50">
-                    <div className="bg-indigo-50 p-5 flex items-center gap-4">
-                      <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-indigo-100">{team.icon}</div>
-                      <div>
-                        <h3 className="font-black text-xl text-slate-900 leading-tight">{team.name}</h3>
-                        <p className="text-xs font-bold text-indigo-600 mt-1 uppercase tracking-wider">{team.members.length} Members</p>
-                      </div>
-                    </div>
+
+                {/* Illustration Card */}
+                <div className="bg-white/60 backdrop-blur-xl rounded-[40px] p-8 shadow-xl shadow-indigo-100/50 border border-white/80 flex justify-center items-center mb-8">
+                  <div className="relative w-48 h-48">
+                    <div className="absolute inset-0 bg-slate-100 rounded-full border border-slate-200"></div>
+                    <div className="absolute top-4 left-4 w-12 h-12 bg-yellow-300 rounded-full"></div>
+                    <div className="absolute top-8 right-6 w-14 h-14 bg-purple-300 rounded-full"></div>
+                    <div className="absolute bottom-6 left-10 w-8 h-8 bg-cyan-300 rounded-full"></div>
                     
-                    {/* Leaderboard */}
-                    <div className="p-2">
-                       <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mx-4 mt-2 mb-3">Leaderboard</h4>
-                       <div className="space-y-1">
-                         {team.members.map((m: any, idx: number) => {
-                           const isMe = m.id === childUser.id;
-                           return (
-                             <div key={m.id} className={`flex items-center justify-between p-3 rounded-2xl ${isMe ? 'bg-amber-50 border border-amber-100' : 'bg-transparent'}`}>
-                               <div className="flex items-center gap-3">
-                                 <span className={`w-6 text-center font-black ${idx === 0 ? 'text-amber-500 text-lg' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-amber-700' : 'text-slate-300'}`}>
-                                   {idx === 0 ? '👑' : `#${idx + 1}`}
-                                 </span>
-                                 <div className="w-10 h-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center shadow-sm text-lg">
-                                   {getAvatarEmoji(m.avatar)}
-                                 </div>
-                                 <span className={`font-black ${isMe ? 'text-amber-900' : 'text-slate-700'}`}>{m.name} {isMe && '(You)'}</span>
-                               </div>
-                               <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
-                                 <span className="font-black text-slate-700">{m.xp}</span>
-                                 <span className="text-[10px] font-bold text-slate-400">XP</span>
-                               </div>
-                             </div>
-                           );
-                         })}
-                       </div>
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-24 h-24 bg-purple-600 rounded-t-2xl z-10"></div>
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-32 h-10 bg-cyan-400 rounded-full z-10"></div>
+                    <div className="absolute bottom-16 left-6 w-6 h-16 bg-purple-400 rounded-full -rotate-12 z-0"></div>
+                    <div className="absolute bottom-16 right-6 w-6 h-16 bg-purple-400 rounded-full rotate-12 z-0"></div>
+                    <div className="absolute bottom-6 left-4 w-24 h-6 bg-yellow-400 rounded-full -rotate-45 z-20"></div>
+                    
+                    <div className="absolute bottom-8 -right-4 bg-white rounded-xl shadow-lg border border-slate-100 p-3 rotate-12 z-30">
+                      <Mail className="w-8 h-8 text-purple-500" strokeWidth={1.5} />
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+
+                {/* Form Card */}
+                <div className="bg-white rounded-[36px] p-6 shadow-xl shadow-indigo-100/40 border border-white mb-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-md shadow-blue-200 text-white shrink-0"><Key className="w-5 h-5"/></div>
+                    <h3 className="font-black text-lg text-slate-800">Enter Invite Code</h3>
+                  </div>
+                  <p className="text-sm font-bold text-slate-500 leading-snug mb-6">Type the code your parent or teacher shared with you</p>
+                  
+                  <form onSubmit={handleJoinTeam}>
+                    <div className="border-2 border-dashed border-indigo-200 bg-slate-50 rounded-2xl p-2 mb-6">
+                      <input
+                        type="text"
+                        placeholder="• • • •  • • • •"
+                        required
+                        value={joinTeamCode}
+                        onChange={e => setJoinTeamCode(e.target.value.toUpperCase())}
+                        className="w-full bg-transparent text-center text-2xl font-black text-slate-800 tracking-[0.5em] outline-none placeholder:text-slate-300 uppercase py-3"
+                      />
+                    </div>
+                    <button disabled={joinTeamLoading} type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg py-4 rounded-3xl shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
+                      <Rocket className="w-5 h-5" /> {joinTeamLoading ? "..." : "Join Team"}
+                    </button>
+                  </form>
+                </div>
+
+                {/* Footer Card */}
+                <div className="bg-white/80 backdrop-blur-md rounded-[32px] p-5 shadow-lg shadow-indigo-50/50 border border-white flex gap-4 items-center">
+                  <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 shrink-0 shadow-sm"><Users className="w-6 h-6"/></div>
+                  <div>
+                    <h4 className="font-black text-sm text-slate-800 leading-tight mb-1">Ask your parent or teacher for your Invite Code</h4>
+                    <p className="text-[10px] font-bold text-slate-500 leading-tight">They can help you join the right team and start earning XP together</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="px-4 pt-8">
+                {teams.map(team => (
+                  <div key={team.id} className="mb-10">
+                    <div className="bg-white rounded-[32px] p-5 flex items-center gap-4 shadow-sm border border-slate-100 mb-8 relative z-10">
+                      <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-indigo-500 rounded-2xl flex items-center justify-center text-3xl shadow-md border-[3px] border-indigo-50 shrink-0 text-white">
+                        {team.icon && team.icon !== "🏆" ? team.icon : <Users className="w-8 h-8" />}
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="font-black text-xl text-slate-900 leading-tight tracking-tight mb-0.5">{team.name}</h2>
+                        <p className="text-[10px] font-bold text-slate-500 leading-tight">Team leaderboard and peer progress</p>
+                      </div>
+                      <div className="bg-amber-100/80 text-amber-700 text-[10px] font-black px-3 py-1.5 rounded-full whitespace-nowrap self-start mt-1 shrink-0">
+                        {team.members.length} members
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 mb-6 px-2">
+                      <div className="w-10 h-10 bg-indigo-400 rounded-full flex items-center justify-center text-white shadow-md shadow-indigo-200 shrink-0">
+                        <Trophy className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-xl text-slate-900 leading-tight">Leaderboard</h3>
+                        <p className="text-[10px] font-bold text-slate-500">Ranked by total XP</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {team.members.map((m: any, idx: number) => {
+                        const isMe = m.id === childUser.id;
+                        const rank = idx + 1;
+                        
+                        let cardStyle = "";
+                        let rankElement = null;
+                        let xpPillStyle = "";
+                        let progressColor = "";
+
+                        if (rank === 1) {
+                          cardStyle = "bg-[#fff9e6] border-[#fce9b8]";
+                          rankElement = (
+                            <div className="relative">
+                               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider whitespace-nowrap shadow-sm z-10">CROWN</div>
+                               <div className="w-16 h-16 rounded-full bg-[#3eb1eb] border-[4px] border-white flex items-center justify-center text-3xl shadow-md relative z-0">
+                                  {getAvatarEmoji(m.avatar)}
+                               </div>
+                            </div>
+                          );
+                          xpPillStyle = "bg-white text-amber-600 border-[#fce9b8]";
+                          progressColor = "bg-amber-500";
+                        } else if (rank === 2) {
+                          cardStyle = "bg-[#eaf7ff] border-[#cce8ff]";
+                          rankElement = (
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-indigo-400 flex items-center justify-center text-white font-black text-sm shadow-sm">{rank}</div>
+                              <div className="w-12 h-12 rounded-full bg-[#00c5bc] border-[3px] border-white flex items-center justify-center text-xl shadow-sm">
+                                 {getAvatarEmoji(m.avatar)}
+                              </div>
+                            </div>
+                          );
+                          xpPillStyle = "bg-[#d9f1ff] text-[#007cc0] border-transparent";
+                          progressColor = "bg-[#00a3ff]";
+                        } else if (isMe) {
+                          cardStyle = "bg-[#fffae8] border-[#ffecaa]";
+                          rankElement = (
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-amber-400 flex items-center justify-center text-white font-black text-sm shadow-sm">{rank}</div>
+                              <div className="relative">
+                                <div className="absolute -top-2 -right-3 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider shadow-sm z-10">YOU</div>
+                                <div className="w-12 h-12 rounded-full bg-[#c284f9] border-[3px] border-white flex items-center justify-center text-xl shadow-sm relative z-0">
+                                   {getAvatarEmoji(m.avatar)}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                          xpPillStyle = "bg-[#ffe082] text-amber-800 border-transparent";
+                          progressColor = "bg-[#ffc107]";
+                        } else {
+                          cardStyle = "bg-white border-slate-100";
+                          rankElement = (
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-black text-sm">{rank}</div>
+                              <div className="w-12 h-12 rounded-full bg-[#70c970] border-[3px] border-white flex items-center justify-center text-xl shadow-sm">
+                                 {getAvatarEmoji(m.avatar)}
+                              </div>
+                            </div>
+                          );
+                          xpPillStyle = "bg-slate-100 text-slate-800 border-transparent";
+                          progressColor = rank % 2 === 0 ? "bg-[#ff7a00]" : "bg-[#00d084]";
+                        }
+
+                        const maxXP = Math.max(...team.members.map((mem:any) => mem.xp));
+                        const progressWidth = Math.max(10, Math.round((m.xp / (maxXP || 1)) * 100));
+
+                        return (
+                          <div key={m.id} className={`rounded-[32px] p-4 flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-2 ${cardStyle} relative overflow-hidden transition-transform active:scale-95`}>
+                            <div className="flex items-center justify-between mb-3 w-full">
+                              <div className="flex items-center gap-4">
+                                {rankElement}
+                                <div>
+                                  <h4 className="font-black text-lg text-slate-900 leading-tight tracking-tight">{m.name}</h4>
+                                  {rank === 1 ? (
+                                    <div className="bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider inline-block mt-1">1st Place</div>
+                                  ) : (
+                                    <p className="text-[10px] font-bold text-slate-500 mt-0.5 max-w-[120px] leading-tight line-clamp-1">{isMe ? "Your current ranking" : rank === 2 ? "Consistent streak builder" : rank === 3 ? "Fast task finisher" : "Steady progress"}</p>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              <div className={`px-4 py-2 rounded-full border shadow-sm flex items-center justify-center whitespace-nowrap shrink-0 ${xpPillStyle}`}>
+                                <span className="font-black text-sm">{m.xp.toLocaleString()} XP</span>
+                              </div>
+                            </div>
+                            
+                            <div className="w-full pl-[5.5rem] pr-2">
+                              <div className="w-full h-2 bg-black/5 rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full ${progressColor}`} style={{ width: `${progressWidth}%` }}></div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
