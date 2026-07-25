@@ -541,16 +541,18 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
       </main>
 
       {/* Bottom Nav */}
-      <nav className="fixed bottom-0 w-full max-w-2xl bg-white/90 backdrop-blur-xl border-t border-slate-100 pb-safe pt-2 px-6 flex justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-40">
-        {navItems.map((item) => (
-          <div key={item.id} onClick={() => { setActiveTab(item.id); if(item.id === "tasks") setManageSubTab("tasks"); }} className={`bottom-nav-item ${activeTab === item.id || (item.id === "tasks" && (activeTab === "rewards" || activeTab === "verify")) ? "active" : ""}`}>
-            <div className="relative">
-              {item.icon}
-              {item.alert && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 pb-safe pt-2 px-6 z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+        <div className="max-w-2xl mx-auto flex justify-between items-center px-4">
+          {navItems.map((item) => (
+            <div key={item.id} onClick={() => { setActiveTab(item.id); if(item.id === "tasks") setManageSubTab("tasks"); }} className={`bottom-nav-item ${activeTab === item.id || (item.id === "tasks" && (activeTab === "rewards" || activeTab === "verify")) ? "active" : ""}`}>
+              <div className="relative">
+                {item.icon}
+                {item.alert && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>}
+              </div>
+              <span className="text-[10px] font-bold mt-1">{item.label}</span>
             </div>
-            <span className="text-[10px] font-bold mt-1">{item.label}</span>
-          </div>
-        ))}
+          ))}
+        </div>
       </nav>
 
       {/* ── AI MODALS (Full Screen Scrollable) ── */}
