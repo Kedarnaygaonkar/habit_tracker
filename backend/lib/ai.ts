@@ -29,7 +29,7 @@ async function fetchAI(systemPrompt: string, userPrompt: string, jsonMode: boole
     });
     
     if (response.ok) {
-      const data = await response.json();
+      const data: any = await response.json();
       return data.choices[0].message.content;
     }
     

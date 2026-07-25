@@ -14,6 +14,13 @@ export async function createApp() {
   // Middleware
   app.use(cors());
   app.use(express.json({ limit: "10mb" }));
+  app.use(async (req, res, next) => {
+    // Refresh DB state before serving request to prevent stale serverless caches
+    if (process.env.VERCEL) {
+      await db.init();
+    }
+    next();
+  });
 
   // Helper: Create unique ID
   const generateId = () => Math.random().toString(36).substring(2, 11);
@@ -198,7 +205,7 @@ export async function createApp() {
   // PARENT API ENDPOINTS
   // ==========================================
 
-  app.get("/api/parent/children", authenticateParent, (req: any, res) => {
+  app.get("/api/parent/children", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const children = db.get().children.filter(c => c.parentId === parentId).map(({ passwordHash, ...child }) => child);
     res.json(children);
@@ -273,17 +280,17 @@ export async function createApp() {
     res.json({ message: "Child and all associated data successfully deleted." });
   });
 
-  app.get("/api/quests", authenticateParent, (req: any, res) => {
+  app.get("/api/quests", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     res.json(db.get().quests.filter(q => q.parentId === parentId));
   });
 
-  app.get("/api/parent/quests", authenticateParent, (req: any, res) => {
+  app.get("/api/parent/quests", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     res.json(db.get().quests.filter(q => q.parentId === parentId));
   });
 
-  app.get("/api/rewards", authenticateParent, (req: any, res) => {
+  app.get("/api/rewards", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     res.json(db.get().rewards.filter(r => r.parentId === parentId));
   });
@@ -319,7 +326,7 @@ export async function createApp() {
       verified: false
     };
     db.get().quests.push(newQuest);
-    db.save();
+    await db.save();
     res.status(201).json(newQuest);
   });
 
@@ -340,21 +347,21 @@ export async function createApp() {
     if (requireProof) quest.requireProof = requireProof;
     if (xp !== undefined) quest.xp = xp;
     if (coins !== undefined) quest.coins = coins;
-    db.save();
+    await db.save();
     res.json(quest);
   });
 
-  app.delete("/api/parent/quests/:id", authenticateParent, (req: any, res) => {
+  app.delete("/api/parent/quests/:id", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { id } = req.params;
     const questIndex = db.get().quests.findIndex(q => q.id === id && q.parentId === parentId);
     if (questIndex === -1) return res.status(404).json({ error: "Quest not found." });
     db.get().quests.splice(questIndex, 1);
-    db.save();
+    await db.save();
     res.json({ message: "Quest successfully deleted." });
   });
 
-  app.post("/api/parent/quests/:id/verify", authenticateParent, (req: any, res) => {
+  app.post("/api/parent/quests/:id/verify", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { id } = req.params;
     const quest = db.get().quests.find(q => q.id === id && q.parentId === parentId);
@@ -454,11 +461,11 @@ export async function createApp() {
       read: false
     });
 
-    db.save();
+    await db.save();
     res.json({ success: true, leveledUp, newLevel: child.level, streak: child.streak, newlyUnlocked, quest, child });
   });
 
-  app.post("/api/parent/quests/:id/reject", authenticateParent, (req: any, res) => {
+  app.post("/api/parent/quests/:id/reject", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { id } = req.params;
     const { comment } = req.body;
@@ -475,11 +482,11 @@ export async function createApp() {
       createdAt: new Date().toISOString(),
       read: false
     });
-    db.save();
+    await db.save();
     res.json({ success: true, quest });
   });
 
-  app.post("/api/parent/rewards", authenticateParent, (req: any, res) => {
+  app.post("/api/parent/rewards", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { childId, title, coinsCost } = req.body;
     if (!childId || !title || !coinsCost) return res.status(400).json({ error: "Child ID, reward title, and coin cost are required." });
@@ -492,11 +499,11 @@ export async function createApp() {
       status: "available"
     };
     db.get().rewards.push(newReward);
-    db.save();
+    await db.save();
     res.status(201).json(newReward);
   });
 
-  app.post("/api/parent/rewards/:id/approve", authenticateParent, (req: any, res) => {
+  app.post("/api/parent/rewards/:id/approve", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { id } = req.params;
     const reward = db.get().rewards.find(r => r.id === id && r.parentId === parentId);
@@ -511,11 +518,11 @@ export async function createApp() {
       createdAt: new Date().toISOString(),
       read: false
     });
-    db.save();
+    await db.save();
     res.json({ success: true, reward });
   });
 
-  app.post("/api/parent/rewards/:id/reject", authenticateParent, (req: any, res) => {
+  app.post("/api/parent/rewards/:id/reject", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { id } = req.params;
     const { comment } = req.body;
@@ -533,11 +540,11 @@ export async function createApp() {
       createdAt: new Date().toISOString(),
       read: false
     });
-    db.save();
+    await db.save();
     res.json({ success: true, reward, child });
   });
 
-  app.get("/api/parent/dashboard", authenticateParent, (req: any, res) => {
+  app.get("/api/parent/dashboard", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const children = db.get().children.filter(c => c.parentId === parentId);
     const quests = db.get().quests.filter(q => q.parentId === parentId);
@@ -591,7 +598,7 @@ export async function createApp() {
     });
   });
 
-  app.post("/api/children/:childId/quests/:questId/submit", authenticateChild, (req: any, res) => {
+  app.post("/api/children/:childId/quests/:questId/submit", authenticateChild, async (req: any, res) => {
     const { childId, questId } = req.params;
     const { proofData } = req.body;
     const quest = db.get().quests.find(q => q.id === questId && q.childId === childId);
@@ -607,11 +614,11 @@ export async function createApp() {
       createdAt: new Date().toISOString(),
       read: false
     });
-    db.save();
+    await db.save();
     res.json({ success: true, quest });
   });
 
-  app.post("/api/children/:id/feed-pet", authenticateChild, (req: any, res) => {
+  app.post("/api/children/:id/feed-pet", authenticateChild, async (req: any, res) => {
     const { id } = req.params;
     const child = db.get().children.find(c => c.id === id);
     if (!child) return res.status(404).json({ error: "Child not found." });
@@ -637,11 +644,11 @@ export async function createApp() {
         read: false
       });
     }
-    db.save();
+    await db.save();
     res.json({ success: true, petLeveledUp, coins: child.coins, pet: child.pet });
   });
 
-  app.post("/api/children/:childId/rewards/:rewardId/claim", authenticateChild, (req: any, res) => {
+  app.post("/api/children/:childId/rewards/:rewardId/claim", authenticateChild, async (req: any, res) => {
     const { childId, rewardId } = req.params;
     const child = db.get().children.find(c => c.id === childId);
     const reward = db.get().rewards.find(r => r.id === rewardId && r.childId === childId);
@@ -658,7 +665,7 @@ export async function createApp() {
       createdAt: new Date().toISOString(),
       read: false
     });
-    db.save();
+    await db.save();
     res.json({ success: true, child, reward });
   });
 
@@ -698,7 +705,7 @@ export async function createApp() {
       ...reportData
     };
     db.get().aiReports.push(newReport);
-    db.save();
+    await db.save();
     res.json(newReport);
   });
 
@@ -715,12 +722,12 @@ export async function createApp() {
     res.json(list);
   });
 
-  app.post("/api/notifications/:id/read", (req, res) => {
+  app.post("/api/notifications/:id/read", async (req, res) => {
     const { id } = req.params;
     const notification = db.get().notifications.find(n => n.id === id);
     if (notification) {
       notification.read = true;
-      db.save();
+      await db.save();
     }
     res.json({ success: true });
   });
@@ -729,7 +736,7 @@ export async function createApp() {
   // TEAMS & GROUPS API
   // ==========================================
 
-  app.post("/api/teams", authenticateParent, (req: any, res) => {
+  app.post("/api/teams", authenticateParent, async (req: any, res) => {
     const { name, icon } = req.body;
     if (!name) return res.status(400).json({ error: "Team name is required." });
     
@@ -746,11 +753,11 @@ export async function createApp() {
     };
     
     db.get().teams.push(newTeam);
-    db.save();
+    await db.save();
     res.json(newTeam);
   });
 
-  app.get("/api/parent/teams", authenticateParent, (req: any, res) => {
+  app.get("/api/parent/teams", authenticateParent, async (req: any, res) => {
     const teams = db.get().teams.filter(t => t.parentId === req.parent.id);
     // Populate members for parent view
     const populatedTeams = teams.map(t => {
@@ -763,7 +770,7 @@ export async function createApp() {
     res.json(populatedTeams);
   });
 
-  app.post("/api/children/:childId/join-team", authenticateChild, (req: any, res) => {
+  app.post("/api/children/:childId/join-team", authenticateChild, async (req: any, res) => {
     const { inviteCode } = req.body;
     const { childId } = req.params;
     
@@ -778,11 +785,11 @@ export async function createApp() {
     }
     
     team.members.push(childId);
-    db.save();
+    await db.save();
     res.json({ success: true, team });
   });
 
-  app.get("/api/children/:childId/teams", authenticateChild, (req: any, res) => {
+  app.get("/api/children/:childId/teams", authenticateChild, async (req: any, res) => {
     const { childId } = req.params;
     if (req.child.id !== childId) return res.status(403).json({ error: "Forbidden" });
     
