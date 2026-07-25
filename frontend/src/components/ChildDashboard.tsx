@@ -641,6 +641,31 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                     </div>
                   </div>
                 ))}
+
+                {/* Join Another Team Section */}
+                <div className="bg-white rounded-[36px] p-6 shadow-xl shadow-indigo-100/40 border border-slate-100 mb-6 mt-10">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-md shadow-blue-200 text-white shrink-0"><Key className="w-5 h-5"/></div>
+                    <h3 className="font-black text-lg text-slate-800">Join Another Team</h3>
+                  </div>
+                  <p className="text-sm font-bold text-slate-500 leading-snug mb-6">Type the invite code to join a new team.</p>
+                  
+                  <form onSubmit={handleJoinTeam}>
+                    <div className="border-2 border-dashed border-indigo-200 bg-slate-50 rounded-2xl p-2 mb-6">
+                      <input
+                        type="text"
+                        placeholder="• • • •  • • • •"
+                        required
+                        value={joinTeamCode}
+                        onChange={e => setJoinTeamCode(e.target.value.toUpperCase())}
+                        className="w-full bg-transparent text-center text-2xl font-black text-slate-800 tracking-[0.5em] outline-none placeholder:text-slate-300 uppercase py-3"
+                      />
+                    </div>
+                    <button disabled={joinTeamLoading} type="submit" className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-black text-lg py-4 rounded-3xl shadow-lg shadow-purple-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95">
+                      <Rocket className="w-5 h-5" /> {joinTeamLoading ? "..." : "Join Team"}
+                    </button>
+                  </form>
+                </div>
               </div>
             )}
           </div>
