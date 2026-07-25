@@ -35,6 +35,7 @@ interface ChildDashboardProps {
 export default function ChildDashboard({ token, childUser, onLogout }: ChildDashboardProps) {
   const [data, setData] = useState<any | null>(null);
   const [teams, setTeams] = useState<any[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"home" | "tasks" | "rewards" | "teams" | "profile">("home");
   const [loading, setLoading] = useState(true);
   const [selectedQuest, setSelectedQuest] = useState<any | null>(null);
@@ -53,7 +54,11 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
         fetch(`/api/children/${childUser.id}/teams`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       if (res.ok) setData(await res.json());
-      if (teamRes.ok) setTeams(await teamRes.json());
+      if (teamRes.ok) {
+        const fetchedTeams = await teamRes.json();
+        setTeams(fetchedTeams);
+        setSelectedTeamId(prev => (prev && fetchedTeams.some((t: any) => t.id === prev)) ? prev : (fetchedTeams[0]?.id || null));
+      }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
@@ -519,7 +524,26 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
               </div>
             ) : (
               <div className="px-4 pt-8">
-                {teams.map(team => (
+                {/* Team Selector Dropdown */}
+                {teams.length > 1 && (
+                  <div className="mb-8">
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2 ml-2">Select Team</label>
+                    <div className="relative">
+                      <select
+                        value={selectedTeamId || teams[0]?.id || ""}
+                        onChange={e => setSelectedTeamId(e.target.value)}
+                        className="w-full appearance-none bg-white border-2 border-slate-100 rounded-2xl pl-4 pr-10 py-3 font-black text-slate-800 outline-none focus:border-indigo-400 transition-all shadow-sm cursor-pointer"
+                      >
+                        {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </select>
+                      <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                         <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {teams.filter(t => t.id === (selectedTeamId || teams[0]?.id)).map(team => (
                   <div key={team.id} className="mb-10">
                     <div className="bg-white rounded-[32px] p-5 flex items-center gap-4 shadow-sm border border-slate-100 mb-8 relative z-10">
                       <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-indigo-500 rounded-2xl flex items-center justify-center text-3xl shadow-md border-[3px] border-indigo-50 shrink-0 text-white">
