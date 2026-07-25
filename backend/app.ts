@@ -770,6 +770,16 @@ export async function createApp() {
     res.json(populatedTeams);
   });
 
+  app.delete("/api/teams/:id", authenticateParent, async (req: any, res) => {
+    const parentId = req.parent.id;
+    const { id } = req.params;
+    const teamIndex = db.get().teams.findIndex(t => t.id === id && t.parentId === parentId);
+    if (teamIndex === -1) return res.status(404).json({ error: "Team not found." });
+    db.get().teams.splice(teamIndex, 1);
+    await db.save();
+    res.json({ message: "Team successfully deleted." });
+  });
+
   app.post("/api/children/:childId/join-team", authenticateChild, async (req: any, res) => {
     const { inviteCode } = req.body;
     const { childId } = req.params;

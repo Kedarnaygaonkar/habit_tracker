@@ -16,7 +16,7 @@ const emptyRewardForm = { open: false, childId: "", title: "", coinsCost: "30" }
 
 export default function ParentDashboard({ token, parent, onLogout }: ParentDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("heroes");
-  const [manageSubTab, setManageSubTab] = useState<"tasks" | "rewards">("tasks");
+  const [manageSubTab, setManageSubTab] = useState<"tasks" | "rewards" | "verify">("tasks");
   const [children, setChildren] = useState<any[]>([]);
   const [quests, setQuests] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
@@ -122,6 +122,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const deleteChild = async (id: string) => { if (!confirm("Delete this child?")) return; const r = await fetch(`/api/parent/children/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
   const deleteQuest = async (id: string) => { if (!confirm("Delete this task?")) return; const r = await fetch(`/api/parent/quests/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
   const deleteReward = async (id: string) => { if (!confirm("Delete this reward?")) return; const r = await fetch(`/api/parent/rewards/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
+  const deleteTeam = async (id: string) => { if (!confirm("Delete this team?")) return; const r = await fetch(`/api/teams/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Team deleted."); } };
   const verifyQuest = async (id: string) => { const r = await fetch(`/api/parent/quests/${id}/verify`, { method: "POST", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Verified! ✅"); } else { const d = await r.json(); setError(d.error); } };
   const rejectQuest = async (e: React.FormEvent) => { e.preventDefault(); const r = await fetch(`/api/parent/quests/${rejectModal.questId}/reject`, { method: "POST", headers, body: JSON.stringify({ comment: rejectModal.comment }) }); if (r.ok) { setRejectModal({ open: false, questId: "", comment: "" }); await fetchData(); showMsg("Sent back."); } };
   const approveReward = async (id: string) => { const r = await fetch(`/api/parent/rewards/${id}/approve`, { method: "POST", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Approved! 🎉"); } };
@@ -135,9 +136,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
 
   const navItems = [
     { id: "heroes" as Tab, icon: <Users size={22} />, label: "Heroes", alert: false },
-    { id: "tasks" as Tab, icon: <CheckCircle size={22} />, label: "Tasks", alert: false },
-    { id: "rewards" as Tab, icon: <Sparkles size={22} />, label: "Rewards", alert: requestedRewards.length > 0 },
-    { id: "verify" as Tab, icon: <CheckCircle size={22} />, label: "Verify", alert: pendingQuests.length > 0 },
+    { id: "tasks" as Tab, icon: <CheckCircle size={22} />, label: "Manage", alert: pendingQuests.length > 0 || requestedRewards.length > 0 },
     { id: "teams" as Tab, icon: <Users size={22} />, label: "Teams", alert: false },
     { id: "settings" as Tab, icon: <User size={22} />, label: "Settings", alert: false },
   ];
@@ -229,8 +228,8 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
           </div>
         )}
 
-        {/* ── MANAGE (Tasks & Rewards) ── */}
-        {(activeTab === "tasks" || activeTab === "rewards") && (
+        {/* ── MANAGE (Tasks, Rewards, Verify) ── */}
+        {(activeTab === "tasks" || activeTab === "rewards" || activeTab === "verify") && (
           <div className="animate-fade-in pb-10 relative min-h-[80vh]">
             <header className="px-6 pt-10 pb-4">
               <div className="flex items-center justify-between mb-4">
@@ -238,16 +237,25 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Portal</p>
                   <h1 className="text-3xl font-black text-slate-900 ">Manage</h1>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center relative">
                   <Bell className="w-5 h-5 text-slate-600 " />
+                  {(pendingQuests.length > 0 || requestedRewards.length > 0) && (
+                    <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white rounded-full"></span>
+                  )}
                 </div>
               </div>
               <div className="segmented-control">
                 <div className={`segmented-btn ${manageSubTab === "tasks" ? "active" : ""}`} onClick={() => { setManageSubTab("tasks"); setActiveTab("tasks"); }}>
                   <CheckCircle className="w-4 h-4 inline-block mr-1 -mt-0.5" /> Tasks
                 </div>
-                <div className={`segmented-btn ${manageSubTab === "rewards" ? "active" : ""}`} onClick={() => { setManageSubTab("rewards"); setActiveTab("rewards"); }}>
+                <div className={`segmented-btn ${manageSubTab === "rewards" ? "active" : ""}`} onClick={() => { setManageSubTab("rewards"); setActiveTab("tasks"); }}>
                   <Sparkles className="w-4 h-4 inline-block mr-1 -mt-0.5" /> Rewards
+                </div>
+                <div className={`segmented-btn ${manageSubTab === "verify" ? "active relative" : "relative"}`} onClick={() => { setManageSubTab("verify"); setActiveTab("tasks"); }}>
+                  <Shield className="w-4 h-4 inline-block mr-1 -mt-0.5" /> Verify
+                  {pendingQuests.length > 0 && (
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                  )}
                 </div>
               </div>
             </header>
@@ -325,65 +333,53 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {/* ── VERIFY ── */}
-        {activeTab === "verify" && (
-          <div className="animate-fade-in pb-10">
-            <header className="flex items-center justify-between px-6 pt-10 pb-6 border-b border-slate-100 ">
-              <div className="flex gap-3">
-                 <Shield className="w-5 h-5 text-slate-600 mt-1" />
-                 <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parent Portal</p>
-                    <h1 className="text-2xl font-black text-slate-900 ">Pending Verifications</h1>
+            {manageSubTab === "verify" && (
+              <div className="px-6 pb-24">
+                 <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-black text-slate-500 uppercase tracking-wider">Pending Verifications</h3>
                  </div>
+                 
+                 {pendingQuests.length === 0 ? (
+                    <div className="text-center py-10">
+                       <CheckCircle className="w-16 h-16 text-green-200 mx-auto mb-4" />
+                       <p className="text-lg font-black text-slate-700 ">All caught up!</p>
+                    </div>
+                 ) : (
+                    <div className="space-y-6">
+                      {pendingQuests.map(q => (
+                         <div key={q.id} className="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50 ">
+                           {/* Header */}
+                           <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center text-xl">{getEmoji(childAvatar(q.childId))}</div>
+                              <div>
+                                 <p className="font-black text-sm text-slate-900 leading-tight">{childName(q.childId)}</p>
+                                 <p className="text-[10px] text-slate-400 font-semibold">🕒 Just now</p>
+                              </div>
+                           </div>
+                           {/* Body */}
+                           <h4 className="font-black text-base text-slate-900 mb-1">{q.title}</h4>
+                           <p className="text-xs text-slate-500 font-medium mb-3">Completed quest marked as done.</p>
+                           {q.proofImage && (
+                              <div className="mb-3">
+                                 <img src={q.proofImage} alt="proof" className="w-full h-32 object-cover rounded-xl bg-slate-100 " />
+                                 <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><ImageIcon className="w-3 h-3" /> 1 photo proof attached</p>
+                              </div>
+                           )}
+                           {/* Actions */}
+                           <div className="flex gap-3 mt-4">
+                              <button onClick={() => verifyQuest(q.id)} className="flex-1 bg-[#00b85c] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-600 active:scale-95 transition-all">
+                                 <Check className="w-4 h-4" strokeWidth={3} /> Approve
+                              </button>
+                              <button onClick={() => setRejectModal({ open: true, questId: q.id, comment: "" })} className="flex-1 bg-slate-50 text-red-500 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-100 hover:bg-red-50 active:scale-95 transition-all">
+                                 <X className="w-4 h-4" strokeWidth={3} /> Reject
+                              </button>
+                           </div>
+                         </div>
+                      ))}
+                    </div>
+                 )}
               </div>
-            </header>
-
-            <div className="px-6 py-4">
-               <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-4 shadow-sm">Pending</div>
-               
-               {pendingQuests.length === 0 ? (
-                  <div className="text-center py-10">
-                     <CheckCircle className="w-16 h-16 text-green-200 mx-auto mb-4" />
-                     <p className="text-lg font-black text-slate-700 ">All caught up!</p>
-                  </div>
-               ) : (
-                  <div className="space-y-6">
-                    {pendingQuests.map(q => (
-                       <div key={q.id} className="bg-white rounded-[1.5rem] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-slate-50 ">
-                         {/* Header */}
-                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white shadow-sm flex items-center justify-center text-xl">{getEmoji(childAvatar(q.childId))}</div>
-                            <div>
-                               <p className="font-black text-sm text-slate-900 leading-tight">{childName(q.childId)}</p>
-                               <p className="text-[10px] text-slate-400 font-semibold">🕒 Just now</p>
-                            </div>
-                         </div>
-                         {/* Body */}
-                         <h4 className="font-black text-base text-slate-900 mb-1">{q.title}</h4>
-                         <p className="text-xs text-slate-500 font-medium mb-3">Completed quest marked as done.</p>
-                         {q.proofImage && (
-                            <div className="mb-3">
-                               <img src={q.proofImage} alt="proof" className="w-full h-32 object-cover rounded-xl bg-slate-100 " />
-                               <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><ImageIcon className="w-3 h-3" /> 1 photo proof attached</p>
-                            </div>
-                         )}
-                         {/* Actions */}
-                         <div className="flex gap-3 mt-4">
-                            <button onClick={() => verifyQuest(q.id)} className="flex-1 bg-[#00b85c] text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-600 active:scale-95 transition-all">
-                               <Check className="w-4 h-4" strokeWidth={3} /> Approve
-                            </button>
-                            <button onClick={() => setRejectModal({ open: true, questId: q.id, comment: "" })} className="flex-1 bg-slate-50 text-red-500 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-100 hover:bg-red-50 :bg-slate-600 active:scale-95 transition-all">
-                               <X className="w-4 h-4" strokeWidth={3} /> Reject
-                            </button>
-                         </div>
-                       </div>
-                    ))}
-                  </div>
-               )}
-            </div>
+            )}
           </div>
         )}
 
@@ -421,8 +417,13 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                           <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Invite Code</p>
                         </div>
                       </div>
-                      <div className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-black tracking-widest shadow-sm">
-                        {team.inviteCode}
+                      <div className="flex items-center gap-2">
+                        <div className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-black tracking-widest shadow-sm">
+                          {team.inviteCode}
+                        </div>
+                        <button onClick={() => deleteTeam(team.id)} className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors">
+                           <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
 
@@ -540,11 +541,14 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
       </main>
 
       {/* Bottom Nav */}
-      <nav className="bottom-nav-white">
-        {navItems.map(item => (
-          <div key={item.id} onClick={() => { setActiveTab(item.id); if(item.id === "tasks" || item.id === "rewards") setManageSubTab(item.id as "tasks"|"rewards"); }} className={`bottom-nav-item ${activeTab === item.id || (item.id === "tasks" && activeTab === "rewards") || (item.id === "rewards" && activeTab === "tasks") ? "active" : ""}`}>
-             {item.icon}
-             <span>{item.label}</span>
+      <nav className="fixed bottom-0 w-full max-w-2xl bg-white/90 backdrop-blur-xl border-t border-slate-100 pb-safe pt-2 px-6 flex justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-40">
+        {navItems.map((item) => (
+          <div key={item.id} onClick={() => { setActiveTab(item.id); if(item.id === "tasks") setManageSubTab("tasks"); }} className={`bottom-nav-item ${activeTab === item.id || (item.id === "tasks" && (activeTab === "rewards" || activeTab === "verify")) ? "active" : ""}`}>
+            <div className="relative">
+              {item.icon}
+              {item.alert && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>}
+            </div>
+            <span className="text-[10px] font-bold mt-1">{item.label}</span>
           </div>
         ))}
       </nav>
