@@ -109,6 +109,16 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     } catch (err: any) { setError(err.message); } finally { setSaving(false); }
   };
 
+  const handleTeamSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); setSaving(true); setError("");
+    try {
+      const res = await fetch("/api/teams", { method: "POST", headers, body: JSON.stringify({ name: teamForm.name, icon: teamForm.icon }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setTeamForm({ open: false, name: "", icon: "🏆" }); await fetchData(); showMsg("Team created! 🎉");
+    } catch (err: any) { setError(err.message); } finally { setSaving(false); }
+  };
+
   const deleteChild = async (id: string) => { if (!confirm("Delete this child?")) return; const r = await fetch(`/api/parent/children/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
   const deleteQuest = async (id: string) => { if (!confirm("Delete this task?")) return; const r = await fetch(`/api/parent/quests/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
   const deleteReward = async (id: string) => { if (!confirm("Delete this reward?")) return; const r = await fetch(`/api/parent/rewards/${id}`, { method: "DELETE", headers: authHeaders }); if (r.ok) { await fetchData(); showMsg("Deleted."); } };
