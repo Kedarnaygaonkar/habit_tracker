@@ -71,6 +71,10 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
           user: cleanUser,
           pass: cleanPass,
         },
+        connectionTimeout: 15000,
+        tls: {
+          rejectUnauthorized: false, // Prevents certificate verification failures in serverless containers
+        },
       });
     } else {
       // Fallback to auto-generated test account (Ethereal Email)
