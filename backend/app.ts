@@ -144,7 +144,7 @@ export async function createApp() {
   // AUTH API ENDPOINTS
   // ==========================================
 
-  // Register Parent
+  // Register Parent (Compulsory OTP / 2FA)
   app.post("/api/auth/register-parent", async (req, res) => {
     const { email, password, familyName } = req.body;
     if (!email || !password || !familyName) {
@@ -156,16 +156,23 @@ export async function createApp() {
     }
     const salt = bcrypt.genSaltSync(10);
     const passwordHash = bcrypt.hashSync(password, salt);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const newParent: Parent = {
       id: `p-${generateId()}`,
       email: email.toLowerCase(),
       passwordHash,
-      familyName
+      familyName,
+      otp,
+      otpExpiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes
     };
     db.get().parents.push(newParent);
     await db.save();
-    const token = jwt.sign({ id: newParent.id, role: "parent" }, JWT_SECRET, { expiresIn: "30d" });
-    res.status(201).json({ token, parent: { id: newParent.id, email: newParent.email, familyName: newParent.familyName } });
+    console.log(`[OTP] Compulsory 2FA OTP ${otp} for registration of ${email}`);
+    const isDemoParent = newParent.email.toLowerCase() === "parent@habitquest.com";
+    if (!isDemoParent) {
+      await sendOtpEmail(newParent.email, otp);
+    }
+    res.status(201).json({ requireOtp: true, email: newParent.email, message: "Verification code sent!", devOtp: isDemoParent ? otp : undefined });
   });
 
   // Login Parent (Compulsory OTP / 2FA)

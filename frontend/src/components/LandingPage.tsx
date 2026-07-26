@@ -157,7 +157,7 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
               </button>
             </div>
 
-            {!otpSent || isRegister ? (
+            {!otpSent ? (
               <form onSubmit={handleParentSubmit} className="space-y-4 animate-fade-in">
                 {isRegister && (
                   <div>
@@ -177,7 +177,7 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
                 </div>
 
                 <button type="submit" disabled={loading} className="btn btn-purple w-full py-4 mt-2">
-                  {loading ? "Loading..." : isRegister ? "Create Account" : "Sign In & Get Code 🔐"}
+                  {loading ? "Loading..." : isRegister ? "Create Account & Get Code 🔐" : "Sign In & Get Code 🔐"}
                 </button>
               </form>
             ) : (
@@ -196,7 +196,7 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Enter 6-Digit Code</label>
-                    <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] font-bold text-purple-600 hover:underline">Back to Login</button>
+                    <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] font-bold text-purple-600 hover:underline">Back to {isRegister ? "Registration" : "Login"}</button>
                   </div>
                   <input
                     type="text"
@@ -210,7 +210,7 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
                 </div>
 
                 <button type="submit" disabled={loading || otpCode.trim().length !== 6} className="btn btn-purple w-full py-4 mt-2">
-                  {loading ? "Verifying..." : "Verify & Sign In 🚀"}
+                  {loading ? "Verifying..." : `Verify & ${isRegister ? "Create Account" : "Sign In"} 🚀`}
                 </button>
 
                 <div className="text-center pt-1">
