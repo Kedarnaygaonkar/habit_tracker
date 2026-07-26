@@ -120,6 +120,10 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
           accessToken: process.env.EMAILJS_PRIVATE_KEY.trim(),
           template_params: {
             to_email: to,
+            email: to,
+            to_name: "HabitQuest Parent",
+            from_name: "HabitQuest Security",
+            otp: otp,
             otp_code: otp,
             message: `Your HabitQuest 2-Step Verification code is: ${otp}`,
             html_content: htmlContent,
