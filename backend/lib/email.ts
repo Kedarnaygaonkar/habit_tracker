@@ -118,6 +118,7 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
           template_id: process.env.EMAILJS_TEMPLATE_ID.trim(),
           user_id: process.env.EMAILJS_PUBLIC_KEY.trim(),
           accessToken: process.env.EMAILJS_PRIVATE_KEY.trim(),
+          access_token: process.env.EMAILJS_PRIVATE_KEY.trim(),
           template_params: {
             to_email: to,
             email: to,
@@ -135,8 +136,8 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
         }),
       });
       if (!res.ok) {
-        const errText = await res.text().catch(() => "Unknown EmailJS error");
-        console.error(`[EMAILJS EMAIL ERROR] Failed to send to ${to}: ${errText}`);
+        const errText = await res.text().catch(() => "");
+        console.error(`[EMAILJS EMAIL ERROR] Failed to send to ${to} (Status: ${res.status} ${res.statusText}): ${errText}`);
         console.log(`[FALLBACK LOG OTP] Code for ${to} is: ${otp}`);
         return;
       } else {
