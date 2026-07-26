@@ -67,6 +67,8 @@ HabitQuest utilizes MongoDB Atlas. To ensure high speed and reliability in serve
 ```mermaid
 erDiagram
     PARENT ||--o{ CHILD : "creates & manages"
+    PARENT ||--o{ QUEST : "assigns"
+    PARENT ||--o{ REWARD : "creates"
     CHILD ||--o{ QUEST : "assigned to"
     CHILD ||--o{ REWARD : "redeems"
     CHILD }o--o{ TEAM : "joins"
@@ -94,6 +96,7 @@ erDiagram
     
     QUEST {
         string id PK
+        string parentId FK
         string childId FK
         string title
         string difficulty
@@ -106,6 +109,7 @@ erDiagram
     
     REWARD {
         string id PK
+        string parentId FK
         string childId FK
         string title
         number coinsCost
@@ -130,12 +134,14 @@ erDiagram
    - **Authentication**: Children log in using a simple, easy-to-remember `loginId` (e.g., `hero_alex`) and a PIN/password.
    - **Gamification Stats**: Tracks cumulative `xp`, spendable `coins`, and daily completion `streak`.
 3. **`quests`**: Represents tasks assigned to a child hero.
+   - **Relationships**: Connected directly to both the assigning Game Master (`parentId`) and the target Hero (`childId`).
    - **Attributes**: Includes `difficulty` (`easy` = 10 XP/10 Coins, `medium` = 20 XP/20 Coins, `hard` = 40 XP/40 Coins), `repetition` (`daily`, `weekly`, or `once`), and `requireProof` (`none`, `text`, or `photo`).
    - **Lifecycle Statuses**:
      - `pending`: Waiting for the child to complete.
      - `completed`: Submitted by child (with proof if required), waiting for parent verification.
      - `verified`: Approved by parent; XP and coins have been awarded.
 4. **`rewards`**: Represents custom store items created by parents (e.g., "Sleepover", "Ice Cream Trip", "30 mins Gaming").
+   - **Relationships**: Connected directly to both the creating Game Master (`parentId`) and the redeeming Hero (`childId`).
    - **Lifecycle Statuses**: `available` (can be purchased), `requested` (child spent coins, waiting for approval), `approved` (parent granted reward).
 5. **`teams`**: Represents collaborative hero groups.
    - **Invite Code**: A unique 6-character alphanumeric identifier (e.g., `ITTQ19`) generated upon team creation.
