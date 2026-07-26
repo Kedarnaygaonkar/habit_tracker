@@ -181,6 +181,44 @@ export async function createApp() {
     res.json({ token, parent: { id: parent.id, email: parent.email, familyName: parent.familyName } });
   });
 
+  // Send OTP for Parent Login
+  app.post("/api/auth/send-otp", async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
+    const parent = db.get().parents.find(p => p.email.toLowerCase() === email.toLowerCase());
+    if (!parent) {
+      return res.status(400).json({ error: "No parent account found with this email." });
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    parent.otp = otp;
+    parent.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await db.save();
+    console.log(`[OTP] Generated OTP ${otp} for ${email}`);
+    res.json({ success: true, message: "Verification code sent!", devOtp: otp });
+  });
+
+  // Verify OTP for Parent Login
+  app.post("/api/auth/verify-otp", async (req, res) => {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ error: "Email and OTP code are required." });
+    }
+    const parent = db.get().parents.find(p => p.email.toLowerCase() === email.toLowerCase());
+    if (!parent || !parent.otp || parent.otp !== otp.trim()) {
+      return res.status(400).json({ error: "Invalid verification code." });
+    }
+    if (parent.otpExpiresAt && Date.now() > parent.otpExpiresAt) {
+      return res.status(400).json({ error: "Verification code has expired." });
+    }
+    parent.otp = undefined;
+    parent.otpExpiresAt = undefined;
+    await db.save();
+    const token = jwt.sign({ id: parent.id, role: "parent" }, JWT_SECRET, { expiresIn: "30d" });
+    res.json({ token, parent: { id: parent.id, email: parent.email, familyName: parent.familyName } });
+  });
+
   // Child Login
   app.post("/api/auth/login-child", async (req, res) => {
     const { loginId, password, name, passcode } = req.body;

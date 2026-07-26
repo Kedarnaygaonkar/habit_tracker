@@ -16,6 +16,11 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
   const [childLoginId, setChildLoginId] = useState("");
   const [childPassword, setChildPassword] = useState("");
 
+  const [loginMethod, setLoginMethod] = useState<"password" | "otp">("password");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [devOtp, setDevOtp] = useState("");
+
   const handleParentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -26,6 +31,31 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
       const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
+      onLoginSuccess(data.token, { id: data.parent.id, email: data.parent.email, name: data.parent.familyName, role: "parent" });
+    } catch (err: any) { setError(err.message); } finally { setLoading(false); }
+  };
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/send-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send verification code");
+      setOtpSent(true);
+      setDevOtp(data.devOtp || "");
+    } catch (err: any) { setError(err.message); } finally { setLoading(false); }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/verify-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, otp: otpCode }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invalid verification code");
       onLoginSuccess(data.token, { id: data.parent.id, email: data.parent.email, name: data.parent.familyName, role: "parent" });
     } catch (err: any) { setError(err.message); } finally { setLoading(false); }
   };
@@ -115,35 +145,107 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
           </form>
         ) : (
           /* Parent Login */
-          <form onSubmit={handleParentSubmit} className="space-y-4 animate-fade-in">
+          <div className="space-y-4 animate-fade-in">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-lg font-black text-slate-800">🛡️ Parent Login</h3>
-              <button type="button" onClick={() => { setIsRegister(!isRegister); setError(""); }} className="text-xs font-black px-3 py-1.5 rounded-lg text-purple-600 bg-purple-50 border border-purple-200">
+              <button type="button" onClick={() => { setIsRegister(!isRegister); setError(""); setOtpSent(false); }} className="text-xs font-black px-3 py-1.5 rounded-lg text-purple-600 bg-purple-50 border border-purple-200">
                 {isRegister ? "Sign In" : "Register"}
               </button>
             </div>
 
-            {isRegister && (
-              <div>
-                <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Family Name</label>
-                <input type="text" required placeholder="e.g. Smith" value={familyName} onChange={(e) => setFamilyName(e.target.value)} className="input" />
+            {!isRegister && (
+              <div className="flex rounded-xl bg-purple-50 p-1 mb-4 border border-purple-100">
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod("password"); setError(""); setOtpSent(false); }}
+                  className={`flex-1 py-2 text-xs font-black rounded-lg transition-all ${
+                    loginMethod === "password" ? "bg-white text-purple-700 shadow-sm" : "text-purple-400"
+                  }`}
+                >
+                  🔑 Password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setLoginMethod("otp"); setError(""); setOtpSent(false); }}
+                  className={`flex-1 py-2 text-xs font-black rounded-lg transition-all ${
+                    loginMethod === "otp" ? "bg-white text-purple-700 shadow-sm" : "text-purple-400"
+                  }`}
+                >
+                  📲 OTP Code
+                </button>
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Email</label>
-              <input type="email" required placeholder="parent@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="input" />
-            </div>
+            {isRegister || loginMethod === "password" ? (
+              <form onSubmit={handleParentSubmit} className="space-y-4 animate-fade-in">
+                {isRegister && (
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Family Name</label>
+                    <input type="text" required placeholder="e.g. Smith" value={familyName} onChange={(e) => setFamilyName(e.target.value)} className="input" />
+                  </div>
+                )}
 
-            <div>
-              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Password</label>
-              <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="input" />
-            </div>
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Email</label>
+                  <input type="email" required placeholder="parent@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="input" />
+                </div>
 
-            <button type="submit" disabled={loading} className="btn btn-purple w-full py-4 mt-2">
-              {loading ? "Loading..." : isRegister ? "Create Account" : "Sign In"}
-            </button>
-          </form>
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Password</label>
+                  <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="input" />
+                </div>
+
+                <button type="submit" disabled={loading} className="btn btn-purple w-full py-4 mt-2">
+                  {loading ? "Loading..." : isRegister ? "Create Account" : "Sign In"}
+                </button>
+              </form>
+            ) : !otpSent ? (
+              <form onSubmit={handleSendOtp} className="space-y-4 animate-fade-in">
+                <div className="text-center bg-purple-50/50 p-3 rounded-xl border border-purple-100 mb-2">
+                  <p className="text-xs font-bold text-slate-500">Receive a 6-digit verification code to sign in without your password.</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Email Address</label>
+                  <input type="email" required placeholder="parent@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="input" />
+                </div>
+                <button type="submit" disabled={loading} className="btn btn-purple w-full py-4 mt-2">
+                  {loading ? "Sending Code..." : "Send Verification Code 📨"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOtp} className="space-y-4 animate-fade-in">
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center mb-2">
+                  <p className="text-xs font-bold text-purple-700 mb-1">Code sent to {email}</p>
+                  {devOtp && (
+                    <div className="mt-1.5 bg-white border border-purple-200 rounded-lg py-1 px-2.5 inline-block shadow-sm">
+                      <span className="text-[10px] uppercase font-black text-slate-400 mr-1.5">Demo Code:</span>
+                      <span className="font-mono text-base font-black text-purple-600 tracking-wider">{devOtp}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Enter 6-Digit Code</label>
+                    <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] font-bold text-purple-600 hover:underline">Change Email</button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="• • • • • •"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    className="input text-center text-2xl font-mono tracking-widest font-black uppercase py-3"
+                  />
+                </div>
+
+                <button type="submit" disabled={loading || otpCode.trim().length !== 6} className="btn btn-purple w-full py-4 mt-2">
+                  {loading ? "Verifying..." : "Verify & Sign In 🚀"}
+                </button>
+              </form>
+            )}
+          </div>
         )}
       </div>
 
@@ -151,7 +253,7 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
       <div className="card w-full max-w-sm p-4 mt-4 animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <p className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3 text-center">Quick Demo</p>
         <div className="flex gap-2">
-          <button onClick={() => { setRole("parent"); setIsRegister(false); setEmail("parent@habitquest.com"); setPassword("password123"); setError(""); }} className="flex-1 py-2.5 rounded-xl text-xs font-black bg-purple-50 text-purple-600 border-2 border-purple-200 active:translate-y-0.5 transition-transform">
+          <button onClick={() => { setRole("parent"); setIsRegister(false); setLoginMethod("password"); setOtpSent(false); setEmail("parent@habitquest.com"); setPassword("password123"); setError(""); }} className="flex-1 py-2.5 rounded-xl text-xs font-black bg-purple-50 text-purple-600 border-2 border-purple-200 active:translate-y-0.5 transition-transform">
             🛡️ Parent
           </button>
           <button onClick={() => { setRole("child"); setChildLoginId("leo"); setChildPassword("1234"); setError(""); }} className="flex-1 py-2.5 rounded-xl text-xs font-black bg-blue-50 text-blue-600 border-2 border-blue-200 active:translate-y-0.5 transition-transform">

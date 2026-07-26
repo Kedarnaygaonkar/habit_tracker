@@ -9,6 +9,8 @@ export interface Parent {
   email: string;
   passwordHash: string;
   familyName: string;
+  otp?: string;
+  otpExpiresAt?: number;
 }
 
 export interface VirtualPet {
