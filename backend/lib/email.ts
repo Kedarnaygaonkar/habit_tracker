@@ -107,6 +107,37 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
       }
     }
 
+    // 4. Use EmailJS REST API if configured (Bypasses all DMARC/domain rules because it uses Gmail OAuth!)
+    if (process.env.EMAILJS_SERVICE_ID && process.env.EMAILJS_TEMPLATE_ID && process.env.EMAILJS_PUBLIC_KEY && process.env.EMAILJS_PRIVATE_KEY) {
+      console.log(`[EMAILJS] Attempting to send OTP email to ${to} via EmailJS API...`);
+      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id: process.env.EMAILJS_SERVICE_ID.trim(),
+          template_id: process.env.EMAILJS_TEMPLATE_ID.trim(),
+          user_id: process.env.EMAILJS_PUBLIC_KEY.trim(),
+          accessToken: process.env.EMAILJS_PRIVATE_KEY.trim(),
+          template_params: {
+            to_email: to,
+            otp_code: otp,
+            message: `Your HabitQuest 2-Step Verification code is: ${otp}`,
+            html_content: htmlContent,
+          },
+        }),
+      });
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "Unknown EmailJS error");
+        console.error(`[EMAILJS EMAIL ERROR] Failed to send to ${to}: ${errText}`);
+        console.log(`[FALLBACK LOG OTP] Code for ${to} is: ${otp}`);
+        return;
+      } else {
+        console.log(`[EMAILJS EMAIL SENT] Verification code sent to ${to}`);
+        console.log(`[EMAIL OTP]: ${otp}`);
+        return;
+      }
+    }
+
     let transporter: nodemailer.Transporter;
 
     // 2. Use SMTP configuration if provided in environment variables
