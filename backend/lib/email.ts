@@ -118,7 +118,6 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
           template_id: process.env.EMAILJS_TEMPLATE_ID.trim(),
           user_id: process.env.EMAILJS_PUBLIC_KEY.trim(),
           accessToken: process.env.EMAILJS_PRIVATE_KEY.trim(),
-          access_token: process.env.EMAILJS_PRIVATE_KEY.trim(),
           template_params: {
             to_email: to,
             email: to,
