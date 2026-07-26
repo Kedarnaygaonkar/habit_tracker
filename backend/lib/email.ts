@@ -60,12 +60,16 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
         },
       });
     } else if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
-      // Direct Gmail support if GMAIL_USER and GMAIL_PASS / app password provided
+      // Direct Gmail support with explicit SSL port 465 (works reliably on serverless/Vercel)
+      const cleanUser = process.env.GMAIL_USER.trim();
+      const cleanPass = process.env.GMAIL_PASS.trim().replace(/\s+/g, ""); // Strip spaces from app password
       transporter = nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
         auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASS,
+          user: cleanUser,
+          pass: cleanPass,
         },
       });
     } else {
@@ -82,8 +86,15 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
       });
     }
 
+    // Gmail requires the 'from' address to match the authenticated user address
+    const fromAddress = process.env.GMAIL_USER
+      ? `"HabitQuest Security" <${process.env.GMAIL_USER.trim()}>`
+      : process.env.SMTP_USER
+      ? `"HabitQuest Security" <${process.env.SMTP_USER.trim()}>`
+      : '"HabitQuest Security" <no-reply@habitquest.com>';
+
     const mailOptions = {
-      from: '"HabitQuest Security" <no-reply@habitquest.com>',
+      from: fromAddress,
       to,
       subject: "Your HabitQuest Verification Code",
       text: `Welcome back to HabitQuest!\n\nYour 2-Step Verification code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not request this code, please ignore this email.`,
