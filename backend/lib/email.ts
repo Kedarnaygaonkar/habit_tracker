@@ -49,6 +49,63 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
       }
     }
 
+    // 2. Use Brevo (formerly Sendinblue) HTTP API if configured (Allows sending to ANY recipient without domain verification)
+    if (process.env.BREVO_API_KEY) {
+      console.log(`[BREVO] Attempting to send OTP email to ${to} via Brevo HTTP API...`);
+      const senderEmail = process.env.BREVO_FROM || process.env.GMAIL_USER || "no-reply@habitquest.com";
+      const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": process.env.BREVO_API_KEY.trim(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: { name: "HabitQuest Security", email: senderEmail },
+          to: [{ email: to }],
+          subject: "Your HabitQuest Verification Code",
+          htmlContent: htmlContent,
+        }),
+      });
+      const data: any = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        console.error(`[BREVO EMAIL ERROR] Failed to send to ${to}: ${data?.message || JSON.stringify(data)}`);
+        console.log(`[FALLBACK LOG OTP] Code for ${to} is: ${otp}`);
+        return;
+      } else {
+        console.log(`[BREVO EMAIL SENT] Verification code sent to ${to} (ID: ${data?.messageId})`);
+        console.log(`[EMAIL OTP]: ${otp}`);
+        return;
+      }
+    }
+
+    // 3. Use Twilio SendGrid HTTP API if configured (Allows sending to ANY recipient without domain verification)
+    if (process.env.SENDGRID_API_KEY) {
+      console.log(`[SENDGRID] Attempting to send OTP email to ${to} via SendGrid HTTP API...`);
+      const senderEmail = process.env.SENDGRID_FROM || process.env.GMAIL_USER || "no-reply@habitquest.com";
+      const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.SENDGRID_API_KEY.trim()}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: to }], subject: "Your HabitQuest Verification Code" }],
+          from: { email: senderEmail, name: "HabitQuest Security" },
+          content: [{ type: "text/html", value: htmlContent }],
+        }),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        console.error(`[SENDGRID EMAIL ERROR] Failed to send to ${to}: ${text}`);
+        console.log(`[FALLBACK LOG OTP] Code for ${to} is: ${otp}`);
+        return;
+      } else {
+        console.log(`[SENDGRID EMAIL SENT] Verification code sent to ${to}`);
+        console.log(`[EMAIL OTP]: ${otp}`);
+        return;
+      }
+    }
+
     let transporter: nodemailer.Transporter;
 
     // 2. Use SMTP configuration if provided in environment variables
