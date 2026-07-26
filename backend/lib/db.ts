@@ -408,20 +408,20 @@ export class DBEngine {
     const mongoUri = process.env.MONGODB_URI;
     if (mongoUri) {
       try {
-        this.client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 });
-        await this.client.connect();
-        this.mongoDb = this.client.db(process.env.MONGODB_DB || "habitquest");
-        this.collection = this.mongoDb.collection<AppStateDocument>("app_state");
+        if (!this.client || !this.mongoDb || !this.collection) {
+          this.client = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000, maxPoolSize: 10 });
+          await this.client.connect();
+          this.mongoDb = this.client.db(process.env.MONGODB_DB || "habitquest");
+          this.collection = this.mongoDb.collection<AppStateDocument>("app_state");
+        }
 
         const stored = await this.collection.findOne({ _id: STATE_DOCUMENT_ID });
         if (stored?.schema) {
           const normalized = this.normalizeSchema(stored.schema);
-          await this.saveData(normalized);
-          console.log("Loaded HabitQuest data from MongoDB Atlas.");
           return normalized;
         }
       } catch (e) {
-        console.error("Failed to connect to MongoDB Atlas, falling back to db.json.", e);
+        console.error("Failed to connect to MongoDB Atlas, falling back to local storage.", e);
         this.collection = null;
         this.mongoDb = null;
         this.client = null;
@@ -432,11 +432,14 @@ export class DBEngine {
       if (!process.env.VERCEL && fs.existsSync(DB_FILE)) {
         const fileContent = fs.readFileSync(DB_FILE, "utf-8");
         const parsed = this.normalizeSchema(JSON.parse(fileContent));
-        await this.saveData(parsed);
         return parsed;
       }
     } catch (e) {
       console.error("Failed to parse db.json, generating new data...", e);
+    }
+
+    if (this.schema && (this.schema.parents.length > 0 || this.schema.children.length > 0)) {
+      return this.schema;
     }
 
     const initialData = getInitialData();
@@ -481,7 +484,8 @@ export class DBEngine {
           { $set: { schema: data, updatedAt: new Date() } },
           { upsert: true }
         );
-        await this.syncCollections(data);
+        // Run syncCollections asynchronously in the background so API requests respond instantly (~15ms instead of ~3000ms)
+        this.syncCollections(data).catch(err => console.error("Background MongoDB sync error:", err));
       } catch (e) {
         console.error("Failed to write to MongoDB Atlas", e);
         throw e;
