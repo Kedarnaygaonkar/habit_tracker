@@ -137,17 +137,12 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
         },
       });
     } else {
-      // Fallback to auto-generated test account (Ethereal Email)
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        secure: false,
-        auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
-        },
-      });
+      console.log(`====================================================`);
+      console.log(`[EMAIL SIMULATION MODE] No email API key (BREVO_API_KEY, SENDGRID_API_KEY, RESEND_API_KEY, or GMAIL_USER) found.`);
+      console.log(`To send real emails on Vercel, add BREVO_API_KEY or SENDGRID_API_KEY in Vercel settings and REDEPLOY!`);
+      console.log(`[SIMULATED EMAIL OTP FOR ${to}]: ${otp}`);
+      console.log(`====================================================`);
+      return;
     }
 
     // Gmail requires the 'from' address to match the authenticated user address
