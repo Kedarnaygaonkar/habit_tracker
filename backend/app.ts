@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { db, Parent, Child, Quest, Reward, Achievement, QuestHistory, Notification, AIReport, RepetitionType, ProofType } from "./lib/db.js";
 import { generateAdventureTitle, generateHabitPlan, generateMotivation, generateParentAdvice, generateWeeklyReport } from "./lib/ai.js";
+import { sendOtpEmail } from "./lib/email.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "habit-quest-epic-secret-key-2026";
 
@@ -182,7 +183,11 @@ export async function createApp() {
     parent.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
     await db.save();
     console.log(`[OTP] Compulsory 2FA OTP ${otp} for ${email}`);
-    res.json({ requireOtp: true, email: parent.email, message: "Verification code sent!", devOtp: otp });
+    const isDemoParent = parent.email.toLowerCase() === "parent@habitquest.com";
+    if (!isDemoParent) {
+      await sendOtpEmail(parent.email, otp);
+    }
+    res.json({ requireOtp: true, email: parent.email, message: "Verification code sent!", devOtp: isDemoParent ? otp : undefined });
   });
 
   // Send OTP for Parent Login
@@ -200,7 +205,11 @@ export async function createApp() {
     parent.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
     await db.save();
     console.log(`[OTP] Generated OTP ${otp} for ${email}`);
-    res.json({ success: true, message: "Verification code sent!", devOtp: otp });
+    const isDemoParent = parent.email.toLowerCase() === "parent@habitquest.com";
+    if (!isDemoParent) {
+      await sendOtpEmail(parent.email, otp);
+    }
+    res.json({ success: true, message: "Verification code sent!", devOtp: isDemoParent ? otp : undefined });
   });
 
   // Verify OTP for Parent Login
