@@ -23,10 +23,11 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
 
     // 1. Use Resend API if configured (Best for Vercel / Serverless environments)
     if (process.env.RESEND_API_KEY) {
+      console.log(`[RESEND] Attempting to send OTP email to ${to} via Resend HTTP API...`);
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY.trim()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
