@@ -31,7 +31,7 @@ Traditional habit trackers often fail with children due to a lack of immediate e
 - **Gamified Engagement**: Children act as **Heroes** (Knights, Wizards, Ninjas, Rangers, or Unicorns), completing daily **Quests** (chores) to earn **XP** (experience points), **Coins** (reward currency), and **Streaks**.
 - **Parental Guidance & Verification**: Parents act as **Game Masters**, assigning tasks with specific repetition rules, difficulty tiers, and proof requirements (none, text notes, or webcam/photo uploads).
 - **Vibrant & Responsive UI**: Built with modern aesthetics—glassmorphism, vibrant gradients, micro-animations, and interactive canvas confetti rewards.
-- **AI-Powered Assistance**: Integrated with Google Gemini AI to help parents generate age-appropriate routine schedules and receive actionable parenting advice.
+- **AI-Powered Assistance**: Integrated with generative AI (initially built with **Google Gemini**, currently running via **OpenRouter**) to help parents generate age-appropriate routine schedules and receive actionable parenting advice.
 
 ### 💡 Ideation, Prototyping & UI Workflow:
 - **Architectural Modeling (Google AI Studio)**: The foundational logic structure, data relationships, and gamification loop were prototyped and refined using **Google AI Studio**.
@@ -55,7 +55,7 @@ The application is engineered as a full-stack TypeScript application optimized f
 | **Security & Auth** | **JSON Web Tokens (JWT) + Bcryptjs** | Stateless token-based authentication (`30d` expiry) and secure `saltRound=10` password hashing. |
 | **Database Engine** | **MongoDB Atlas + Official Node Driver** | Cloud NoSQL database utilizing a custom connection-pooled caching engine (`DBEngine`). |
 | **Email Service** | **EmailJS REST API** | Transactional email delivery for OTP verification codes during registration and password reset flows. |
-| **AI Integration** | **Google Gemini AI (`@google/genai`)** | Generative AI models powering the *AI Habit Planner* and *Parent Assistant* chat tools. |
+| **AI Integration** | **OpenRouter API (initially Google Gemini)** | Generative AI integration powering the *AI Habit Planner* and *Parent Assistant* chat tools, utilizing OpenRouter for flexible multi-model access. |
 | **Cloud Hosting** | **Vercel Serverless Functions** | Seamless deployment hosting static frontend assets and routing `/api/*` requests to serverless containers. |
 
 ---
@@ -236,8 +236,8 @@ sequenceDiagram
 ### Phase 6: AI Habit Planner & Parenting Assistant
 - **Objective**: Provide intelligent, personalized parenting support using cutting-edge generative AI.
 - **Implementation**:
-  - Integrated Google's `@google/genai` SDK within backend API endpoints (`/api/ai/plan` and `/api/ai/assistant`).
-  - **AI Habit Planner**: Parents input a prompt (e.g., "7-year-old struggling with morning ADHD routines"), and Gemini returns a JSON-structured list of tailored tasks with recommended difficulty and repetition rules.
+  - **AI Engine Evolution**: Initially built and tested using Google's Gemini SDK (`@google/genai`), the AI layer was subsequently migrated to **OpenRouter**. OpenRouter acts as an intelligent AI gateway providing robust, unified access to state-of-the-art LLMs with enhanced uptime and model flexibility.
+  - **AI Habit Planner**: Parents input a prompt (e.g., "7-year-old struggling with morning ADHD routines"), and the OpenRouter AI model returns a JSON-structured list of tailored tasks with recommended difficulty and repetition rules.
   - **Parenting Assistant**: An interactive AI chat advisor trained on positive reinforcement strategies and habit-building psychology.
 
 ### Phase 7: Serverless Scaling & Connection Pooling
@@ -310,8 +310,8 @@ HabitQuest is configured for zero-configuration continuous deployment on **Verce
 | `POST` | `/api/children/rewards/:id/claim` | Deducts coins and requests reward redemption. | **Yes (Child)** |
 | `POST` | `/api/teams` | Creates a new Team and generates a 6-char invite code. | **Yes (Parent)** |
 | `POST` | `/api/teams/join` | Links a child hero to a team via invite code. | **Yes (Any)** |
-| `POST` | `/api/ai/plan` | Calls Google Gemini to generate custom routine plans. | **Yes (Parent)** |
-| `POST` | `/api/ai/assistant` | Calls Google Gemini for parenting advice. | **Yes (Parent)** |
+| `POST` | `/api/ai/plan` | Calls OpenRouter AI (formerly Gemini) to generate custom routine plans. | **Yes (Parent)** |
+| `POST` | `/api/ai/assistant` | Calls OpenRouter AI for parenting advice. | **Yes (Parent)** |
 
 ---
 
