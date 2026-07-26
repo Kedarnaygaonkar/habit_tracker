@@ -66,13 +66,14 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
           htmlContent: htmlContent,
         }),
       });
-      const data: any = await res.json().catch(() => ({}));
       if (!res.ok) {
-        console.error(`[BREVO EMAIL ERROR] Failed to send to ${to}: ${data?.message || JSON.stringify(data)}`);
+        const errText = await res.text().catch(() => "Unknown Brevo API error");
+        console.error(`[BREVO EMAIL ERROR] Failed to send to ${to}: ${errText}`);
         console.log(`[FALLBACK LOG OTP] Code for ${to} is: ${otp}`);
         return;
       } else {
-        console.log(`[BREVO EMAIL SENT] Verification code sent to ${to} (ID: ${data?.messageId})`);
+        const data: any = await res.json().catch(() => ({}));
+        console.log(`[BREVO EMAIL SENT] Verification code sent to ${to} (ID: ${data?.messageId || "success"})`);
         console.log(`[EMAIL OTP]: ${otp}`);
         return;
       }
