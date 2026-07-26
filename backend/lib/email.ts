@@ -39,7 +39,9 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
       });
       const data: any = await res.json();
       if (!res.ok) {
-        console.error(`[RESEND EMAIL ERROR] Failed to send to ${to}:`, data);
+        console.error(`[RESEND EMAIL ERROR] Failed to send to ${to}: ${data?.message || JSON.stringify(data)}`);
+        console.log(`[FALLBACK LOG OTP] Code for ${to} is: ${otp}`);
+        return;
       } else {
         console.log(`[RESEND EMAIL SENT] Verification code sent to ${to} (ID: ${data?.id})`);
         console.log(`[EMAIL OTP]: ${otp}`);
