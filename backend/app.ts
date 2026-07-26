@@ -239,6 +239,53 @@ export async function createApp() {
     res.json({ token, parent: { id: parent.id, email: parent.email, familyName: parent.familyName } });
   });
 
+  // Forgot Password (Send OTP)
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
+    const parent = db.get().parents.find(p => p.email.toLowerCase() === email.toLowerCase());
+    if (!parent) {
+      return res.status(400).json({ error: "No parent account found with this email address." });
+    }
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    parent.otp = otp;
+    parent.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await db.save();
+    console.log(`[OTP] Password reset OTP ${otp} for ${email}`);
+    const isDemoParent = parent.email.toLowerCase() === "parent@habitquest.com";
+    if (!isDemoParent) {
+      await sendOtpEmail(parent.email, otp);
+    }
+    res.json({ success: true, message: "Password reset code sent to your email!", devOtp: isDemoParent ? otp : undefined });
+  });
+
+  // Reset Password (Verify OTP & Update Password)
+  app.post("/api/auth/reset-password", async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: "Email, verification code, and new password are required." });
+    }
+    if (newPassword.length < 4) {
+      return res.status(400).json({ error: "New password must be at least 4 characters long." });
+    }
+    const parent = db.get().parents.find(p => p.email.toLowerCase() === email.toLowerCase());
+    if (!parent || !parent.otp || parent.otp !== otp.trim()) {
+      return res.status(400).json({ error: "Invalid verification code." });
+    }
+    if (parent.otpExpiresAt && Date.now() > parent.otpExpiresAt) {
+      return res.status(400).json({ error: "Verification code has expired." });
+    }
+    const salt = bcrypt.genSaltSync(10);
+    parent.passwordHash = bcrypt.hashSync(newPassword, salt);
+    parent.otp = undefined;
+    parent.otpExpiresAt = undefined;
+    await db.save();
+    console.log(`[AUTH] Password reset successfully for ${email}`);
+    res.json({ success: true, message: "Password updated successfully! Please sign in with your new password." });
+  });
+
   // Child Login
   app.post("/api/auth/login-child", async (req, res) => {
     const { loginId, password, name, passcode } = req.body;

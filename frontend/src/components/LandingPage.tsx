@@ -20,9 +20,14 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
   const [otpCode, setOtpCode] = useState("");
   const [devOtp, setDevOtp] = useState("");
 
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [resetSuccessMsg, setResetSuccessMsg] = useState("");
+
   const handleParentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setResetSuccessMsg("");
     setLoading(true);
     const url = isRegister ? "/api/auth/register-parent" : "/api/auth/login-parent";
     const body = isRegister ? { email, password, familyName } : { email, password };
@@ -61,6 +66,38 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Invalid verification code");
       onLoginSuccess(data.token, { id: data.parent.id, email: data.parent.email, name: data.parent.familyName, role: "parent" });
+    } catch (err: any) { setError(err.message); } finally { setLoading(false); }
+  };
+
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setResetSuccessMsg("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send reset code");
+      setOtpSent(true);
+      setDevOtp(data.devOtp || "");
+    } catch (err: any) { setError(err.message); } finally { setLoading(false); }
+  };
+
+  const handleResetPasswordVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setResetSuccessMsg("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, otp: otpCode, newPassword }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to reset password");
+      setResetSuccessMsg(data.message || "Password reset successfully!");
+      setIsForgotPassword(false);
+      setOtpSent(false);
+      setOtpCode("");
+      setNewPassword("");
+      setPassword("");
     } catch (err: any) { setError(err.message); } finally { setLoading(false); }
   };
 
@@ -117,6 +154,13 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
           </button>
         </div>
 
+        {/* Reset Success Message */}
+        {resetSuccessMsg && (
+          <div className="mb-4 p-3 rounded-xl text-sm font-bold text-center animate-bounce-in bg-emerald-50 border-2 border-emerald-200 text-emerald-700">
+            ✅ {resetSuccessMsg}
+          </div>
+        )}
+
         {/* Error */}
         {error && (
           <div className="mb-4 p-3 rounded-xl text-sm font-bold text-center animate-shake bg-red-50 border-2 border-red-200 text-red-600">
@@ -147,6 +191,80 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
               {loading ? "Loading..." : "Let's Go! 🚀"}
             </button>
           </form>
+        ) : isForgotPassword ? (
+          /* Forgot Password */
+          <div className="space-y-4 animate-fade-in">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-black text-slate-800">🔑 Reset Password</h3>
+              <button type="button" onClick={() => { setIsForgotPassword(false); setError(""); setOtpSent(false); setResetSuccessMsg(""); }} className="text-xs font-black px-3 py-1.5 rounded-lg text-slate-600 bg-slate-100 border border-slate-200">
+                Back to Login
+              </button>
+            </div>
+
+            {!otpSent ? (
+              <form onSubmit={handleForgotPasswordSubmit} className="space-y-4 animate-fade-in">
+                <p className="text-xs font-bold text-slate-500 mb-2">Enter your registered parent email address and we will send a 6-digit verification code to your inbox.</p>
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Email Address</label>
+                  <input type="email" required placeholder="parent@example.com" value={email} onChange={(e) => setEmail(e.target.value)} className="input" />
+                </div>
+                <button type="submit" disabled={loading} className="btn btn-purple w-full py-4 mt-2">
+                  {loading ? "Sending Code..." : "Send Reset Code 📧"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleResetPasswordVerify} className="space-y-4 animate-fade-in">
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center mb-2">
+                  <p className="text-xs font-bold text-purple-700 mb-1">🔒 Reset Verification Code Sent</p>
+                  <p className="text-[11px] text-slate-500 mb-2">We sent a 6-digit code to {email}</p>
+                  {devOtp && (
+                    <div className="bg-white border border-purple-200 rounded-lg py-1 px-2.5 inline-block shadow-sm">
+                      <span className="text-[10px] uppercase font-black text-slate-400 mr-1.5">Demo Code:</span>
+                      <span className="font-mono text-base font-black text-purple-600 tracking-wider">{devOtp}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Enter 6-Digit Code</label>
+                    <button type="button" onClick={() => setOtpSent(false)} className="text-[10px] font-bold text-purple-600 hover:underline">Change Email</button>
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="• • • • • •"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value)}
+                    className="input text-center text-2xl font-mono tracking-widest font-black uppercase py-3 mb-2"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">New Password</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="input"
+                  />
+                </div>
+
+                <button type="submit" disabled={loading || otpCode.trim().length !== 6 || !newPassword} className="btn btn-purple w-full py-4 mt-2">
+                  {loading ? "Resetting..." : "Reset Password & Save 🚀"}
+                </button>
+
+                <div className="text-center pt-1">
+                  <button type="button" onClick={handleForgotPasswordSubmit} disabled={loading} className="text-xs font-bold text-slate-400 hover:text-purple-600">
+                    Didn't receive code? Resend
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         ) : (
           /* Parent Login */
           <div className="space-y-4 animate-fade-in">
@@ -172,7 +290,14 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Password</label>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-xs font-black uppercase tracking-wider text-slate-500">Password</label>
+                    {!isRegister && (
+                      <button type="button" onClick={() => { setIsForgotPassword(true); setError(""); setOtpSent(false); setResetSuccessMsg(""); }} className="text-[11px] font-bold text-purple-600 hover:underline">
+                        Forgot Password?
+                      </button>
+                    )}
+                  </div>
                   <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="input" />
                 </div>
 
