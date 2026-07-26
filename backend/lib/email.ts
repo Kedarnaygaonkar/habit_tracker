@@ -2,9 +2,53 @@ import nodemailer from "nodemailer";
 
 export async function sendOtpEmail(to: string, otp: string): Promise<void> {
   try {
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="color: #6d28d9; margin: 0; font-size: 24px;">🏰 HabitQuest</h1>
+          <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Parent Portal Security</p>
+        </div>
+        <div style="background-color: #ffffff; padding: 24px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+          <p style="color: #334155; font-size: 16px; margin-bottom: 16px;">Here is your verification code to access your parent dashboard:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #6d28d9; background-color: #f3e8ff; padding: 12px 24px; border-radius: 8px; display: inline-block; margin: 10px 0; font-family: monospace;">
+            ${otp}
+          </div>
+          <p style="color: #94a3b8; font-size: 12px; margin-top: 16px;">This code will expire in 10 minutes.</p>
+        </div>
+        <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 20px;">
+          If you did not attempt to sign in to HabitQuest, please ignore this email or secure your account.
+        </p>
+      </div>
+    `;
+
+    // 1. Use Resend API if configured (Best for Vercel / Serverless environments)
+    if (process.env.RESEND_API_KEY) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM || "HabitQuest <onboarding@resend.dev>",
+          to: [to],
+          subject: "Your HabitQuest Verification Code",
+          html: htmlContent,
+        }),
+      });
+      const data: any = await res.json();
+      if (!res.ok) {
+        console.error(`[RESEND EMAIL ERROR] Failed to send to ${to}:`, data);
+      } else {
+        console.log(`[RESEND EMAIL SENT] Verification code sent to ${to} (ID: ${data?.id})`);
+        console.log(`[EMAIL OTP]: ${otp}`);
+        return;
+      }
+    }
+
     let transporter: nodemailer.Transporter;
 
-    // Use SMTP configuration if provided in environment variables
+    // 2. Use SMTP configuration if provided in environment variables
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
@@ -43,24 +87,7 @@ export async function sendOtpEmail(to: string, otp: string): Promise<void> {
       to,
       subject: "Your HabitQuest Verification Code",
       text: `Welcome back to HabitQuest!\n\nYour 2-Step Verification code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not request this code, please ignore this email.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #6d28d9; margin: 0; font-size: 24px;">🏰 HabitQuest</h1>
-            <p style="color: #64748b; font-size: 14px; margin-top: 4px;">Parent Portal Security</p>
-          </div>
-          <div style="background-color: #ffffff; padding: 24px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <p style="color: #334155; font-size: 16px; margin-bottom: 16px;">Here is your verification code to access your parent dashboard:</p>
-            <div style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #6d28d9; background-color: #f3e8ff; padding: 12px 24px; border-radius: 8px; display: inline-block; margin: 10px 0; font-family: monospace;">
-              ${otp}
-            </div>
-            <p style="color: #94a3b8; font-size: 12px; margin-top: 16px;">This code will expire in 10 minutes.</p>
-          </div>
-          <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 20px;">
-            If you did not attempt to sign in to HabitQuest, please ignore this email or secure your account.
-          </p>
-        </div>
-      `,
+      html: htmlContent,
     };
 
     const info = await transporter.sendMail(mailOptions);
