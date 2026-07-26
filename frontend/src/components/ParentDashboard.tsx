@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, Edit2, LogOut, Plus, Sparkles, Trash2, X, Shield, Users, Zap, Flame, Star, Bell, Image as ImageIcon, CheckCircle, ArrowRight, User } from "lucide-react";
+import { Check, Edit2, LogOut, Plus, Sparkles, Trash2, X, Shield, Users, Zap, Flame, Star, Bell, Image as ImageIcon, CheckCircle, ArrowRight, User, Share2 } from "lucide-react";
 
 interface ParentDashboardProps {
   token: string;
@@ -31,6 +31,34 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const [teamForm, setTeamForm] = useState({ open: false, name: "", icon: "🏆" });
   const [rejectModal, setRejectModal] = useState({ open: false, questId: "", comment: "" });
   const [saving, setSaving] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleShareTeam = async (team: any) => {
+    const shareUrl = `${window.location.origin}/?team=${team.inviteCode}`;
+    const shareData = {
+      title: `Join team "${team.name}" on HabitQuest!`,
+      text: `Join my HabitQuest Team "${team.name}"! Use invite code: ${team.inviteCode} or click this link to join directly:`,
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        // Fallback to clipboard if cancelled/unsupported
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopiedId(team.id);
+      showMsg("Invite link copied to clipboard! 📋");
+      setTimeout(() => setCopiedId(null), 3000);
+    } catch (err) {
+      alert(`Invite Link:\n${shareUrl}`);
+    }
+  };
 
   // AI Tools
   const [plannerPrompt, setPlannerPrompt] = useState("My child needs a better morning routine.");
@@ -421,6 +449,23 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                         <div className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-black tracking-widest shadow-sm">
                           {team.inviteCode}
                         </div>
+                        <button
+                          onClick={() => handleShareTeam(team)}
+                          title="Share Team Join Link"
+                          className="px-3 py-2 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 font-bold text-xs flex items-center gap-1.5 transition-all active:scale-95 border border-purple-200 shadow-sm"
+                        >
+                          {copiedId === team.id ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                              <span className="text-emerald-600 font-black">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="w-3.5 h-3.5" />
+                              <span>Share</span>
+                            </>
+                          )}
+                        </button>
                         <button onClick={() => deleteTeam(team.id)} className="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition-colors">
                            <Trash2 className="w-4 h-4" />
                         </button>
@@ -440,7 +485,12 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                       </div>
                     )}
                     {team.members.length === 0 && (
-                      <p className="text-xs font-bold text-slate-400 bg-slate-50 p-3 rounded-xl">Share the invite code to let members join!</p>
+                      <div className="text-xs font-bold text-slate-400 bg-slate-50 p-3 rounded-xl flex items-center justify-between">
+                        <span>Share the invite code or link to let members join!</span>
+                        <button onClick={() => handleShareTeam(team)} className="text-purple-600 hover:underline font-black flex items-center gap-1">
+                          <Share2 className="w-3 h-3" /> {copiedId === team.id ? "Copied!" : "Copy Link"}
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface LandingPageProps {
   onLoginSuccess: (token: string, user: { id: string; email?: string; name?: string; role: "parent" | "child"; avatar?: string }) => void;
@@ -9,6 +9,18 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pendingTeam, setPendingTeam] = useState<string | null>(null);
+
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("team");
+    if (code) {
+      localStorage.setItem("pendingTeamCode", code.toUpperCase());
+      setPendingTeam(code.toUpperCase());
+    } else {
+      const stored = localStorage.getItem("pendingTeamCode");
+      if (stored) setPendingTeam(stored);
+    }
+  }, []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -153,6 +165,14 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
             👨‍👩‍👧 Parent
           </button>
         </div>
+
+        {/* Pending Team Invite Banner */}
+        {pendingTeam && (
+          <div className="mb-4 p-3 rounded-xl text-xs font-bold text-center animate-bounce-in bg-indigo-50 border-2 border-indigo-200 text-indigo-700 flex items-center justify-between shadow-sm">
+            <span>🏆 You're invited to Team <strong>#{pendingTeam}</strong>! Log in as Hero to join!</span>
+            <button type="button" onClick={() => { localStorage.removeItem("pendingTeamCode"); setPendingTeam(null); }} className="text-indigo-400 hover:text-indigo-600 ml-2 font-black">✕</button>
+          </div>
+        )}
 
         {/* Reset Success Message */}
         {resetSuccessMsg && (

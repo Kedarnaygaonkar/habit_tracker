@@ -44,7 +44,10 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const [claiming, setClaiming] = useState(false);
   const [taskFilter, setTaskFilter] = useState<"today" | "all">("today");
 
-  const [joinTeamCode, setJoinTeamCode] = useState("");
+  const [joinTeamCode, setJoinTeamCode] = useState(() => {
+    const urlCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
+    return urlCode ? urlCode.toUpperCase() : "";
+  });
   const [joinTeamLoading, setJoinTeamLoading] = useState(false);
 
   const fetchDashboard = async () => {
@@ -66,6 +69,13 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   useEffect(() => {
     fetchDashboard();
     const interval = setInterval(fetchDashboard, 15000);
+
+    const pendingCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
+    if (pendingCode) {
+      localStorage.removeItem("pendingTeamCode");
+      setActiveTab("teams");
+    }
+
     return () => clearInterval(interval);
   }, []);
 
