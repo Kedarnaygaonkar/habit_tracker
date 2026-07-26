@@ -167,7 +167,7 @@ export async function createApp() {
     res.status(201).json({ token, parent: { id: newParent.id, email: newParent.email, familyName: newParent.familyName } });
   });
 
-  // Login Parent
+  // Login Parent (Compulsory OTP / 2FA)
   app.post("/api/auth/login-parent", async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -177,8 +177,12 @@ export async function createApp() {
     if (!parent || !bcrypt.compareSync(password, parent.passwordHash)) {
       return res.status(400).json({ error: "Invalid email or password." });
     }
-    const token = jwt.sign({ id: parent.id, role: "parent" }, JWT_SECRET, { expiresIn: "30d" });
-    res.json({ token, parent: { id: parent.id, email: parent.email, familyName: parent.familyName } });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    parent.otp = otp;
+    parent.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await db.save();
+    console.log(`[OTP] Compulsory 2FA OTP ${otp} for ${email}`);
+    res.json({ requireOtp: true, email: parent.email, message: "Verification code sent!", devOtp: otp });
   });
 
   // Send OTP for Parent Login
