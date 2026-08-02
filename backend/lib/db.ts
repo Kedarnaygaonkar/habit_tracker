@@ -26,6 +26,8 @@ export interface Child {
   id: string;
   parentId: string;
   name: string;
+  age?: number;
+  gender?: "boy" | "girl";
   loginId: string; // parent-assigned child login ID
   passwordHash: string; // hashed child password
   passcode?: string; // legacy 4-digit passcode kept only for migrating old local data
@@ -167,6 +169,8 @@ function getInitialData(): Schema {
         id: child1Id,
         parentId: parentId,
         name: "Leo",
+        age: 7,
+        gender: "boy",
         loginId: "leo",
         passwordHash: bcrypt.hashSync("1234", salt),
         passcode: "1234",
@@ -189,6 +193,8 @@ function getInitialData(): Schema {
         id: child2Id,
         parentId: parentId,
         name: "Emma",
+        age: 9,
+        gender: "girl",
         loginId: "emma",
         passwordHash: bcrypt.hashSync("5678", salt),
         passcode: "5678",

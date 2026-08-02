@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, Edit2, LogOut, Plus, Sparkles, Trash2, X, Shield, Users, Zap, Flame, Star, Bell, Image as ImageIcon, CheckCircle, ArrowRight, User, Share2 } from "lucide-react";
+import { Check, Edit2, LogOut, Plus, Sparkles, Trash2, X, Shield, Users, Zap, Flame, Star, Bell, Image as ImageIcon, CheckCircle, ArrowRight, User, Share2, MoreVertical, Calendar as CalendarIcon, ChevronLeft } from "lucide-react";
 
 interface ParentDashboardProps {
   token: string;
@@ -10,7 +10,7 @@ interface ParentDashboardProps {
 
 type Tab = "heroes" | "tasks" | "rewards" | "verify" | "settings";
 
-const emptyChildForm = { open: false, isEdit: false, id: "", name: "", loginId: "", password: "", avatar: "avatar_knight" };
+const emptyChildForm = { open: false, isEdit: false, id: "", name: "", loginId: "", password: "", avatar: "avatar_knight", age: 7, gender: "boy" };
 const emptyQuestForm = { open: false, isEdit: false, id: "", childId: "", title: "", difficulty: "medium", repetition: "daily", reminderTime: "08:00", requireProof: "none" };
 const emptyRewardForm = { open: false, childId: "", title: "", coinsCost: "30" };
 
@@ -21,6 +21,9 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const [quests, setQuests] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
+  const [questHistory, setQuestHistory] = useState<any[]>([]);
+  const [selectedHero, setSelectedHero] = useState<any | null>(null);
+  const [selectedTaskHistory, setSelectedTaskHistory] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -87,17 +90,19 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   const fetchData = async () => {
     setLoading(true); setError("");
     try {
-      const [cR, qR, rR, tR] = await Promise.all([
+      const [cR, qR, rR, tR, hR] = await Promise.all([
         fetch("/api/parent/children", { headers: authHeaders }),
         fetch("/api/quests", { headers: authHeaders }),
         fetch("/api/rewards", { headers: authHeaders }),
         fetch("/api/parent/teams", { headers: authHeaders }),
+        fetch("/api/parent/questHistory", { headers: authHeaders }),
       ]);
-      if (!cR.ok || !qR.ok || !rR.ok || !tR.ok) throw new Error("Failed to load data.");
+      if (!cR.ok || !qR.ok || !rR.ok || !tR.ok || !hR.ok) throw new Error("Failed to load data.");
       setChildren(await cR.json());
       setQuests(await qR.json());
       setRewards(await rR.json());
       setTeams(await tR.json());
+      setQuestHistory(await hR.json());
     } catch (err: any) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -215,22 +220,33 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
 
             <div className="px-6 flex overflow-x-auto gap-4 pb-4 snap-x hide-scroll">
               {children.map(c => (
-                <div key={c.id} className="snap-start shrink-0 w-[180px] bg-[#f4f7fc] rounded-[2rem] p-5 flex flex-col relative cursor-pointer hover:bg-[#eaf0fb] :bg-slate-700 transition-colors" onClick={() => setChildForm({ open: true, isEdit: true, id: c.id, name: c.name, loginId: c.loginId || "", password: "", avatar: c.avatar })}>
+                <div key={c.id} className={`snap-start shrink-0 w-[180px] rounded-[2rem] p-5 flex flex-col relative cursor-pointer transition-colors ${c.gender === 'girl' ? 'bg-[#fce6f3] hover:bg-[#fad4eb]' : 'bg-[#e6f0fa] hover:bg-[#d4e6f9]'}`} onClick={() => setSelectedHero(c)}>
+                  {/* Edit Button (3 dots) */}
+                  <button 
+                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-white/50 hover:bg-white rounded-full p-1.5 transition-colors z-20"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setChildForm({ open: true, isEdit: true, id: c.id, name: c.name, loginId: c.loginId || "", password: "", avatar: c.avatar, age: c.age || 7, gender: c.gender || "boy" });
+                    }}
+                  >
+                    <MoreVertical className="w-5 h-5" />
+                  </button>
+
                   {/* Top Left Pills */}
                   <div className="flex flex-col items-start gap-1">
-                     <div className="bg-blue-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm">Level {c.level || 1}</div>
+                     <div className={`${c.gender === 'girl' ? 'bg-pink-500' : 'bg-blue-500'} text-white text-[10px] font-black px-3 py-1 rounded-full shadow-sm`}>Level {c.level || 1}</div>
                      <Star className="w-6 h-6 text-slate-800 ml-1 mt-1" strokeWidth={2.5} />
                   </div>
 
                   {/* Avatar Progress */}
                   <div className="mt-4 mb-4 flex justify-center">
                      <div className="progress-ring-container">
-                       <div className="progress-ring" style={{"--progress": c.xp ? Math.min(100, (c.xp % 1000) / 10) : 0} as any}>
+                       <div className="progress-ring" style={{"--progress": c.xp ? Math.min(100, (c.xp % 1000) / 10) : 0, stroke: c.gender === 'girl' ? '#ec4899' : '#3b82f6'} as any}>
                           <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden border-[3px] border-white flex items-center justify-center text-3xl z-10 relative">
                              {getEmoji(c.avatar)}
                           </div>
                        </div>
-                       <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white z-20 shadow-sm">
+                       <div className={`absolute -bottom-1 -right-1 ${c.gender === 'girl' ? 'bg-pink-500' : 'bg-blue-500'} text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white z-20 shadow-sm`}>
                          {c.xp ? Math.min(100, Math.floor((c.xp % 1000) / 10)) : 0}%
                        </div>
                      </div>
@@ -238,7 +254,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
 
                   <div className="text-center mt-2">
                     <h4 className="text-xl font-black text-slate-900 ">{c.name}</h4>
-                    <p className="text-[11px] text-slate-400 font-bold mb-3">7 years old</p>
+                    <p className="text-[11px] text-slate-400 font-bold mb-3">{c.age || 7} years old</p>
                     <div className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full shadow-sm text-xs font-black text-slate-700 ">
                       <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
                       {c.xp || 0} XP
@@ -672,6 +688,18 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
             <FormField label="Name" value={childForm.name} onChange={v => setChildForm({ ...childForm, name: v })} placeholder="e.g. Leo" required />
             <FormField label="Login ID" value={childForm.loginId} onChange={v => setChildForm({ ...childForm, loginId: v.toLowerCase().replace(/[^a-z0-9_-]/g, "") })} placeholder="e.g. leo" required />
             <FormField label="Password" type="password" value={childForm.password} onChange={v => setChildForm({ ...childForm, password: v })} placeholder="Secret password" required={!childForm.isEdit} />
+            <div className="flex gap-4">
+               <div className="flex-1">
+                  <FormField label="Age (Years)" type="number" value={childForm.age.toString()} onChange={v => setChildForm({ ...childForm, age: parseInt(v) || 7 })} placeholder="e.g. 7" required />
+               </div>
+               <div className="flex-1">
+                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Gender</label>
+                  <select value={childForm.gender} onChange={e => setChildForm({ ...childForm, gender: e.target.value })} className="select w-full">
+                    <option value="boy">👦 Boy</option>
+                    <option value="girl">👧 Girl</option>
+                  </select>
+               </div>
+            </div>
             <div>
               <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Avatar</label>
               <select value={childForm.avatar} onChange={e => setChildForm({ ...childForm, avatar: e.target.value })} className="select">
@@ -766,7 +794,134 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
           </form>
         </Modal>
       )}
-    </div>
+
+      {/* ── HERO DETAILS VIEW & CALENDAR ── */}
+      {selectedHero && (
+         <div className="fixed inset-0 z-[60] bg-white flex flex-col animate-slide-up overflow-y-auto">
+            {/* Header */}
+            <div className={`pt-12 pb-6 px-6 ${selectedHero.gender === 'girl' ? 'bg-[#fce6f3]' : 'bg-[#e6f0fa]'} relative`}>
+               <button onClick={() => setSelectedHero(null)} className="absolute top-6 left-6 w-10 h-10 rounded-full bg-white/50 flex items-center justify-center hover:bg-white transition-colors">
+                  <ChevronLeft className="w-6 h-6 text-slate-700" />
+               </button>
+               <div className="flex flex-col items-center text-center mt-6">
+                  <div className="w-24 h-24 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center text-5xl mb-4 relative z-10">
+                     {getEmoji(selectedHero.avatar)}
+                  </div>
+                  <h2 className="text-3xl font-black text-slate-900">{selectedHero.name}</h2>
+                  <p className="text-sm text-slate-500 font-bold mb-4">{selectedHero.age || 7} years old</p>
+                  
+                  <div className="flex gap-3 justify-center">
+                     <div className="bg-white px-4 py-2 rounded-2xl shadow-sm text-sm font-black text-slate-700 flex items-center gap-1.5">
+                        <Star className="w-4 h-4 text-purple-500 fill-purple-500" /> Lvl {selectedHero.level || 1}
+                     </div>
+                     <div className="bg-white px-4 py-2 rounded-2xl shadow-sm text-sm font-black text-slate-700 flex items-center gap-1.5">
+                        <Zap className="w-4 h-4 text-amber-500 fill-amber-500" /> {selectedHero.xp} XP
+                     </div>
+                     <div className="bg-white px-4 py-2 rounded-2xl shadow-sm text-sm font-black text-slate-700 flex items-center gap-1.5">
+                        <Flame className="w-4 h-4 text-orange-500 fill-orange-500" /> {selectedHero.streak} Days
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {/* Content Tabs for Tasks and Rewards */}
+            <div className="px-6 py-6 flex-1 bg-slate-50">
+               <h3 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-blue-500" /> Tasks ({quests.filter(q => q.childId === selectedHero.id).length})
+               </h3>
+               <div className="space-y-4 mb-8">
+                  {quests.filter(q => q.childId === selectedHero.id).map(q => {
+                     const isExpanded = selectedTaskHistory === q.id;
+                     const historyRecords = questHistory.filter(h => h.questId === q.id && h.status === 'verified');
+                     
+                     // Helper to check if a task was completed on a specific day
+                     const wasCompletedOn = (d: Date) => {
+                        const dateStr = d.toISOString().split('T')[0];
+                        return historyRecords.some(h => h.completedAt && h.completedAt.startsWith(dateStr));
+                     };
+
+                     // Generate days for current month calendar
+                     const now = new Date();
+                     const year = now.getFullYear();
+                     const month = now.getMonth();
+                     const daysInMonth = new Date(year, month + 1, 0).getDate();
+                     const calendarDays = Array.from({length: daysInMonth}, (_, i) => new Date(year, month, i + 1));
+
+                     return (
+                        <div key={q.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 overflow-hidden">
+                           <div className="flex justify-between items-center cursor-pointer" onClick={() => setSelectedTaskHistory(isExpanded ? null : q.id)}>
+                              <div>
+                                 <h4 className="font-bold text-slate-900">{q.title}</h4>
+                                 <p className="text-xs font-semibold text-slate-400 mt-0.5">{q.repetition} • {q.xp} XP</p>
+                              </div>
+                              <button className={`p-2 rounded-full ${isExpanded ? 'bg-blue-50 text-blue-500' : 'bg-slate-50 text-slate-400'} hover:bg-blue-100 transition-colors`}>
+                                 <CalendarIcon className="w-5 h-5" />
+                              </button>
+                           </div>
+
+                           {isExpanded && (
+                              <div className="mt-4 pt-4 border-t border-slate-100 animate-fade-in">
+                                 <h5 className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">Completion History (This Month)</h5>
+                                 <div className="grid grid-cols-7 gap-2">
+                                    {['S','M','T','W','T','F','S'].map(d => <div key={d} className="text-center text-[9px] font-bold text-slate-400">{d}</div>)}
+                                    {/* Offset for start of month */}
+                                    {Array.from({length: new Date(year, month, 1).getDay()}).map((_, i) => <div key={`empty-${i}`} />)}
+                                    {calendarDays.map(d => {
+                                       const completed = wasCompletedOn(d);
+                                       const isToday = d.toDateString() === new Date().toDateString();
+                                       return (
+                                          <div key={d.getDate()} className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold mx-auto
+                                             ${completed ? 'bg-green-500 text-white shadow-sm shadow-green-500/30' : 
+                                               isToday ? 'bg-blue-100 text-blue-600 border border-blue-200' : 'bg-slate-50 text-slate-400'}`}>
+                                             {d.getDate()}
+                                          </div>
+                                       );
+                                    })}
+                                 </div>
+                                 <div className="mt-4 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 p-2 rounded-xl">
+                                    <Flame className="w-4 h-4 text-orange-500" /> Total Completions: {historyRecords.length}
+                                 </div>
+                              </div>
+                           )}
+                        </div>
+                     );
+                  })}
+                  {quests.filter(q => q.childId === selectedHero.id).length === 0 && (
+                     <div className="text-center py-6 bg-white rounded-2xl border border-dashed border-slate-200">
+                        <p className="text-sm font-bold text-slate-400">No tasks assigned yet.</p>
+                     </div>
+                  )}
+               </div>
+
+               <h3 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-yellow-500" /> Rewards ({rewards.filter(r => r.childId === selectedHero.id).length})
+               </h3>
+               <div className="space-y-4">
+                  {rewards.filter(r => r.childId === selectedHero.id).map(r => (
+                     <div key={r.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex justify-between items-center">
+                        <div>
+                           <h4 className="font-bold text-slate-900">{r.title}</h4>
+                           <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase mt-1 ${
+                              r.status === 'approved' ? 'bg-green-100 text-green-600' :
+                              r.status === 'requested' ? 'bg-yellow-100 text-yellow-600' :
+                              'bg-slate-100 text-slate-500'
+                           }`}>{r.status}</span>
+                        </div>
+                        <div className="bg-yellow-50 px-3 py-1.5 rounded-xl flex items-center gap-1 font-black text-yellow-600 text-sm">
+                           🪙 {r.coinsCost}
+                        </div>
+                     </div>
+                  ))}
+                  {rewards.filter(r => r.childId === selectedHero.id).length === 0 && (
+                     <div className="text-center py-6 bg-white rounded-2xl border border-dashed border-slate-200">
+                        <p className="text-sm font-bold text-slate-400">No rewards added yet.</p>
+                     </div>
+                  )}
+               </div>
+            </div>
+         </div>
+      )}
+    </>
   );
 }
 

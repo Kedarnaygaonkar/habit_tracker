@@ -318,7 +318,7 @@ export async function createApp() {
 
   app.post("/api/parent/children", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
-    const { name, loginId, password, avatar } = req.body;
+    const { name, loginId, password, avatar, age, gender } = req.body;
     const normalizedLoginId = (loginId || "").trim().toLowerCase();
     if (!name || !normalizedLoginId || !password || !avatar) {
       return res.status(400).json({ error: "Child name, login ID, password, and avatar are required." });
@@ -332,6 +332,8 @@ export async function createApp() {
       id: `c-${generateId()}`,
       parentId,
       name,
+      age: age || 7,
+      gender: gender || "boy",
       loginId: normalizedLoginId,
       passwordHash: bcrypt.hashSync(password, salt),
       avatar,
@@ -351,7 +353,7 @@ export async function createApp() {
   app.put("/api/parent/children/:id", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { id } = req.params;
-    const { name, loginId, password, avatar, petName } = req.body;
+    const { name, loginId, password, avatar, petName, age, gender } = req.body;
     const normalizedLoginId = loginId ? loginId.trim().toLowerCase() : "";
     const childIndex = db.get().children.findIndex(c => c.id === id && c.parentId === parentId);
     if (childIndex === -1) return res.status(404).json({ error: "Child not found." });
@@ -364,6 +366,8 @@ export async function createApp() {
     if (normalizedLoginId) child.loginId = normalizedLoginId;
     if (password) child.passwordHash = bcrypt.hashSync(password, bcrypt.genSaltSync(10));
     if (avatar) child.avatar = avatar;
+    if (age) child.age = age;
+    if (gender) child.gender = gender;
     if (petName && child.pet) child.pet.name = petName;
     await db.save();
     const { passwordHash, ...publicChild } = child;
@@ -383,6 +387,15 @@ export async function createApp() {
     db.get().aiReports = db.get().aiReports.filter(r => r.childId !== id);
     await db.save();
     res.json({ message: "Child and all associated data successfully deleted." });
+  });
+
+  app.get("/api/parent/questHistory", authenticateParent, async (req: any, res) => {
+    const parentId = req.parent.id;
+    // Get all children for this parent
+    const childrenIds = db.get().children.filter(c => c.parentId === parentId).map(c => c.id);
+    // Return quest history records for these children
+    const history = db.get().questHistory.filter(h => childrenIds.includes(h.childId));
+    res.json(history);
   });
 
   app.get("/api/quests", authenticateParent, async (req: any, res) => {
