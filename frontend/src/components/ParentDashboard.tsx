@@ -175,6 +175,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   ];
 
   return (
+    <>
     <div className="parent-portal-bg min-h-screen pb-24 select-none">
       {/* Toast */}
       {message && <div className="toast flex items-center gap-2 z-50"><Check className="w-4 h-4 text-green-600" /> {message}</div>}
@@ -921,6 +922,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
             </div>
          </div>
       )}
+    </div>
     </>
   );
 }
