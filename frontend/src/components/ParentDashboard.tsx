@@ -114,7 +114,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     e.preventDefault(); setSaving(true); setError("");
     try {
       const url = childForm.isEdit ? `/api/parent/children/${childForm.id}` : "/api/parent/children";
-      const res = await fetch(url, { method: childForm.isEdit ? "PUT" : "POST", headers, body: JSON.stringify({ name: childForm.name, loginId: childForm.loginId, password: childForm.password, avatar: childForm.avatar }) });
+      const res = await fetch(url, { method: childForm.isEdit ? "PUT" : "POST", headers, body: JSON.stringify({ name: childForm.name, loginId: childForm.loginId, password: childForm.password, avatar: childForm.avatar, age: childForm.age, gender: childForm.gender }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setChildForm(emptyChildForm); await fetchData(); showMsg(childForm.isEdit ? "Updated!" : "Hero created!");
