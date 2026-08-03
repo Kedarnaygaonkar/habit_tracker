@@ -848,8 +848,13 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                      
                      // Helper to check if a task was completed on a specific day
                      const wasCompletedOn = (d: Date) => {
-                        const dateStr = d.toISOString().split('T')[0];
-                        return historyRecords.some(h => h.completedAt && h.completedAt.startsWith(dateStr));
+                        return historyRecords.some(h => {
+                           if (!h.completedAt) return false;
+                           const compDate = new Date(h.completedAt);
+                           return compDate.getFullYear() === d.getFullYear() && 
+                                  compDate.getMonth() === d.getMonth() && 
+                                  compDate.getDate() === d.getDate();
+                        });
                      };
 
                      // Generate days for current month calendar
