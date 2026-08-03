@@ -348,7 +348,7 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
                       {idx === 0 ? "👑" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "⭐"}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <div className="font-black truncate leading-tight">{m.familyName} {m.id === parent.id && "(You)"}</div>
+                      <div className="font-black truncate leading-tight">{m.familyName || m.email?.split('@')[0] || 'Parent'} {m.id === parent.id && "(You)"}</div>
                       <div className="text-[10px] font-bold text-white/70 uppercase tracking-widest mt-0.5">Lvl {m.level} • {m.streak}🔥</div>
                     </div>
                     <div className="font-black text-yellow-300 shrink-0 text-sm whitespace-nowrap">{m.xp} XP</div>
