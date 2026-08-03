@@ -328,7 +328,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
               
               <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-4 pt-1 px-1">
                 {quests.map((q: any, i: number) => {
-                  const isDone = q.status === 'completed';
+                  const isDone = q.status === 'completed' || q.status === 'verified';
                   const borderColors = ['bg-emerald-400', 'bg-blue-400', 'bg-orange-400', 'bg-purple-400'];
                   const color = borderColors[i % borderColors.length];
                   
@@ -408,7 +408,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                {quests.map((q: any, i: number) => {
                   const borderColors = ['bg-emerald-400', 'bg-blue-400', 'bg-orange-400', 'bg-purple-400'];
                   const borderColor = borderColors[i % borderColors.length];
-                  const isDone = q.status === 'completed';
+                  const isDone = q.status === 'completed' || q.status === 'verified';
                   const isCalOpen = selectedTaskCalendar === q.id;
 
                   // Calendar helpers
