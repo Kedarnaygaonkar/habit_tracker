@@ -771,18 +771,93 @@ export async function createApp() {
     const quest = db.get().quests.find(q => q.id === questId && q.childId === childId);
     if (!quest) return res.status(404).json({ error: "Quest not found." });
     if (quest.status === "completed" || quest.status === "verified") return res.status(400).json({ error: "Quest already submitted or completed." });
+
+    const child = db.get().children.find(c => c.id === childId);
+    if (!child) return res.status(404).json({ error: "Child not found." });
+
     quest.status = "completed";
     quest.proofData = proofData;
-    db.get().notifications.push({
-      id: `notif-${generateId()}`,
-      userId: quest.parentId,
-      role: "parent",
-      message: `✨ ${db.get().children.find(c => c.id === childId)?.name} completed quest "${quest.title}" and is waiting for your verification!`,
-      createdAt: new Date().toISOString(),
-      read: false
-    });
+
+    // ── Award XP & coins immediately on submit ──
+    child.xp += quest.xp;
+    child.coins += quest.coins;
+
+    // ── Level up check ──
+    const levelInfo = getLevelProgress(child.xp);
+    let leveledUp = false;
+    if (levelInfo.level > child.level) {
+      child.level = levelInfo.level;
+      leveledUp = true;
+      db.get().notifications.push({
+        id: `notif-${generateId()}`,
+        userId: child.id,
+        role: "child",
+        message: `🎉 LEVEL UP! You are now Level ${child.level}! You've gained magical strength!`,
+        createdAt: new Date().toISOString(),
+        read: false
+      });
+    }
+
+    // ── Update Daily Streak ──
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if (child.lastActiveDate !== todayStr) {
+      if (child.lastActiveDate) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().slice(0, 10);
+        child.streak = child.lastActiveDate === yesterdayStr ? child.streak + 1 : 1;
+      } else {
+        child.streak = 1;
+      }
+      if (child.streak > child.longestStreak) child.longestStreak = child.streak;
+      child.lastActiveDate = todayStr;
+    }
+
+    // ── Pet happiness boost ──
+    if (child.pet) {
+      child.pet.happiness = Math.min(100, child.pet.happiness + 10);
+      child.pet.status = "excited";
+      child.pet.xp += Math.round(quest.xp / 4);
+      if (child.pet.xp >= child.pet.level * 100) {
+        child.pet.xp -= child.pet.level * 100;
+        child.pet.level += 1;
+      }
+    }
+
+    // ── Add to quest history (status verified so badges trigger) ──
+    const historyItem: QuestHistory = {
+      id: `h-${generateId()}`,
+      childId: child.id,
+      questId: quest.id,
+      title: quest.title,
+      adventureTitle: quest.adventureTitle || quest.title,
+      xpEarned: quest.xp,
+      coinsEarned: quest.coins,
+      completedAt: new Date().toISOString(),
+      status: "verified",
+      proofData: quest.proofData
+    };
+    db.get().questHistory.push(historyItem);
+
+    // ── Badge check ──
+    const allHistory = db.get().questHistory.filter(h => h.childId === child.id);
+    const questsForChild = db.get().quests.filter(q => q.childId === child.id);
+    const newlyUnlocked = checkAndUnlockAchievements(child, questsForChild, allHistory);
+
+    // ── Notify parent for proof review if needed ──
+    if (quest.requireProof !== "none") {
+      db.get().notifications.push({
+        id: `notif-${generateId()}`,
+        userId: quest.parentId,
+        role: "parent",
+        message: `✨ ${child.name} completed quest "${quest.title}" and submitted proof for review!`,
+        createdAt: new Date().toISOString(),
+        read: false
+      });
+    }
+
     await db.save();
-    res.json({ success: true, quest });
+    res.json({ success: true, quest, leveledUp, newLevel: child.level, streak: child.streak, newlyUnlocked, child });
   });
 
   app.post("/api/children/:id/feed-pet", authenticateChild, async (req: any, res) => {

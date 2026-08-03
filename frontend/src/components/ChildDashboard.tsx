@@ -121,11 +121,25 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
         body: JSON.stringify({ proofData: proof })
       });
       if (res.ok) {
-        confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+        const result = await res.json();
         setSelectedQuest(null);
         setProofText("");
         setProofPhoto(null);
-        // Pass current achievements to detect any newly unlocked after refresh
+
+        // Show badge congrats popup if new badges were unlocked
+        if (result.newlyUnlocked && result.newlyUnlocked.length > 0) {
+          setNewBadgesPopup(result.newlyUnlocked);
+          confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ['#f59e0b','#10b981','#6366f1','#ec4899'] });
+        } else {
+          confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+        }
+
+        // Show level-up confetti if leveled up
+        if (result.leveledUp) {
+          setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#a855f7','#f59e0b','#10b981'] }), 400);
+        }
+
+        // Refresh dashboard — pass current achievements to detect any further newly unlocked ones
         const prevAchs = data?.achievements || [];
         fetchDashboard(prevAchs);
       }
@@ -190,10 +204,13 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
   const { child, pet, quests, achievements, rewards } = data;
   const pendingQuests = quests.filter((q: any) => q.status === "pending");
-  const completedQuests = quests.filter((q: any) => q.status === "completed");
+  const completedQuests = quests.filter((q: any) => q.status === "completed" || q.status === "verified");
   const todayDone = completedQuests.length;
   const todayTotal = quests.length;
   const progressPct = todayTotal > 0 ? Math.round((todayDone / todayTotal) * 100) : 0;
+  const xpProgressPct = child.levelProgress?.progressPercentage ?? 0; // Real XP-toward-next-level %
+  const xpNeeded = child.levelProgress?.nextLevelXpNeeded ?? 200; // XP needed for next level
+  const xpCurrent = child.levelProgress?.currentLevelXp ?? child.xp; // XP earned at current level
   const streak = child.streak || 0; // Real streak from DB
 
   const navItems = [
@@ -259,11 +276,20 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
               
               <div className="grid grid-cols-2 gap-3">
                  <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
-                   <div className="w-12 h-12 rounded-full border-4 border-purple-300 flex items-center justify-center font-black text-xs shrink-0">{child.levelProgress?.progressPercentage ?? progressPct}%</div>
+                   <div className="relative w-12 h-12 shrink-0">
+                     <svg viewBox="0 0 44 44" className="w-12 h-12 -rotate-90">
+                       <circle cx="22" cy="22" r="18" strokeWidth="4" stroke="rgba(255,255,255,0.2)" fill="none" />
+                       <circle cx="22" cy="22" r="18" strokeWidth="4" stroke="#c4b5fd" fill="none"
+                         strokeDasharray={`${2 * Math.PI * 18}`}
+                         strokeDashoffset={`${2 * Math.PI * 18 * (1 - xpProgressPct / 100)}`}
+                         strokeLinecap="round" className="transition-all duration-700" />
+                     </svg>
+                     <span className="absolute inset-0 flex items-center justify-center font-black text-[10px]">{xpProgressPct}%</span>
+                   </div>
                    <div>
                      <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">XP / Level</p>
                      <p className="font-black text-lg leading-tight">Level {child.level}</p>
-                     <p className="text-[11px] text-blue-200 font-semibold">{child.xp} XP total</p>
+                     <p className="text-[10px] text-blue-200 font-semibold">{child.xp} XP total • {xpCurrent}/{xpNeeded} this level</p>
                    </div>
                  </div>
                  <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
