@@ -25,7 +25,7 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
   const [message, setMessage] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  const authHeaders = { "Content-Type": "application/json", Authorization: Bearer  };
+  const authHeaders = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
   const fetchTeams = async () => {
     try {
