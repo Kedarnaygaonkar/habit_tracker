@@ -548,6 +548,12 @@ export async function createApp() {
     const { id } = req.params;
     const quest = db.get().quests.find(q => q.id === id && q.parentId === parentId);
     if (!quest) return res.status(404).json({ error: "Quest not found." });
+    
+    // Prevent double-clicks from failing
+    if (quest.status === "verified") {
+        return res.json({ success: true, quest });
+    }
+    
     if (quest.status !== "completed") return res.status(400).json({ error: "Quest is not in a submitted/completed state to verify." });
     const child = db.get().children.find(c => c.id === quest.childId && c.parentId === parentId);
     if (!child) return res.status(404).json({ error: "Associated child not found." });
@@ -556,38 +562,6 @@ export async function createApp() {
     quest.verified = true;
     quest.lastCompletedAt = new Date().toISOString();
 
-    child.xp += quest.xp;
-    child.coins += quest.coins;
-
-    const levelInfo = getLevelProgress(child.xp);
-    let leveledUp = false;
-    if (levelInfo.level > child.level) {
-      child.level = levelInfo.level;
-      leveledUp = true;
-      db.get().notifications.push({
-        id: `notif-${generateId()}`,
-        userId: child.id,
-        role: "child",
-        message: `🎉 LEVEL UP! You are now Level ${child.level}! You've gained magical strength!`,
-        createdAt: new Date().toISOString(),
-        read: false
-      });
-    }
-
-    // Update Daily Streak
-    const todayDate = new Date();
-    const todayStr = todayDate.toISOString().slice(0, 10);
-    const lastActiveStr = child.lastActiveDate;
-
-    if (lastActiveStr !== todayStr) {
-      if (lastActiveStr) {
-        const yesterdayDate = new Date(todayDate);
-        yesterdayDate.setDate(todayDate.getDate() - 1);
-        if (lastActiveStr === yesterdayDate.toISOString().slice(0, 10)) {
-          child.streak += 1;
-        } else {
-          child.streak = 1; // Reset streak
-        }
       } else {
         child.streak = 1;
       }
