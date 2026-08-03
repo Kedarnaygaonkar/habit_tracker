@@ -186,11 +186,15 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
 
   return (
     <>
-    <div className="parent-portal-bg min-h-screen pb-24 select-none">
+    <div className="parent-portal-bg min-h-screen pb-24 select-none relative">
+      {/* Decorative background blurs */}
+      <div className="fixed top-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-[100px] pointer-events-none z-0"></div>
+      <div className="fixed bottom-[10%] left-[-10%] w-[50%] h-[50%] bg-purple-200/40 rounded-full blur-[120px] pointer-events-none z-0"></div>
+
       {/* Toast */}
       {message && <div className="toast flex items-center gap-2 z-50"><Check className="w-4 h-4 text-green-600" /> {message}</div>}
 
-      <main className="max-w-2xl mx-auto">
+      <main className="max-w-2xl mx-auto relative z-10">
         {error && <div className="m-4 p-3 rounded-xl text-sm font-bold bg-red-50 border-2 border-red-200 text-red-600 flex items-center gap-2">⚠️ {error}</div>}
 
         {/* ── HEROES ── */}
@@ -206,21 +210,27 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               </div>
             </header>
 
-            <div className="px-6 flex gap-3 mb-8">
-              <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex flex-col items-center">
-                <Users className="w-5 h-5 text-slate-700 mb-2" strokeWidth={2.5} />
-                <span className="text-xl font-black text-slate-900 ">{children.length}</span>
-                <span className="text-xs text-slate-400 font-semibold mt-1">Heroes</span>
+            <div className="px-6 flex gap-3 mb-8 relative z-10">
+              <div className="flex-1 bg-white/70 backdrop-blur-xl rounded-[2rem] p-5 shadow-lg shadow-indigo-100/30 border border-white flex flex-col items-center transform transition-transform hover:-translate-y-1">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center mb-2">
+                  <Users className="w-5 h-5 text-indigo-500" strokeWidth={2.5} />
+                </div>
+                <span className="text-2xl font-black text-slate-800 ">{children.length}</span>
+                <span className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mt-1">Heroes</span>
               </div>
-              <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex flex-col items-center">
-                <Zap className="w-5 h-5 text-amber-500 mb-2" strokeWidth={2.5} />
-                <span className="text-xl font-black text-slate-900 ">{children.reduce((acc, c) => acc + (c.xp || 0), 0).toLocaleString()}</span>
-                <span className="text-xs text-slate-400 font-semibold mt-1">Total XP</span>
+              <div className="flex-1 bg-white/70 backdrop-blur-xl rounded-[2rem] p-5 shadow-lg shadow-indigo-100/30 border border-white flex flex-col items-center transform transition-transform hover:-translate-y-1">
+                <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center mb-2">
+                  <Zap className="w-5 h-5 text-amber-500" strokeWidth={2.5} />
+                </div>
+                <span className="text-2xl font-black text-slate-800 ">{children.reduce((acc, c) => acc + (c.xp || 0), 0).toLocaleString()}</span>
+                <span className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mt-1">Total XP</span>
               </div>
-              <div className="flex-1 bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex flex-col items-center">
-                <Flame className="w-5 h-5 text-red-500 mb-2" strokeWidth={2.5} />
-                <span className="text-xl font-black text-slate-900 ">{Math.max(...children.map(c => c.streak || 0), 0)}</span>
-                <span className="text-xs text-slate-400 font-semibold mt-1">Day Streak</span>
+              <div className="flex-1 bg-white/70 backdrop-blur-xl rounded-[2rem] p-5 shadow-lg shadow-indigo-100/30 border border-white flex flex-col items-center transform transition-transform hover:-translate-y-1">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-2">
+                  <Flame className="w-5 h-5 text-red-500" strokeWidth={2.5} />
+                </div>
+                <span className="text-2xl font-black text-slate-800 ">{Math.max(...children.map(c => c.streak || 0), 0)}</span>
+                <span className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mt-1">Day Streak</span>
               </div>
             </div>
 
@@ -229,9 +239,9 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               <span className="text-xs font-semibold text-slate-400">Swipe to browse</span>
             </div>
 
-            <div className="px-6 flex overflow-x-auto gap-4 pb-4 snap-x hide-scroll">
+            <div className="px-6 flex overflow-x-auto gap-4 pb-4 snap-x hide-scroll relative z-10">
               {children.map(c => (
-                <div key={c.id} className={`snap-start shrink-0 w-[180px] rounded-[2rem] p-5 flex flex-col relative cursor-pointer transition-colors ${c.gender === 'girl' ? 'bg-[#fce6f3] hover:bg-[#fad4eb]' : 'bg-[#e6f0fa] hover:bg-[#d4e6f9]'}`} onClick={() => setSelectedHero(c)}>
+                <div key={c.id} className={`snap-start shrink-0 w-[180px] rounded-[2.5rem] p-5 flex flex-col relative cursor-pointer transition-all hover:-translate-y-1 shadow-lg shadow-indigo-100/20 border-2 border-white/60 backdrop-blur-md ${c.gender === 'girl' ? 'bg-[#fce6f3]/80 hover:bg-[#fad4eb]/90' : 'bg-[#e6f0fa]/80 hover:bg-[#d4e6f9]/90'}`} onClick={() => setSelectedHero(c)}>
                   {/* Edit Button (3 dots) */}
                   <button 
                     className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-white/50 hover:bg-white rounded-full p-1.5 transition-colors z-20"
@@ -274,10 +284,12 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                 </div>
               ))}
               
-              <div onClick={() => setChildForm({ ...emptyChildForm, open: true })} className="snap-start shrink-0 w-[180px] add-hero-card">
-                 <div className="add-hero-icon"><Plus className="w-6 h-6" strokeWidth={3} /></div>
-                 <h4 className="text-sm font-bold text-blue-600 mb-1">Add a Hero</h4>
-                 <p className="text-[10px] font-semibold text-blue-400 text-center px-2 leading-tight">Create a new child profile</p>
+              <div onClick={() => setChildForm({ ...emptyChildForm, open: true })} className="snap-start shrink-0 w-[180px] rounded-[2.5rem] p-5 flex flex-col items-center justify-center cursor-pointer transition-all hover:-translate-y-1 shadow-lg shadow-indigo-100/20 border-2 border-dashed border-indigo-200 bg-white/40 backdrop-blur-md group">
+                 <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Plus className="w-6 h-6" strokeWidth={3} />
+                 </div>
+                 <h4 className="text-sm font-black text-indigo-600 mb-1">Add a Hero</h4>
+                 <p className="text-[10px] font-bold text-indigo-400 text-center px-2 leading-tight">Create a new profile</p>
               </div>
             </div>
           </div>
