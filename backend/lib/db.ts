@@ -230,6 +230,7 @@ function getInitialData(): Schema {
         coins: 5,
         reminderTime: "08:00",
         requireProof: "none",
+        category: "health",
         status: "pending",
         verified: false
       },
@@ -245,6 +246,7 @@ function getInitialData(): Schema {
         coins: 15,
         reminderTime: "19:30",
         requireProof: "text",
+        category: "reading",
         status: "pending",
         verified: false
       },
@@ -260,6 +262,7 @@ function getInitialData(): Schema {
         coins: 30,
         reminderTime: "16:00",
         requireProof: "photo",
+        category: "homework",
         status: "pending",
         verified: false
       },
@@ -275,6 +278,7 @@ function getInitialData(): Schema {
         coins: 20,
         reminderTime: "10:00",
         requireProof: "photo",
+        category: "chores",
         status: "pending",
         verified: false
       },
@@ -290,6 +294,7 @@ function getInitialData(): Schema {
         coins: 2,
         reminderTime: "12:00",
         requireProof: "none",
+        category: "health",
         status: "pending",
         verified: false
       }

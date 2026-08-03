@@ -548,77 +548,29 @@ export async function createApp() {
     const { id } = req.params;
     const quest = db.get().quests.find(q => q.id === id && q.parentId === parentId);
     if (!quest) return res.status(404).json({ error: "Quest not found." });
-    
+
     // Prevent double-clicks from failing
-    if (quest.status === "verified") {
-        return res.json({ success: true, quest });
-    }
-    
+    if (quest.status === "verified") return res.json({ success: true, quest });
     if (quest.status !== "completed") return res.status(400).json({ error: "Quest is not in a submitted/completed state to verify." });
+
     const child = db.get().children.find(c => c.id === quest.childId && c.parentId === parentId);
     if (!child) return res.status(404).json({ error: "Associated child not found." });
 
     quest.status = "verified";
     quest.verified = true;
-    quest.lastCompletedAt = new Date().toISOString();
 
-      } else {
-        child.streak = 1;
-      }
-      if (child.streak > child.longestStreak) child.longestStreak = child.streak;
-      child.lastActiveDate = todayStr;
-    }
-
-    if (child.pet) {
-      child.pet.happiness = Math.min(100, child.pet.happiness + 15);
-      child.pet.status = "excited";
-      child.pet.xp += Math.round(quest.xp / 2);
-      if (child.pet.xp >= child.pet.level * 100) {
-        child.pet.xp -= child.pet.level * 100;
-        child.pet.level += 1;
-        db.get().notifications.push({
-          id: `notif-${generateId()}`,
-          userId: child.id,
-          role: "child",
-          message: `🐉 Your pet ${child.pet.name} leveled up to Level ${child.pet.level}!`,
-          createdAt: new Date().toISOString(),
-          read: false
-        });
-      }
-    }
-
-    const historyItem: QuestHistory = {
-      id: `h-${generateId()}`,
-      childId: child.id,
-      questId: quest.id,
-      title: quest.title,
-      adventureTitle: quest.adventureTitle,
-      xpEarned: quest.xp,
-      coinsEarned: quest.coins,
-      completedAt: new Date().toISOString(),
-      status: "verified",
-      proofData: quest.proofData
-    };
-    db.get().questHistory.push(historyItem);
-
-    // We no longer reset to pending immediately — it stays verified for today
-    // and the middleware will reset it to pending tomorrow.
-
-    const allHistory = db.get().questHistory.filter(h => h.childId === child.id);
-    const questsForChild = db.get().quests.filter(q => q.childId === child.id);
-    const newlyUnlocked = checkAndUnlockAchievements(child, questsForChild, allHistory);
-
+    // Notify the child
     db.get().notifications.push({
       id: `notif-${generateId()}`,
-      userId: parentId,
-      role: "parent",
-      message: `Verified quest "${quest.title}" for ${child.name}. Gained +${quest.xp} XP / +${quest.coins} Coins!`,
+      userId: child.id,
+      role: "child",
+      message: `✅ Parent verified your quest "${quest.title}"! Great job!`,
       createdAt: new Date().toISOString(),
       read: false
     });
 
     await db.save();
-    res.json({ success: true, leveledUp, newLevel: child.level, streak: child.streak, newlyUnlocked, quest, child });
+    res.json({ success: true, quest });
   });
 
   app.post("/api/parent/quests/:id/reject", authenticateParent, async (req: any, res) => {
