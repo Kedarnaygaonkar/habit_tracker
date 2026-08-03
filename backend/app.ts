@@ -1075,6 +1075,37 @@ export async function createApp() {
     res.json(populatedTeams);
   });
 
+  app.delete("/api/parent-teams/:teamId", authenticateParent, async (req: any, res) => {
+    const parentId = req.parent.id;
+    const { teamId } = req.params;
+    
+    const teamIndex = db.get().parentTeams.findIndex(t => t.id === teamId);
+    if (teamIndex === -1) return res.status(404).json({ error: "Team not found." });
+    
+    const team = db.get().parentTeams[teamIndex];
+    if (team.creatorId !== parentId) return res.status(403).json({ error: "Only the creator can delete the team." });
+    
+    db.get().parentTeams.splice(teamIndex, 1);
+    await db.save();
+    res.json({ success: true, message: "Team deleted." });
+  });
+
+  app.post("/api/parent-teams/:teamId/leave", authenticateParent, async (req: any, res) => {
+    const parentId = req.parent.id;
+    const { teamId } = req.params;
+    
+    const team = db.get().parentTeams.find(t => t.id === teamId);
+    if (!team) return res.status(404).json({ error: "Team not found." });
+    
+    if (team.creatorId === parentId) {
+      return res.status(400).json({ error: "As the creator, you cannot leave the team. You must delete it." });
+    }
+    
+    team.members = team.members.filter((id: string) => id !== parentId);
+    await db.save();
+    res.json({ success: true, message: "Left team successfully." });
+  });
+
   app.post("/api/parent-teams/:teamId/quests", authenticateParent, async (req: any, res) => {
     const { teamId } = req.params;
     const { title, xp, coins, repetition } = req.body;

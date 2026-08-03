@@ -182,6 +182,34 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
     } catch (err) { console.error(err); }
   };
 
+  const handleDeleteTeam = async (teamId: string) => {
+    if (!confirm("Are you sure you want to delete this team? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/parent-teams/${teamId}`, { method: "DELETE", headers: authHeaders });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const newTeams = teams.filter(t => t.id !== teamId);
+      setTeams(newTeams);
+      if (newTeams.length > 0) setSelectedTeamId(newTeams[0].id);
+      else setSelectedTeamId(null);
+      showMsg("Team deleted.");
+    } catch (err: any) { showErr(err.message); }
+  };
+
+  const handleLeaveTeam = async (teamId: string) => {
+    if (!confirm("Are you sure you want to leave this team?")) return;
+    try {
+      const res = await fetch(`/api/parent-teams/${teamId}/leave`, { method: "POST", headers: authHeaders });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const newTeams = teams.filter(t => t.id !== teamId);
+      setTeams(newTeams);
+      if (newTeams.length > 0) setSelectedTeamId(newTeams[0].id);
+      else setSelectedTeamId(null);
+      showMsg("You left the team.");
+    } catch (err: any) { showErr(err.message); }
+  };
+
   if (loading) return <div className="p-10 text-center text-slate-400 font-bold animate-pulse">Loading Teams...</div>;
 
   const team = teams.find(t => t.id === selectedTeamId) || teams[0];
@@ -237,6 +265,15 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
                   <button onClick={() => handleShareTeam(team)} className="bg-purple-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 hover:bg-purple-700 active:scale-95 transition-all shadow-md shadow-purple-200">
                     {copiedId === team?.id ? "Copied!" : "Share"}
                   </button>
+                  {team?.creatorId === parent.id ? (
+                    <button onClick={() => handleDeleteTeam(team.id)} className="bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 px-4 py-2 rounded-xl font-bold transition-all" title="Delete Team">
+                      Delete
+                    </button>
+                  ) : (
+                    <button onClick={() => handleLeaveTeam(team.id)} className="bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 px-4 py-2 rounded-xl font-bold transition-all" title="Leave Team">
+                      Leave
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -310,22 +347,30 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-300 to-orange-400 flex items-center justify-center text-xl shadow-md border-2 border-white/20 shrink-0">
                       {idx === 0 ? "👑" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "⭐"}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-black truncate">{m.familyName} {m.id === parent.id && "(You)"}</div>
-                      <div className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Lvl {m.level} • {m.streak}🔥</div>
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <div className="font-black truncate leading-tight">{m.familyName} {m.id === parent.id && "(You)"}</div>
+                      <div className="text-[10px] font-bold text-white/70 uppercase tracking-widest mt-0.5">Lvl {m.level} • {m.streak}🔥</div>
                     </div>
-                    <div className="font-black text-yellow-300 shrink-0">{m.xp} XP</div>
+                    <div className="font-black text-yellow-300 shrink-0 text-sm whitespace-nowrap">{m.xp} XP</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-               <h3 className="font-black text-lg text-slate-800 mb-4">Join Another Team</h3>
+            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 space-y-4">
+               <h3 className="font-black text-lg text-slate-800">Join Another Team</h3>
                <form onSubmit={handleJoin} className="flex gap-2">
-                 <input type="text" placeholder="Invite Code" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} className="flex-1 bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-2 font-bold text-slate-700 outline-none focus:border-indigo-400 uppercase" required />
-                 <button disabled={joinLoading} type="submit" className="bg-indigo-600 text-white font-black px-4 rounded-xl hover:bg-indigo-700 transition-colors">Join</button>
+                 <input type="text" placeholder="Invite Code" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} className="flex-1 bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-2 font-bold text-slate-700 outline-none focus:border-indigo-400 uppercase w-full min-w-0" required />
+                 <button disabled={joinLoading} type="submit" className="bg-indigo-600 text-white font-black px-4 rounded-xl hover:bg-indigo-700 transition-colors shrink-0">Join</button>
                </form>
+               <div className="relative flex items-center py-2">
+                 <div className="flex-grow border-t border-slate-200"></div>
+                 <span className="flex-shrink-0 mx-4 text-slate-400 font-black text-xs uppercase tracking-widest">OR</span>
+                 <div className="flex-grow border-t border-slate-200"></div>
+               </div>
+               <button onClick={() => setCreateForm({ ...createForm, open: true })} className="w-full bg-slate-50 border-2 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 font-black py-3 rounded-xl transition-all">
+                 Create a New Team
+               </button>
             </div>
           </div>
         </div>
