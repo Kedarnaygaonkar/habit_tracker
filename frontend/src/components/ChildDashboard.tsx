@@ -44,6 +44,9 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const [claiming, setClaiming] = useState(false);
   const [taskFilter, setTaskFilter] = useState<"today" | "all">("today");
   const [selectedTaskCalendar, setSelectedTaskCalendar] = useState<string | null>(null);
+  const [badgeCatalog, setBadgeCatalog] = useState<any[]>([]);
+  const [selectedBadge, setSelectedBadge] = useState<any | null>(null); // for detail modal
+  const [newBadgesPopup, setNewBadgesPopup] = useState<any[]>([]); // congrats popup
 
   const [joinTeamCode, setJoinTeamCode] = useState(() => {
     const urlCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
@@ -51,25 +54,46 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   });
   const [joinTeamLoading, setJoinTeamLoading] = useState(false);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (prevAchievements?: any[]) => {
     try {
-      const [res, teamRes] = await Promise.all([
+      const [res, teamRes, catalogRes] = await Promise.all([
         fetch(`/api/children/${childUser.id}/dashboard`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`/api/children/${childUser.id}/teams`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`/api/children/${childUser.id}/teams`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/badges/catalog`)
       ]);
-      if (res.ok) setData(await res.json());
+      if (res.ok) {
+        const newData = await res.json();
+        // Check if new badges were earned since last fetch
+        if (prevAchievements !== undefined) {
+          const prevIds = new Set(prevAchievements.map((a: any) => a.id));
+          const fresh = (newData.achievements || []).filter((a: any) => !prevIds.has(a.id));
+          if (fresh.length > 0) {
+            setNewBadgesPopup(fresh);
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ['#f59e0b','#10b981','#6366f1','#ec4899'] });
+          }
+        }
+        setData(newData);
+      }
       if (teamRes.ok) {
         const fetchedTeams = await teamRes.json();
         setTeams(fetchedTeams);
         setSelectedTeamId(prev => (prev && fetchedTeams.some((t: any) => t.id === prev)) ? prev : (fetchedTeams[0]?.id || null));
       }
+      if (catalogRes.ok) setBadgeCatalog(await catalogRes.json());
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
   useEffect(() => {
-    fetchDashboard();
-    const interval = setInterval(fetchDashboard, 15000);
+    fetchDashboard(undefined);
+    // Poll every 15s, passing current achievements so we can detect newly unlocked ones
+    const interval = setInterval(() => {
+      setData((prev: any) => {
+        const prevAchs = prev?.achievements || [];
+        fetchDashboard(prevAchs);
+        return prev;
+      });
+    }, 15000);
 
     const pendingCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
     if (pendingCode) {
@@ -101,7 +125,9 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
         setSelectedQuest(null);
         setProofText("");
         setProofPhoto(null);
-        fetchDashboard();
+        // Pass current achievements to detect any newly unlocked after refresh
+        const prevAchs = data?.achievements || [];
+        fetchDashboard(prevAchs);
       }
     } catch (e) { console.error(e); }
     finally { setClaiming(false); }
@@ -862,39 +888,47 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                </div>
             </div>
 
-            {/* My Badges Section */}
+            {/* My Badges Section - Full Catalog */}
             <div className="bg-white rounded-[36px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100">
-               <div className="flex justify-between items-start mb-5">
+               <div className="flex justify-between items-start mb-2">
                   <div>
                      <h3 className="font-black text-2xl text-slate-800 mb-1">My Badges</h3>
-                     <p className="text-xs font-bold text-slate-500 leading-tight">Collect sticker-style achievements as you grow</p>
+                     <p className="text-xs font-bold text-slate-500 leading-tight">{achievements.length} earned — {badgeCatalog.length - achievements.length} locked</p>
                   </div>
                   <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0"><CheckCircle2 className="w-5 h-5 text-amber-600" /></div>
                </div>
-               
-               <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2 pt-1 px-1">
-                  {achievements.length > 0 ? (
-                     achievements.map((ach: any, i: number) => {
-                        const borderColors = ['border-amber-400', 'border-blue-400', 'border-emerald-400', 'border-purple-400', 'border-rose-400'];
-                        const iconMap: Record<string, string> = {
-                          'award_star': '⭐', 'sparkles': '✨', 'trophy': '🏆', 'flame': '🔥',
-                          'shield': '🛡️', 'heart': '❤️', 'book_open': '📖', 'graduation_cap': '🎓',
-                          'shield_alert': '🏅', 'default': '🎖️'
-                        };
-                        return (
-                           <div key={ach.id} className={`w-[96px] h-[120px] rounded-full border-2 ${borderColors[i % borderColors.length]} bg-slate-50 flex flex-col items-center justify-center shrink-0 shadow-sm p-3 text-center`}>
-                              <div className="text-3xl mb-2">{iconMap[ach.icon] || iconMap['default']}</div>
-                              <p className="text-[10px] font-black text-slate-700 leading-tight">{ach.title}</p>
-                           </div>
-                        );
-                     })
-                  ) : (
-                     <div className="w-full py-4 flex flex-col items-center justify-center text-center">
-                        <p className="text-5xl mb-3">🌱</p>
-                        <p className="font-black text-slate-600">No badges yet!</p>
-                        <p className="text-xs font-bold text-slate-400 mt-1">Complete tasks to earn your first badge</p>
-                     </div>
-                  )}
+
+               {/* Earned Badges */}
+               {achievements.length > 0 && (
+                 <div className="mb-4">
+                   <p className="text-[10px] font-black uppercase tracking-wider text-emerald-500 mb-3 px-1">✅ Earned</p>
+                   <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 pt-1 px-1">
+                     {achievements.map((ach: any, i: number) => {
+                       const catalogEntry = badgeCatalog.find((b: any) => b.title === ach.title);
+                       const borderColors = ['border-amber-400','border-blue-400','border-emerald-400','border-purple-400','border-rose-400'];
+                       return (
+                         <button key={ach.id} onClick={() => setSelectedBadge({ ...catalogEntry, earned: true, unlockedAt: ach.unlockedAt })} className={`w-[92px] min-w-[92px] h-[116px] rounded-[28px] border-2 ${borderColors[i % borderColors.length]} bg-gradient-to-b from-amber-50 to-white flex flex-col items-center justify-center shadow-sm p-3 text-center transition-transform hover:scale-105 active:scale-95`}>
+                           <div className="text-3xl mb-1.5">{catalogEntry?.emoji || '🎖️'}</div>
+                           <p className="text-[10px] font-black text-slate-700 leading-tight">{ach.title}</p>
+                           <span className="mt-1.5 text-[8px] font-black bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full">✓ EARNED</span>
+                         </button>
+                       );
+                     })}
+                   </div>
+                 </div>
+               )}
+
+               {/* Locked / Available Badges */}
+               <div>
+                 <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3 px-1">🔒 Available to Earn</p>
+                 <div className="grid grid-cols-3 gap-3">
+                   {badgeCatalog.filter((b: any) => !achievements.some((a: any) => a.title === b.title)).map((badge: any) => (
+                     <button key={badge.id} onClick={() => setSelectedBadge({ ...badge, earned: false })} className="flex flex-col items-center justify-center bg-slate-50 border-2 border-slate-200 border-dashed rounded-[24px] p-3 text-center hover:bg-slate-100 transition-colors active:scale-95">
+                       <div className="text-3xl mb-1.5 grayscale opacity-50">{badge.emoji}</div>
+                       <p className="text-[10px] font-black text-slate-500 leading-tight line-clamp-2">{badge.title}</p>
+                     </button>
+                   ))}
+                 </div>
                </div>
             </div>
             
@@ -965,6 +999,64 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Badge Detail Modal */}
+      {selectedBadge && (
+        <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center bg-slate-900/50 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setSelectedBadge(null)}>
+          <div className="bg-white w-full max-w-sm rounded-[32px] p-6 shadow-2xl animate-slide-up relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedBadge(null)} className="absolute top-4 right-4 w-8 h-8 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center"><X className="w-4 h-4" /></button>
+            
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className={`w-24 h-24 rounded-full flex items-center justify-center text-5xl mb-4 ${selectedBadge.earned ? 'bg-amber-100 border-4 border-amber-400' : 'bg-slate-100 border-4 border-slate-200 grayscale opacity-60'}`}>
+                {selectedBadge.emoji || '🎖️'}
+              </div>
+              <h2 className="text-2xl font-black text-slate-800 mb-1">{selectedBadge.title}</h2>
+              <p className="text-sm font-bold text-slate-500 leading-snug px-4">{selectedBadge.description}</p>
+            </div>
+
+            <div className={`rounded-2xl p-4 mb-4 ${selectedBadge.earned ? 'bg-emerald-50 border border-emerald-200' : 'bg-blue-50 border border-blue-200'}`}>
+              <p className="text-[10px] font-black uppercase tracking-wider mb-1 ${selectedBadge.earned ? 'text-emerald-500' : 'text-blue-400'}">
+                {selectedBadge.earned ? '✅ Requirement Met' : '🎯 Requirement'}
+              </p>
+              <p className="font-black text-slate-800">{selectedBadge.requirementText}</p>
+              {selectedBadge.earned && selectedBadge.unlockedAt && (
+                <p className="text-xs font-bold text-emerald-500 mt-1">Earned on {new Date(selectedBadge.unlockedAt).toLocaleDateString()}</p>
+              )}
+            </div>
+
+            {!selectedBadge.earned && (
+              <p className="text-center text-xs font-bold text-slate-400">Keep going! You can earn this badge! 💪</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Congrats Popup — shows when new badges are unlocked */}
+      {newBadgesPopup.length > 0 && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white w-full max-w-sm rounded-[32px] p-8 shadow-2xl text-center relative animate-slide-up">
+            <div className="text-6xl mb-4">🏆</div>
+            <h2 className="text-3xl font-black text-slate-800 mb-2">Badge Unlocked!</h2>
+            <p className="text-sm font-bold text-slate-500 mb-6">You just earned {newBadgesPopup.length > 1 ? `${newBadgesPopup.length} new badges` : 'a new badge'}!</p>
+            <div className="flex flex-wrap gap-3 justify-center mb-6">
+              {newBadgesPopup.map((b: any, i: number) => {
+                const catalogEntry = badgeCatalog.find((c: any) => c.title === b.title);
+                return (
+                  <div key={i} className="flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-full bg-amber-100 border-4 border-amber-400 flex items-center justify-center text-3xl mb-1">
+                      {catalogEntry?.emoji || '⭐'}
+                    </div>
+                    <p className="text-[10px] font-black text-slate-700">{b.title}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <button onClick={() => setNewBadgesPopup([])} className="w-full bg-emerald-500 text-white font-black py-4 rounded-2xl shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-colors">
+              Awesome! 🎉
+            </button>
           </div>
         </div>
       )}

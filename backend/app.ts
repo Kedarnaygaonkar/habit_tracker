@@ -42,6 +42,21 @@ export async function createApp() {
     }
   }
 
+  // Badge Catalog — single source of truth for all earnable badges
+  const BADGE_CATALOG = [
+    { id: "first_quest",    title: "First Quest",          description: "Complete your very first quest!",                       icon: "award_star",      emoji: "⭐", requirementText: "Complete 1 task",               type: "quests_total",    threshold: 1  },
+    { id: "xp_100",         title: "100 XP Club",          description: "Earn a grand total of 100 XP!",                        icon: "sparkles",        emoji: "✨", requirementText: "Earn 100 XP",                   type: "xp",              threshold: 100 },
+    { id: "xp_500",         title: "500 XP Super Star",    description: "Earn a massive total of 500 XP!",                      icon: "trophy",          emoji: "🏆", requirementText: "Earn 500 XP",                   type: "xp",              threshold: 500 },
+    { id: "streak_7",       title: "7 Day Streak",         description: "Keep your quest streak alive for 7 straight days!",    icon: "flame",           emoji: "🔥", requirementText: "Maintain a 7-day streak",        type: "streak",          threshold: 7  },
+    { id: "streak_15",      title: "15 Day Streak",        description: "Incredible consistency! Keep a 15-day streak!",        icon: "shield",          emoji: "🛡️", requirementText: "Maintain a 15-day streak",       type: "streak",          threshold: 15 },
+    { id: "quest_10",       title: "10 Completed Quests",  description: "Defeat 10 monsters and challenges!",                   icon: "shield_alert",    emoji: "🏅", requirementText: "Complete 10 verified tasks",     type: "verified_total",  threshold: 10 },
+    { id: "quest_25",       title: "25 Quest Champion",    description: "You've verified 25 quests — unstoppable!",             icon: "trophy",          emoji: "🥇", requirementText: "Complete 25 verified tasks",     type: "verified_total",  threshold: 25 },
+    { id: "reading_master", title: "Reading Master",       description: "Complete 3 reading quests!",                           icon: "book_open",       emoji: "📖", requirementText: "Complete 3 reading tasks",       type: "reading",         threshold: 3  },
+    { id: "homework_hero",  title: "Homework Hero",        description: "Complete 3 study or homework quests!",                 icon: "graduation_cap",  emoji: "🎓", requirementText: "Complete 3 homework/study tasks", type: "homework",        threshold: 3  },
+    { id: "healthy_kid",    title: "Healthy Kid",          description: "Complete 5 health & hygiene quests!",                  icon: "heart",           emoji: "❤️", requirementText: "Complete 5 health/hygiene tasks", type: "health",          threshold: 5  },
+    { id: "coins_100",      title: "Coin Collector",       description: "Accumulate 100 coins at once!",                        icon: "sparkles",        emoji: "🪙", requirementText: "Have 100 coins at once",          type: "coins",           threshold: 100 },
+  ];
+
   // Helper: Trigger and check achievements
   function checkAndUnlockAchievements(child: Child, quests: Quest[], history: QuestHistory[]): Achievement[] {
     const currentAchievements = db.get().achievements.filter(a => a.childId === child.id);
@@ -76,8 +91,12 @@ export async function createApp() {
     if (child.xp >= 500) addAchievement("500 XP Super Star", "Earned a massive total of 500 XP!", "trophy");
     if (child.streak >= 7) addAchievement("7 Day Streak", "Kept your quest streak alive for 7 straight days!", "flame");
     if (child.streak >= 15) addAchievement("15 Day Streak", "Incredible consistency! Kept a streak of 15 days!", "shield");
+    if (child.coins >= 100) addAchievement("Coin Collector", "Accumulated 100 coins at once!", "sparkles");
 
     const verifiedHistory = history.filter(h => h.status === "verified");
+    if (verifiedHistory.length >= 10) addAchievement("10 Completed Quests", "Defeated 10 monsters and challenges!", "shield_alert");
+    if (verifiedHistory.length >= 25) addAchievement("25 Quest Champion", "You've verified 25 quests — unstoppable!", "trophy");
+
     const readQuests = verifiedHistory.filter(h => h.title.toLowerCase().includes("read") || h.adventureTitle.toLowerCase().includes("library") || h.adventureTitle.toLowerCase().includes("reading"));
     if (readQuests.length >= 3) addAchievement("Reading Master", "Completed 3 books or reading quests!", "book_open");
 
@@ -85,9 +104,7 @@ export async function createApp() {
     if (homeworkQuests.length >= 3) addAchievement("Homework Hero", "Completed 3 study or homework quests successfully!", "graduation_cap");
 
     const healthQuests = verifiedHistory.filter(h => h.title.toLowerCase().includes("brush") || h.title.toLowerCase().includes("water") || h.adventureTitle.toLowerCase().includes("potion") || h.adventureTitle.toLowerCase().includes("cavity"));
-    if (healthQuests.length >= 5) addAchievement("Healthy Kid", "Successfully drank magic potions and defeated the Cavity Monster 5 times!", "heart");
-
-    if (verifiedHistory.length >= 10) addAchievement("10 Completed Quests", "Defeated 10 monsters and challenges!", "shield_alert");
+    if (healthQuests.length >= 5) addAchievement("Healthy Kid", "Successfully completed health & hygiene quests 5 times!", "heart");
 
     if (newAchievements.length > 0) db.save();
     return newAchievements;
@@ -396,6 +413,11 @@ export async function createApp() {
     // Return quest history records for these children
     const history = db.get().questHistory.filter(h => childrenIds.includes(h.childId));
     res.json(history);
+  });
+
+  // Public badge catalog endpoint
+  app.get("/api/badges/catalog", (_req, res) => {
+    res.json(BADGE_CATALOG);
   });
 
   app.get("/api/quests", authenticateParent, async (req: any, res) => {
