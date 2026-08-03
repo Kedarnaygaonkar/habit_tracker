@@ -259,10 +259,11 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
               
               <div className="grid grid-cols-2 gap-3">
                  <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
-                   <div className="w-12 h-12 rounded-full border-4 border-purple-300 flex items-center justify-center font-black text-xs">{progressPct}%</div>
+                   <div className="w-12 h-12 rounded-full border-4 border-purple-300 flex items-center justify-center font-black text-xs shrink-0">{child.levelProgress?.progressPercentage ?? progressPct}%</div>
                    <div>
                      <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">XP / Level</p>
                      <p className="font-black text-lg leading-tight">Level {child.level}</p>
+                     <p className="text-[11px] text-blue-200 font-semibold">{child.xp} XP total</p>
                    </div>
                  </div>
                  <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">

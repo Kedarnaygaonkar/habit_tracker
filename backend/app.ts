@@ -97,13 +97,38 @@ export async function createApp() {
     if (verifiedHistory.length >= 10) addAchievement("10 Completed Quests", "Defeated 10 monsters and challenges!", "shield_alert");
     if (verifiedHistory.length >= 25) addAchievement("25 Quest Champion", "You've verified 25 quests — unstoppable!", "trophy");
 
-    const readQuests = verifiedHistory.filter(h => h.title.toLowerCase().includes("read") || h.adventureTitle.toLowerCase().includes("library") || h.adventureTitle.toLowerCase().includes("reading"));
-    if (readQuests.length >= 3) addAchievement("Reading Master", "Completed 3 books or reading quests!", "book_open");
+    // Use quest.category for reliable badge detection
+    const questsForChildById: Record<string, Quest> = {};
+    const allQuests = db.get().quests.filter(q => q.childId === child.id);
+    allQuests.forEach(q => { questsForChildById[q.id] = q; });
 
-    const homeworkQuests = verifiedHistory.filter(h => h.title.toLowerCase().includes("homework") || h.title.toLowerCase().includes("study") || h.adventureTitle.toLowerCase().includes("academy") || h.adventureTitle.toLowerCase().includes("school"));
+    const readQuests = verifiedHistory.filter(h => {
+      const q = questsForChildById[h.questId];
+      return q?.category === 'reading' ||
+        h.title.toLowerCase().includes("read") ||
+        h.adventureTitle.toLowerCase().includes("library") ||
+        h.adventureTitle.toLowerCase().includes("reading");
+    });
+    if (readQuests.length >= 3) addAchievement("Reading Master", "Completed 3 reading quests!", "book_open");
+
+    const homeworkQuests = verifiedHistory.filter(h => {
+      const q = questsForChildById[h.questId];
+      return q?.category === 'homework' ||
+        h.title.toLowerCase().includes("homework") ||
+        h.title.toLowerCase().includes("study") ||
+        h.adventureTitle.toLowerCase().includes("academy") ||
+        h.adventureTitle.toLowerCase().includes("school");
+    });
     if (homeworkQuests.length >= 3) addAchievement("Homework Hero", "Completed 3 study or homework quests successfully!", "graduation_cap");
 
-    const healthQuests = verifiedHistory.filter(h => h.title.toLowerCase().includes("brush") || h.title.toLowerCase().includes("water") || h.adventureTitle.toLowerCase().includes("potion") || h.adventureTitle.toLowerCase().includes("cavity"));
+    const healthQuests = verifiedHistory.filter(h => {
+      const q = questsForChildById[h.questId];
+      return q?.category === 'health' ||
+        h.title.toLowerCase().includes("brush") ||
+        h.title.toLowerCase().includes("water") ||
+        h.adventureTitle.toLowerCase().includes("potion") ||
+        h.adventureTitle.toLowerCase().includes("cavity");
+    });
     if (healthQuests.length >= 5) addAchievement("Healthy Kid", "Successfully completed health & hygiene quests 5 times!", "heart");
 
     if (newAchievements.length > 0) db.save();
@@ -437,7 +462,7 @@ export async function createApp() {
 
   app.post("/api/parent/quests", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
-    const { childId, title, difficulty, repetition, reminderTime, requireProof } = req.body;
+    const { childId, title, difficulty, repetition, reminderTime, requireProof, category } = req.body;
     if (!childId || !title || !difficulty || !repetition) {
       return res.status(400).json({ error: "Child, title, difficulty, and repetition style are required." });
     }
@@ -457,6 +482,7 @@ export async function createApp() {
       title,
       adventureTitle,
       difficulty,
+      category: category || "general",
       repetition,
       xp,
       coins,
@@ -473,7 +499,7 @@ export async function createApp() {
   app.put("/api/parent/quests/:id", authenticateParent, async (req: any, res) => {
     const parentId = req.parent.id;
     const { id } = req.params;
-    const { title, difficulty, repetition, reminderTime, requireProof, xp, coins } = req.body;
+    const { title, difficulty, repetition, reminderTime, requireProof, category, xp, coins } = req.body;
     const questIndex = db.get().quests.findIndex(q => q.id === id && q.parentId === parentId);
     if (questIndex === -1) return res.status(404).json({ error: "Quest not found." });
     const quest = db.get().quests[questIndex];
@@ -482,6 +508,7 @@ export async function createApp() {
       quest.adventureTitle = await generateAdventureTitle(title);
     }
     if (difficulty) quest.difficulty = difficulty;
+    if (category) quest.category = category;
     if (repetition) quest.repetition = repetition;
     if (reminderTime) quest.reminderTime = reminderTime;
     if (requireProof) quest.requireProof = requireProof;

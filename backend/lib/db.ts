@@ -45,6 +45,8 @@ export type RepetitionType = "daily" | "weekly" | "monthly";
 export type ProofType = "photo" | "text" | "none";
 export type QuestStatus = "pending" | "completed" | "verified" | "rejected";
 
+export type QuestCategory = "general" | "reading" | "homework" | "health" | "fitness" | "chores";
+
 export interface Quest {
   id: string;
   parentId: string;
@@ -52,6 +54,7 @@ export interface Quest {
   title: string;          // e.g., "Brush Teeth"
   adventureTitle: string; // AI generated, e.g., "Defeat the Cavity Monster"
   difficulty: "easy" | "medium" | "hard";
+  category: QuestCategory;  // task category for badge detection
   repetition: RepetitionType;
   xp: number;
   coins: number;

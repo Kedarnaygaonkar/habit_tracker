@@ -11,7 +11,7 @@ interface ParentDashboardProps {
 type Tab = "heroes" | "tasks" | "rewards" | "verify" | "settings";
 
 const emptyChildForm = { open: false, isEdit: false, id: "", name: "", loginId: "", password: "", avatar: "avatar_knight", age: 7, gender: "boy" };
-const emptyQuestForm = { open: false, isEdit: false, id: "", childId: "", title: "", difficulty: "medium", repetition: "daily", reminderTime: "08:00", requireProof: "none" };
+const emptyQuestForm = { open: false, isEdit: false, id: "", childId: "", title: "", difficulty: "medium", repetition: "daily", reminderTime: "08:00", requireProof: "none", category: "general" };
 const emptyRewardForm = { open: false, childId: "", title: "", coinsCost: "30" };
 
 export default function ParentDashboard({ token, parent, onLogout }: ParentDashboardProps) {
@@ -125,7 +125,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     e.preventDefault(); setSaving(true); setError("");
     try {
       const url = questForm.isEdit ? `/api/parent/quests/${questForm.id}` : "/api/parent/quests";
-      const res = await fetch(url, { method: questForm.isEdit ? "PUT" : "POST", headers, body: JSON.stringify({ childId: questForm.childId, title: questForm.title, difficulty: questForm.difficulty, repetition: questForm.repetition, reminderTime: questForm.reminderTime, requireProof: questForm.requireProof }) });
+      const res = await fetch(url, { method: questForm.isEdit ? "PUT" : "POST", headers, body: JSON.stringify({ childId: questForm.childId, title: questForm.title, difficulty: questForm.difficulty, repetition: questForm.repetition, reminderTime: questForm.reminderTime, requireProof: questForm.requireProof, category: questForm.category }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setQuestForm(emptyQuestForm); await fetchData(); showMsg(questForm.isEdit ? "Updated!" : "Task added! ⚔️");
@@ -314,7 +314,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                 
                 <div className="space-y-3">
                   {quests.map(q => (
-                    <div key={q.id} className="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setQuestForm({ open: true, isEdit: true, id: q.id, childId: q.childId, title: q.title, difficulty: q.difficulty, repetition: q.repetition, reminderTime: q.reminderTime, requireProof: q.requireProof })}>
+                    <div key={q.id} className="bg-white rounded-2xl p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-50 flex items-center justify-between cursor-pointer hover:border-slate-200 transition-colors" onClick={() => setQuestForm({ open: true, isEdit: true, id: q.id, childId: q.childId, title: q.title, difficulty: q.difficulty, repetition: q.repetition, reminderTime: q.reminderTime, requireProof: q.requireProof, category: q.category || "general" })}>
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
                           <CheckCircle className="w-6 h-6 text-blue-500" strokeWidth={2.5} />
@@ -723,6 +723,17 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
               </select>
             </div>
             <FormField label="Task Name" value={questForm.title} onChange={v => setQuestForm({ ...questForm, title: v })} placeholder="e.g. Brush Teeth" required />
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Task Category <span className="text-blue-400 normal-case font-semibold">(used for badges)</span></label>
+              <select value={(questForm as any).category} onChange={e => setQuestForm({ ...questForm, category: e.target.value } as any)} className="select">
+                <option value="general">🎯 General</option>
+                <option value="reading">📖 Reading</option>
+                <option value="homework">📚 Homework / Study</option>
+                <option value="health">❤️ Health / Hygiene</option>
+                <option value="fitness">💪 Fitness / Sports</option>
+                <option value="chores">🏠 Chores</option>
+              </select>
+            </div>
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">Difficulty</label>
