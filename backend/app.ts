@@ -1008,5 +1008,197 @@ export async function createApp() {
     res.json(populatedTeams);
   });
 
+  // --- PARENT TEAMS ---
+  app.post("/api/parent-teams", authenticateParent, async (req: any, res) => {
+    const { name, icon } = req.body;
+    const parentId = req.parent.id;
+    if (!name) return res.status(400).json({ error: "Team name is required." });
+
+    const newTeam = {
+      id: "pt-" + generateId(),
+      creatorId: parentId,
+      name,
+      icon: icon || "👨‍👩‍👧",
+      inviteCode: generateId().substring(0, 6).toUpperCase(),
+      members: [parentId]
+    };
+
+    db.get().parentTeams.push(newTeam);
+    await db.save();
+    res.json(newTeam);
+  });
+
+  app.post("/api/parent-teams/join", authenticateParent, async (req: any, res) => {
+    const { inviteCode } = req.body;
+    const parentId = req.parent.id;
+    if (!inviteCode) return res.status(400).json({ error: "Invite code is required." });
+
+    const team = db.get().parentTeams.find(t => t.inviteCode === inviteCode.trim().toUpperCase());
+    if (!team) return res.status(404).json({ error: "Invalid invite code. Team not found." });
+
+    if (team.members.includes(parentId)) {
+      return res.status(400).json({ error: "You are already in this team!" });
+    }
+
+    team.members.push(parentId);
+    await db.save();
+    res.json({ success: true, team });
+  });
+
+  app.get("/api/parent-teams", authenticateParent, async (req: any, res) => {
+    const parentId = req.parent.id;
+    const teams = db.get().parentTeams.filter(t => t.members.includes(parentId));
+    
+    const populatedTeams = teams.map(t => {
+      const members = t.members.map(memberId => {
+        const parent = db.get().parents.find(p => p.id === memberId);
+        return parent ? { 
+          id: parent.id, 
+          email: parent.email, 
+          familyName: parent.familyName, 
+          level: parent.level || 1, 
+          xp: parent.xp || 0, 
+          streak: parent.streak || 0,
+          longestStreak: parent.longestStreak || 0
+        } : null;
+      }).filter(Boolean);
+      
+      members.sort((a: any, b: any) => b.xp - a.xp);
+      
+      const quests = db.get().parentQuests.filter(q => q.teamId === t.id);
+      const rewards = db.get().parentRewards.filter(r => r.teamId === t.id);
+      const history = db.get().parentQuestHistory.filter(h => h.teamId === t.id);
+
+      return { ...t, members, quests, rewards, history };
+    });
+    
+    res.json(populatedTeams);
+  });
+
+  app.post("/api/parent-teams/:teamId/quests", authenticateParent, async (req: any, res) => {
+    const { teamId } = req.params;
+    const { title, xp, coins, repetition } = req.body;
+    const parentId = req.parent.id;
+
+    const team = db.get().parentTeams.find(t => t.id === teamId);
+    if (!team) return res.status(404).json({ error: "Team not found." });
+    if (team.creatorId !== parentId) return res.status(403).json({ error: "Only the creator can add rules." });
+    if (!title) return res.status(400).json({ error: "Title is required." });
+
+    const newQuest = {
+      id: "pq-" + generateId(),
+      teamId,
+      title,
+      xp: parseInt(xp) || 10,
+      coins: parseInt(coins) || 10,
+      repetition: repetition || "daily"
+    };
+
+    db.get().parentQuests.push(newQuest);
+    await db.save();
+    res.json(newQuest);
+  });
+
+  app.post("/api/parent-teams/:teamId/rewards", authenticateParent, async (req: any, res) => {
+    const { teamId } = req.params;
+    const { title, coinsCost } = req.body;
+    const parentId = req.parent.id;
+
+    const team = db.get().parentTeams.find(t => t.id === teamId);
+    if (!team) return res.status(404).json({ error: "Team not found." });
+    if (team.creatorId !== parentId) return res.status(403).json({ error: "Only the creator can add rewards." });
+    if (!title) return res.status(400).json({ error: "Title is required." });
+
+    const newReward = {
+      id: "pr-" + generateId(),
+      teamId,
+      title,
+      coinsCost: parseInt(coinsCost) || 50
+    };
+
+    db.get().parentRewards.push(newReward);
+    await db.save();
+    res.json(newReward);
+  });
+
+  app.post("/api/parent-teams/:teamId/quests/:questId/submit", authenticateParent, async (req: any, res) => {
+    const { teamId, questId } = req.params;
+    const parentId = req.parent.id;
+
+    const team = db.get().parentTeams.find(t => t.id === teamId);
+    if (!team || !team.members.includes(parentId)) return res.status(404).json({ error: "Team not found or not a member." });
+
+    const quest = db.get().parentQuests.find(q => q.id === questId && q.teamId === teamId);
+    if (!quest) return res.status(404).json({ error: "Quest not found." });
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const existing = db.get().parentQuestHistory.find(h => h.parentId === parentId && h.questId === questId && h.completedAt.startsWith(todayStr));
+    if (existing) return res.status(400).json({ error: "Already completed today." });
+
+    const parent = db.get().parents.find(p => p.id === parentId);
+    if (parent) {
+      parent.xp = (parent.xp || 0) + quest.xp;
+      parent.coins = (parent.coins || 0) + quest.coins;
+      parent.level = getLevelProgress(parent.xp).level;
+      
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().slice(0, 10);
+      const lastActive = parent.lastActiveDate || "";
+      
+      if (lastActive === yesterdayStr) {
+        parent.streak = (parent.streak || 0) + 1;
+      } else if (lastActive !== todayStr) {
+        parent.streak = 1;
+      }
+      parent.lastActiveDate = todayStr;
+      if (parent.streak > (parent.longestStreak || 0)) parent.longestStreak = parent.streak;
+    }
+
+    const history = {
+      id: "pqh-" + generateId(),
+      parentId,
+      teamId,
+      questId,
+      completedAt: new Date().toISOString()
+    };
+
+    db.get().parentQuestHistory.push(history);
+    await db.save();
+    res.json({ success: true, history, parentXP: parent?.xp, parentCoins: parent?.coins });
+  });
+
+  app.post("/api/parent-teams/:teamId/rewards/:rewardId/claim", authenticateParent, async (req: any, res) => {
+    const { teamId, rewardId } = req.params;
+    const parentId = req.parent.id;
+
+    const team = db.get().parentTeams.find(t => t.id === teamId);
+    if (!team || !team.members.includes(parentId)) return res.status(404).json({ error: "Team not found or not a member." });
+
+    const reward = db.get().parentRewards.find(r => r.id === rewardId && r.teamId === teamId);
+    if (!reward) return res.status(404).json({ error: "Reward not found." });
+
+    const parent = db.get().parents.find(p => p.id === parentId);
+    if (!parent) return res.status(404).json({ error: "Parent not found." });
+
+    if ((parent.coins || 0) < reward.coinsCost) {
+      return res.status(400).json({ error: "Not enough coins." });
+    }
+
+    parent.coins -= reward.coinsCost;
+
+    const claim = {
+      id: "prc-" + generateId(),
+      parentId,
+      teamId,
+      rewardId,
+      claimedAt: new Date().toISOString()
+    };
+
+    db.get().parentRewardClaims.push(claim);
+    await db.save();
+    res.json({ success: true, claim, parentCoins: parent.coins });
+  });
+
   return app;
 }

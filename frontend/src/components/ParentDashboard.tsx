@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, Edit2, LogOut, Plus, Sparkles, Trash2, X, Shield, Users, Zap, Flame, Star, Bell, Image as ImageIcon, CheckCircle, ArrowRight, User, Share2, MoreVertical, Calendar as CalendarIcon, ChevronLeft } from "lucide-react";
+import ParentTeamDashboard from "./ParentTeamDashboard";
+import Modal from "./Modal";
 
 interface ParentDashboardProps {
   token: string;
@@ -8,7 +10,7 @@ interface ParentDashboardProps {
   onLogout: () => void;
 }
 
-type Tab = "heroes" | "tasks" | "rewards" | "verify" | "settings";
+type Tab = "heroes" | "tasks" | "rewards" | "verify" | "settings" | "teams";
 
 const emptyChildForm = { open: false, isEdit: false, id: "", name: "", loginId: "", password: "", avatar: "avatar_knight", age: 7, gender: "boy" };
 const emptyQuestForm = { open: false, isEdit: false, id: "", childId: "", title: "", difficulty: "medium", repetition: "daily", reminderTime: "08:00", requireProof: "none", category: "general" };
@@ -17,6 +19,7 @@ const emptyRewardForm = { open: false, childId: "", title: "", coinsCost: "30" }
 export default function ParentDashboard({ token, parent, onLogout }: ParentDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>("heroes");
   const [manageSubTab, setManageSubTab] = useState<"tasks" | "rewards" | "verify">("tasks");
+  const [teamSubTab, setTeamSubTab] = useState<"kids" | "parent">("parent");
   const [children, setChildren] = useState<any[]>([]);
   const [quests, setQuests] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
@@ -439,13 +442,21 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
                     <h1 className="text-2xl font-black text-slate-900">Teams</h1>
                  </div>
               </div>
-              <button onClick={() => setTeamForm({ open: true, name: "", icon: "🏆" })} className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-colors">
-                <Plus className="w-5 h-5" strokeWidth={3} />
-              </button>
+              <div className="flex bg-slate-100 rounded-xl p-1">
+                <button onClick={() => setTeamSubTab("parent")} className={`px-4 py-2 text-sm font-black rounded-lg transition-all ${teamSubTab === "parent" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>My Teams</button>
+                <button onClick={() => setTeamSubTab("kids")} className={`px-4 py-2 text-sm font-black rounded-lg transition-all ${teamSubTab === "kids" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>Kids Teams</button>
+              </div>
+              {teamSubTab === "kids" && (
+                <button onClick={() => setTeamForm({ open: true, name: "", icon: "🏆" })} className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-colors">
+                  <Plus className="w-5 h-5" strokeWidth={3} />
+                </button>
+              )}
             </header>
 
             <div className="px-6 py-4 space-y-4">
-              {teams.length === 0 ? (
+              {teamSubTab === "parent" ? (
+                <ParentTeamDashboard token={token} parent={parent} />
+              ) : teams.length === 0 ? (
                 <div className="text-center py-10">
                    <Users className="w-16 h-16 text-slate-200 mx-auto mb-4" />
                    <p className="text-lg font-black text-slate-700">No teams yet</p>

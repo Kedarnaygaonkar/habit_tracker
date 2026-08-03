@@ -11,6 +11,12 @@ export interface Parent {
   familyName: string;
   otp?: string;
   otpExpiresAt?: number;
+  xp?: number;
+  coins?: number;
+  level?: number;
+  streak?: number;
+  longestStreak?: number;
+  lastActiveDate?: string;
 }
 
 export interface VirtualPet {
@@ -129,6 +135,47 @@ export interface Team {
   members: string[]; // child IDs
 }
 
+export interface ParentTeam {
+  id: string;
+  creatorId: string;
+  name: string;
+  icon: string;
+  inviteCode: string;
+  members: string[]; // parent IDs
+}
+
+export interface ParentQuest {
+  id: string;
+  teamId: string;
+  title: string;
+  xp: number;
+  coins: number;
+  repetition: RepetitionType;
+}
+
+export interface ParentReward {
+  id: string;
+  teamId: string;
+  title: string;
+  coinsCost: number;
+}
+
+export interface ParentQuestHistory {
+  id: string;
+  parentId: string;
+  teamId: string;
+  questId: string;
+  completedAt: string;
+}
+
+export interface ParentRewardClaim {
+  id: string;
+  parentId: string;
+  teamId: string;
+  rewardId: string;
+  claimedAt: string;
+}
+
 export interface Schema {
   parents: Parent[];
   children: Child[];
@@ -139,6 +186,11 @@ export interface Schema {
   notifications: Notification[];
   aiReports: AIReport[];
   teams: Team[];
+  parentTeams: ParentTeam[];
+  parentQuests: ParentQuest[];
+  parentRewards: ParentReward[];
+  parentQuestHistory: ParentQuestHistory[];
+  parentRewardClaims: ParentRewardClaim[];
 }
 
 interface AppStateDocument {
@@ -400,7 +452,12 @@ function getInitialData(): Schema {
         inviteCode: "HERO12",
         members: [child1Id, child2Id]
       }
-    ]
+    ],
+    parentTeams: [],
+    parentQuests: [],
+    parentRewards: [],
+    parentQuestHistory: [],
+    parentRewardClaims: []
   };
 }
 
@@ -479,6 +536,11 @@ export class DBEngine {
     data.notifications = data.notifications || [];
     data.aiReports = data.aiReports || [];
     data.teams = data.teams || [];
+    data.parentTeams = data.parentTeams || [];
+    data.parentQuests = data.parentQuests || [];
+    data.parentRewards = data.parentRewards || [];
+    data.parentQuestHistory = data.parentQuestHistory || [];
+    data.parentRewardClaims = data.parentRewardClaims || [];
     return data;
   }
 
@@ -521,6 +583,11 @@ export class DBEngine {
       ["notifications", data.notifications],
       ["aiReports", data.aiReports],
       ["teams", data.teams],
+      ["parentTeams", data.parentTeams],
+      ["parentQuests", data.parentQuests],
+      ["parentRewards", data.parentRewards],
+      ["parentQuestHistory", data.parentQuestHistory],
+      ["parentRewardClaims", data.parentRewardClaims],
     ];
 
     await Promise.all(collections.map(async ([name, items]) => {
