@@ -43,6 +43,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const [proofPhoto, setProofPhoto] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [taskFilter, setTaskFilter] = useState<"today" | "all">("today");
+  const [selectedTaskCalendar, setSelectedTaskCalendar] = useState<string | null>(null);
 
   const [joinTeamCode, setJoinTeamCode] = useState(() => {
     const urlCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
@@ -167,7 +168,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const todayDone = completedQuests.length;
   const todayTotal = quests.length;
   const progressPct = todayTotal > 0 ? Math.round((todayDone / todayTotal) * 100) : 0;
-  const streak = child.streak || 12; // Mock or actual streak
+  const streak = child.streak || 0; // Real streak from DB
 
   const navItems = [
     { id: "home" as const, icon: Home, label: "Home" },
@@ -248,8 +249,8 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                  <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-amber-500 shadow-inner"><Award className="w-6 h-6 fill-current" /></div>
                    <div>
-                     <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">Badges</p>
-                     <p className="font-black text-lg leading-tight">8 earned</p>
+                      <p className="text-[10px] text-blue-200 font-bold uppercase tracking-wider mb-0.5">Badges</p>
+                      <p className="font-black text-lg leading-tight">{achievements.length} earned</p>
                    </div>
                  </div>
                  <div className="bg-white/10 backdrop-blur-md rounded-[20px] p-4 flex items-center gap-3">
@@ -355,32 +356,81 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                   const borderColors = ['bg-emerald-400', 'bg-blue-400', 'bg-orange-400', 'bg-purple-400'];
                   const borderColor = borderColors[i % borderColors.length];
                   const isDone = q.status === 'completed';
+                  const isCalOpen = selectedTaskCalendar === q.id;
+
+                  // Calendar helpers
+                  const historyRecords = (data.history || []).filter((h: any) => h.questId === q.id);
+                  const now2 = new Date(); const yr = now2.getFullYear(); const mo = now2.getMonth();
+                  const daysInMo = new Date(yr, mo + 1, 0).getDate();
+                  const calDays = Array.from({length: daysInMo}, (_, i2) => new Date(yr, mo, i2 + 1));
+                  const wasCompleted = (d: Date) => {
+                    const ds = d.toISOString().split('T')[0];
+                    return historyRecords.some((h: any) => h.completedAt && h.completedAt.startsWith(ds));
+                  };
                   
                   return (
-                    <div key={q.id} className="bg-white rounded-[28px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center gap-4 cursor-pointer transition-transform hover:-translate-y-0.5" onClick={() => !isDone && setSelectedQuest(q)}>
-                       <div className={`w-1.5 h-16 rounded-full ${borderColor}`}></div>
-                       <div className="w-[72px] h-[72px] bg-blue-50/50 rounded-[20px] flex items-center justify-center text-4xl shrink-0">{q.icon || "📋"}</div>
-                       
-                       <div className="flex-1 py-1 pr-2">
-                          <div className="flex justify-between items-start mb-1">
-                             <h3 className="font-black text-lg text-slate-800 leading-tight">{q.title}</h3>
-                             {isDone ? (
-                                <span className="bg-slate-100 text-slate-400 font-black text-xs px-2.5 py-1 rounded-full">Done!</span>
-                             ) : (
-                                <span className="bg-amber-400 text-slate-900 font-black text-xs px-2.5 py-1 rounded-full shadow-sm">+{q.xp} XP</span>
-                             )}
-                          </div>
-                          <p className="text-[11px] font-bold text-slate-400 mb-3 truncate">{q.description || "Daily morning routine"}</p>
+                    <div key={q.id} className="bg-white rounded-[28px] shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+                       {/* Main row */}
+                       <div className="p-4 flex items-center gap-4 cursor-pointer transition-transform hover:-translate-y-0.5"
+                         onClick={() => {
+                           if (isDone) { setSelectedTaskCalendar(isCalOpen ? null : q.id); }
+                           else { setSelectedQuest(q); }
+                         }}
+                       >
+                          <div className={`w-1.5 h-16 rounded-full ${borderColor} shrink-0`}></div>
+                          <div className="w-[72px] h-[72px] bg-blue-50/50 rounded-[20px] flex items-center justify-center text-4xl shrink-0">{q.icon || "📋"}</div>
                           
-                          <div className="flex justify-between items-center">
-                             <span className="bg-slate-100 text-slate-500 font-black text-[10px] px-3 py-1 rounded-full capitalize">{q.repetition}</span>
-                             {isDone ? (
-                                <button className="bg-slate-100 text-slate-500 font-black text-xs px-4 py-1.5 rounded-full flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Completed</button>
-                             ) : (
-                                <button className="bg-emerald-500 text-white font-black text-xs px-4 py-1.5 rounded-full shadow-sm">Mark Done</button>
-                             )}
+                          <div className="flex-1 py-1 pr-2">
+                             <div className="flex justify-between items-start mb-1">
+                                <h3 className="font-black text-lg text-slate-800 leading-tight">{q.title}</h3>
+                                {isDone ? (
+                                   <span className="bg-emerald-100 text-emerald-600 font-black text-xs px-2.5 py-1 rounded-full flex items-center gap-1"><Check className="w-3 h-3" /> Done!</span>
+                                ) : (
+                                   <span className="bg-amber-400 text-slate-900 font-black text-xs px-2.5 py-1 rounded-full shadow-sm">+{q.xp} XP</span>
+                                )}
+                             </div>
+                             <p className="text-[11px] font-bold text-slate-400 mb-3 truncate">{q.description || "Daily morning routine"}</p>
+                             
+                             <div className="flex justify-between items-center">
+                                <span className="bg-slate-100 text-slate-500 font-black text-[10px] px-3 py-1 rounded-full capitalize">{q.repetition}</span>
+                                {isDone ? (
+                                   <button className="bg-sky-50 text-sky-600 font-black text-xs px-4 py-1.5 rounded-full flex items-center gap-1.5" onClick={e => {e.stopPropagation(); setSelectedTaskCalendar(isCalOpen ? null : q.id);}}>
+                                     📅 {isCalOpen ? 'Hide' : 'History'}
+                                   </button>
+                                ) : (
+                                   <button className="bg-emerald-500 text-white font-black text-xs px-4 py-1.5 rounded-full shadow-sm">Mark Done</button>
+                                )}
+                             </div>
                           </div>
                        </div>
+
+                       {/* Calendar Panel */}
+                       {isCalOpen && (
+                         <div className="border-t border-slate-100 px-5 pb-5 pt-4 animate-fade-in bg-slate-50">
+                           <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">
+                             {now2.toLocaleString('default', {month:'long'})} {yr} — Completion History
+                           </p>
+                           <div className="grid grid-cols-7 gap-1.5 mb-3">
+                             {['S','M','T','W','T','F','S'].map((d,i3) => <div key={i3} className="text-center text-[9px] font-black text-slate-400">{d}</div>)}
+                             {Array.from({length: new Date(yr, mo, 1).getDay()}).map((_, e) => <div key={`e${e}`}/>)}
+                             {calDays.map(d => {
+                               const done = wasCompleted(d);
+                               const isToday = d.toDateString() === new Date().toDateString();
+                               return (
+                                 <div key={d.getDate()} className={`flex items-center justify-center w-9 h-9 rounded-full text-xs font-black mx-auto transition-all
+                                   ${done ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/40 scale-105' :
+                                     isToday ? 'bg-blue-100 text-blue-600 border-2 border-blue-300' : 'bg-white text-slate-400 border border-slate-100'}`}>
+                                   {done ? <Check className="w-4 h-4" /> : d.getDate()}
+                                 </div>
+                               );
+                             })}
+                           </div>
+                           <div className="flex items-center gap-2 text-xs font-black text-slate-500 bg-white p-3 rounded-2xl border border-slate-100">
+                             <span className="w-4 h-4 rounded-full bg-emerald-500 inline-block"></span>
+                             Completed {historyRecords.length} time{historyRecords.length !== 1 ? 's' : ''} this month
+                           </div>
+                         </div>
+                       )}
                     </div>
                   );
                })}
@@ -390,8 +440,8 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
             <div className="bg-white rounded-[28px] p-5 shadow-sm border border-slate-100 flex items-center gap-4">
               <div className="w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center shrink-0"><Flame className="w-7 h-7 text-orange-500" /></div>
               <div>
-                 <h4 className="font-black text-lg text-slate-800 mb-0.5">Streak on fire!</h4>
-                 <p className="text-xs font-bold text-slate-500 leading-tight">Keep going today to protect your 7-day streak.</p>
+                 <h4 className="font-black text-lg text-slate-800 mb-0.5">Streak on fire! 🔥</h4>
+                 <p className="text-xs font-bold text-slate-500 leading-tight">You're on a <span className="text-orange-500 font-black">{streak} day</span> streak! Keep it going!</p>
               </div>
             </div>
           </div>
@@ -751,7 +801,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                         <Award className="w-4 h-4 text-amber-500" />
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Badges</span>
                      </div>
-                     <p className="font-black text-xl text-slate-800 leading-tight">8 <span className="text-xs text-slate-500">Earned</span></p>
+                      <p className="font-black text-xl text-slate-800 leading-tight">{achievements.length} <span className="text-xs text-slate-500">Earned</span></p>
                   </div>
                   <div className="bg-slate-50/80 rounded-[24px] p-4 border border-slate-100 flex-1 flex flex-col justify-center">
                      <div className="flex items-center gap-2 mb-1.5">
@@ -777,7 +827,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                   <div className="flex gap-5 items-center mb-6">
                      <div className="relative shrink-0">
                         <div className="w-24 h-24 rounded-full border-[8px] border-emerald-400 flex items-center justify-center bg-white shadow-inner text-4xl">
-                           🐲
+                           {pet?.emoji || '🐲'}
                         </div>
                         <div className="absolute -top-1 -left-1 bg-amber-400 w-7 h-7 rounded-full flex items-center justify-center text-xs border-[3px] border-white shadow-sm">💎</div>
                         <div className="absolute -bottom-1 -right-1 bg-pink-400 w-7 h-7 rounded-full flex items-center justify-center text-white border-[3px] border-white shadow-sm"><Heart className="w-3.5 h-3.5 fill-current" /></div>
@@ -785,17 +835,22 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                      
                      <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1.5">
-                           <h4 className="font-black text-2xl text-slate-800">Sparky</h4>
-                           <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2.5 py-1 rounded-full">Happy</span>
+                           <h4 className="font-black text-2xl text-slate-800">{pet?.name || 'Buddy'}</h4>
+                           <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${
+                             pet?.status === 'happy' ? 'bg-emerald-100 text-emerald-700' :
+                             pet?.status === 'excited' ? 'bg-purple-100 text-purple-700' :
+                             pet?.status === 'sleepy' ? 'bg-blue-100 text-blue-700' :
+                             'bg-orange-100 text-orange-700'
+                           }`}>{pet?.status ? pet.status.charAt(0).toUpperCase() + pet.status.slice(1) : 'Happy'}</span>
                         </div>
-                        <p className="text-[11px] font-bold text-slate-500 mb-4 leading-tight">Your dragon companion is ready to play and learn.</p>
+                        <p className="text-[11px] font-bold text-slate-500 mb-4 leading-tight">Your companion is ready to play and learn.</p>
                         
                         <div className="flex justify-between items-center text-[10px] font-black text-slate-400 mb-1.5 px-1">
                            <span>Energy</span>
-                           <span>78%</span>
+                           <span>{pet?.happiness ?? 100}%</span>
                         </div>
                         <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden shadow-inner">
-                           <div className="h-full bg-emerald-500 rounded-full" style={{ width: '78%' }}></div>
+                           <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${pet?.happiness ?? 100}%` }}></div>
                         </div>
                      </div>
                   </div>
@@ -818,16 +873,28 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                </div>
                
                <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2 pt-1 px-1">
-                  {['First Task', '7-Day Streak', 'Reading Master', 'Fitness Hero'].map((badge, i) => {
-                     const colors = ['border-amber-400', 'border-blue-400', 'border-amber-400', 'border-emerald-400'];
-                     const icons = ['📋', '🔥', '📖', '💪'];
-                     return (
-                        <div key={i} className={`w-[96px] h-[120px] rounded-full border-2 ${colors[i]} bg-slate-50 flex flex-col items-center justify-center shrink-0 shadow-sm p-3 text-center`}>
-                           <div className="text-3xl mb-2">{icons[i]}</div>
-                           <p className="text-[10px] font-black text-slate-700 leading-tight">{badge}</p>
-                        </div>
-                     )
-                  })}
+                  {achievements.length > 0 ? (
+                     achievements.map((ach: any, i: number) => {
+                        const borderColors = ['border-amber-400', 'border-blue-400', 'border-emerald-400', 'border-purple-400', 'border-rose-400'];
+                        const iconMap: Record<string, string> = {
+                          'award_star': '⭐', 'sparkles': '✨', 'trophy': '🏆', 'flame': '🔥',
+                          'shield': '🛡️', 'heart': '❤️', 'book_open': '📖', 'graduation_cap': '🎓',
+                          'shield_alert': '🏅', 'default': '🎖️'
+                        };
+                        return (
+                           <div key={ach.id} className={`w-[96px] h-[120px] rounded-full border-2 ${borderColors[i % borderColors.length]} bg-slate-50 flex flex-col items-center justify-center shrink-0 shadow-sm p-3 text-center`}>
+                              <div className="text-3xl mb-2">{iconMap[ach.icon] || iconMap['default']}</div>
+                              <p className="text-[10px] font-black text-slate-700 leading-tight">{ach.title}</p>
+                           </div>
+                        );
+                     })
+                  ) : (
+                     <div className="w-full py-4 flex flex-col items-center justify-center text-center">
+                        <p className="text-5xl mb-3">🌱</p>
+                        <p className="font-black text-slate-600">No badges yet!</p>
+                        <p className="text-xs font-bold text-slate-400 mt-1">Complete tasks to earn your first badge</p>
+                     </div>
+                  )}
                </div>
             </div>
             
