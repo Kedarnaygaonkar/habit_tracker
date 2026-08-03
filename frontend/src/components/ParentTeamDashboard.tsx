@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Users, Plus, Trophy, Check, Gift, Rocket, Star, Medal, Crown } from "lucide-react";
-import Modal from "./Modal";
+import { Users, Plus, Trophy, Check, Gift, Rocket, Star, X } from "lucide-react";
+import { createPortal } from "react-dom";
 
 interface ParentTeamDashboardProps {
   token: string;
@@ -411,3 +411,21 @@ const FormField = ({ label, type = "text", value, onChange, placeholder, require
     <input type={type} required={required} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} className="input w-full bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-indigo-400" />
   </div>
 );
+
+const Modal = ({ title, emoji, children, onClose }: any) =>
+  createPortal(
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
+      <div className="relative bg-white rounded-[2rem] w-full max-w-lg shadow-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl">{emoji}</div>
+            <h2 className="text-xl font-black text-slate-900">{title}</h2>
+          </div>
+          <button onClick={onClose} className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="p-6">{children}</div>
+      </div>
+    </div>,
+    document.body
+  );
