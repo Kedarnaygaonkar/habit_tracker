@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Users, Plus, Trophy, Check, Gift, Rocket, Star, Medal, Crown } from "lucide-react";
 import Modal from "./Modal";
-import FormField from "./FormField";
 
 interface ParentTeamDashboardProps {
   token: string;
@@ -405,3 +404,10 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
     </div>
   );
 }
+
+const FormField = ({ label, type = "text", value, onChange, placeholder, required }: any) => (
+  <div>
+    <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2 ml-1">{label}</label>
+    <input type={type} required={required} placeholder={placeholder} value={value} onChange={e => onChange(e.target.value)} className="input w-full bg-slate-50 border-2 border-slate-200 focus:bg-white focus:border-indigo-400" />
+  </div>
+);
