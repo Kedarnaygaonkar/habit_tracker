@@ -5,7 +5,7 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
-  const [role, setRole] = useState<"parent" | "child">("child");
+  const [role, setRole] = useState<"parent" | "child">("parent");
   const [isRegister, setIsRegister] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -149,20 +149,20 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
         {/* Role Switcher */}
         <div className="flex rounded-xl bg-slate-100 p-1 mb-6 border-2 border-slate-200">
           <button
-            onClick={() => { setRole("child"); setError(""); }}
-            className={`flex-1 py-3 text-sm font-black rounded-lg transition-all flex items-center justify-center gap-2 ${
-              role === "child" ? "bg-white text-blue-600 shadow-md border border-blue-200" : "text-slate-400"
-            }`}
-          >
-            👧 Child
-          </button>
-          <button
             onClick={() => { setRole("parent"); setError(""); }}
             className={`flex-1 py-3 text-sm font-black rounded-lg transition-all flex items-center justify-center gap-2 ${
               role === "parent" ? "bg-white text-purple-600 shadow-md border border-purple-200" : "text-slate-400"
             }`}
           >
             👨‍👩‍👧 Parent
+          </button>
+          <button
+            onClick={() => { setRole("child"); setError(""); }}
+            className={`flex-1 py-3 text-sm font-black rounded-lg transition-all flex items-center justify-center gap-2 ${
+              role === "child" ? "bg-white text-blue-600 shadow-md border border-blue-200" : "text-slate-400"
+            }`}
+          >
+            👧 Child
           </button>
         </div>
 
