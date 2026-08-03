@@ -417,8 +417,13 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                   const daysInMo = new Date(yr, mo + 1, 0).getDate();
                   const calDays = Array.from({length: daysInMo}, (_, i2) => new Date(yr, mo, i2 + 1));
                   const wasCompleted = (d: Date) => {
-                    const ds = d.toISOString().split('T')[0];
-                    return historyRecords.some((h: any) => h.completedAt && h.completedAt.startsWith(ds));
+                    return historyRecords.some((h: any) => {
+                      if (!h.completedAt) return false;
+                      const compDate = new Date(h.completedAt);
+                      return compDate.getFullYear() === d.getFullYear() && 
+                             compDate.getMonth() === d.getMonth() && 
+                             compDate.getDate() === d.getDate();
+                    });
                   };
                   
                   return (

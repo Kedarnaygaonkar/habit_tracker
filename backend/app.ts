@@ -16,10 +16,25 @@ export async function createApp() {
   app.use(cors());
   app.use(express.json({ limit: "10mb" }));
   app.use(async (req, res, next) => {
-    // Refresh DB state before serving request to prevent stale serverless caches
     if (process.env.VERCEL) {
       await db.init();
     }
+    
+    // Daily reset check: reset quests completed on previous days
+    const todayStr = new Date().toISOString().slice(0, 10);
+    let dirty = false;
+    db.get().quests.forEach(q => {
+      if ((q.status === "completed" || q.status === "verified") && q.lastCompletedAt) {
+        // If it was completed before today UTC, reset it
+        if (q.lastCompletedAt.slice(0, 10) !== todayStr) {
+          q.status = "pending";
+          q.proofData = undefined;
+          dirty = true;
+        }
+      }
+    });
+    if (dirty) await db.save();
+    
     next();
   });
 
@@ -612,8 +627,8 @@ export async function createApp() {
     };
     db.get().questHistory.push(historyItem);
 
-    quest.status = "pending";
-    quest.proofData = undefined;
+    // We no longer reset to pending immediately — it stays verified for today
+    // and the middleware will reset it to pending tomorrow.
 
     const allHistory = db.get().questHistory.filter(h => h.childId === child.id);
     const questsForChild = db.get().quests.filter(q => q.childId === child.id);
@@ -777,6 +792,7 @@ export async function createApp() {
 
     quest.status = "completed";
     quest.proofData = proofData;
+    quest.lastCompletedAt = new Date().toISOString();
 
     // ── Award XP & coins immediately on submit ──
     child.xp += quest.xp;
