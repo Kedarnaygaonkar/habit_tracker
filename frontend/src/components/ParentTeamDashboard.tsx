@@ -43,7 +43,29 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
   };
 
   useEffect(() => {
-    fetchTeams();
+    const init = async () => {
+      await fetchTeams();
+      // Auto-join from shared link
+      const pendingCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
+      if (pendingCode) {
+        try {
+          const res = await fetch("/api/parent-teams/join", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ inviteCode: pendingCode.toUpperCase() })
+          });
+          const data = await res.json();
+          localStorage.removeItem("pendingTeamCode");
+          if (res.ok) {
+            await fetchTeams();
+            setSelectedTeamId(data.team.id);
+            showMsg(`Joined team! Welcome!`);
+          }
+          // If error (e.g. already in team), just ignore silently
+        } catch (e) { console.error(e); }
+      }
+    };
+    init();
   }, []);
 
   const showMsg = (msg: string) => { setMessage(msg); setTimeout(() => setMessage(""), 3000); };

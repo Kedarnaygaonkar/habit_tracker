@@ -169,7 +169,7 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
         {/* Pending Team Invite Banner */}
         {pendingTeam && (
           <div className="mb-4 p-3 rounded-xl text-xs font-bold text-center animate-bounce-in bg-indigo-50 border-2 border-indigo-200 text-indigo-700 flex items-center justify-between shadow-sm">
-            <span>🏆 You're invited to Team <strong>#{pendingTeam}</strong>! Log in as Hero to join!</span>
+            <span>🏆 Team invite: <strong>#{pendingTeam}</strong> — Log in to join automatically!</span>
             <button type="button" onClick={() => { localStorage.removeItem("pendingTeamCode"); setPendingTeam(null); }} className="text-indigo-400 hover:text-indigo-600 ml-2 font-black">✕</button>
           </div>
         )}

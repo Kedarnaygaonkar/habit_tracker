@@ -109,7 +109,15 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+    // If a shared team link was clicked, auto-open the Teams tab
+    const pending = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
+    if (pending) {
+      setActiveTab("teams");
+      setTeamSubTab("parent");
+    }
+  }, []);
 
   // ── CRUD handlers ──
   const handleChildSubmit = async (e: React.FormEvent) => {
