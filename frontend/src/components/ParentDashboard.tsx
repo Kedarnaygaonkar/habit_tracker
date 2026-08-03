@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, Edit2, LogOut, Plus, Sparkles, Trash2, X, Shield, Users, Zap, Flame, Star, Bell, Image as ImageIcon, CheckCircle, ArrowRight, User, Share2, MoreVertical, Calendar as CalendarIcon, ChevronLeft } from "lucide-react";
 import ParentTeamDashboard from "./ParentTeamDashboard";
-import Modal from "./Modal";
 
 interface ParentDashboardProps {
   token: string;
