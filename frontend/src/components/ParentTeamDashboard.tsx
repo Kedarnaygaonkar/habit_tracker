@@ -409,9 +409,9 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
                     {['S','M','T','W','T','F','S'].map(d => <div key={d+Math.random()} className="text-center text-[10px] font-black text-slate-400">{d}</div>)}
                     {Array.from({length: new Date(y, mo, 1).getDay()}).map((_, i) => <div key={'empty'+i}/>)}
                     {days.map(d => {
-                      // Use local date string for each calendar day to match backend's local date
+                      // Same logic as hero section: compare local date strings, no UTC conversion
+                      const isToday = d.toDateString() === new Date().toDateString();
                       const dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-                      const isToday = dStr === todayStr;
                       const hasActivity = team?.history?.some((h: any) => h.parentId === m.id && h.completedAt.startsWith(dStr));
                       
                       return (
