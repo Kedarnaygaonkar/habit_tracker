@@ -225,13 +225,223 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
 
   // Dynamic Background
   let bgColor = "bg-slate-50";
+onLogout: () => void;
+}
+
+export default function ChildDashboard({ token, childUser, onLogout }: ChildDashboardProps) {
+  const [data, setData] = useState<any | null>(null);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "rewards" | "teams" | "profile">("home");
+  const [loading, setLoading] = useState(true);
+  const [selectedQuest, setSelectedQuest] = useState<any | null>(null);
+  const [proofText, setProofText] = useState("");
+  const [proofPhoto, setProofPhoto] = useState<string | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [taskFilter, setTaskFilter] = useState<"today" | "all">("today");
+  const [selectedTaskCalendar, setSelectedTaskCalendar] = useState<string | null>(null);
+  const [badgeCatalog, setBadgeCatalog] = useState<any[]>([]);
+  const [selectedBadge, setSelectedBadge] = useState<any | null>(null); // for detail modal
+  const [newBadgesPopup, setNewBadgesPopup] = useState<any[]>([]); // congrats popup
+  const [showGame, setShowGame] = useState(false);
+
+  const [joinTeamCode, setJoinTeamCode] = useState(() => {
+    const urlCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
+    return urlCode ? urlCode.toUpperCase() : "";
+  });
+  const [joinTeamLoading, setJoinTeamLoading] = useState(false);
+
+  const fetchDashboard = async (prevAchievements?: any[]) => {
+    try {
+      const [res, teamRes, catalogRes] = await Promise.all([
+        fetch(`/api/children/${childUser.id}/dashboard`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/children/${childUser.id}/teams`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`/api/badges/catalog`)
+      ]);
+      if (res.ok) {
+        const newData = await res.json();
+        // Check if new badges were earned since last fetch
+        if (prevAchievements !== undefined) {
+          const prevIds = new Set(prevAchievements.map((a: any) => a.id));
+          const fresh = (newData.achievements || []).filter((a: any) => !prevIds.has(a.id));
+          if (fresh.length > 0) {
+            setNewBadgesPopup(fresh);
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ['#f59e0b','#10b981','#6366f1','#ec4899'] });
+          }
+        }
+        setData(newData);
+      }
+      if (teamRes.ok) {
+        const fetchedTeams = await teamRes.json();
+        setTeams(fetchedTeams);
+        setSelectedTeamId(prev => (prev && fetchedTeams.some((t: any) => t.id === prev)) ? prev : (fetchedTeams[0]?.id || null));
+      }
+      if (catalogRes.ok) setBadgeCatalog(await catalogRes.json());
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => {
+    fetchDashboard(undefined);
+    // Poll every 15s, passing current achievements so we can detect newly unlocked ones
+    const interval = setInterval(() => {
+      setData((prev: any) => {
+        const prevAchs = prev?.achievements || [];
+        fetchDashboard(prevAchs);
+        return prev;
+      });
+    }, 15000);
+
+    const pendingCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
+    if (pendingCode) {
+      localStorage.removeItem("pendingTeamCode");
+      setActiveTab("teams");
+    }
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const getAvatarEmoji = (key: string) => {
+    const map: Record<string, string> = { avatar_knight: "🛡️", avatar_wizard: "🔮", avatar_ninja: "🥷", avatar_ranger: "🏹", avatar_unicorn: "🦄" };
+    return map[key] || "👤";
+  };
+
+  const handleQuestSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedQuest) return;
+    setClaiming(true);
+    const proof = selectedQuest.requireProof === "photo" ? (proofPhoto || "photo_captured") : proofText;
+    try {
+      const res = await fetch(`/api/children/${childUser.id}/quests/${selectedQuest.id}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ proofData: proof })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setSelectedQuest(null);
+        setProofText("");
+        setProofPhoto(null);
+
+        // Show badge congrats popup if new badges were unlocked
+        if (result.newlyUnlocked && result.newlyUnlocked.length > 0) {
+          setNewBadgesPopup(result.newlyUnlocked);
+          confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ['#f59e0b','#10b981','#6366f1','#ec4899'] });
+        } else {
+          confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+        }
+
+        // Show level-up confetti if leveled up
+        if (result.leveledUp) {
+          setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#a855f7','#f59e0b','#10b981'] }), 400);
+        }
+
+        // Refresh dashboard — pass current achievements to detect any further newly unlocked ones
+        const prevAchs = data?.achievements || [];
+        fetchDashboard(prevAchs);
+      }
+    } catch (e) { console.error(e); }
+    finally { setClaiming(false); }
+  };
+
+  const feedPet = async () => {
+    if (!data || data.child.coins < 10) { alert("You need 10 coins! 🪙"); return; }
+    try {
+      const res = await fetch(`/api/children/${childUser.id}/feed-pet`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        confetti({ particleCount: 30, colors: ["#f43f5e", "#ec4899", "#fda4af"], spread: 40 });
+        fetchDashboard();
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const handleJoinTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!joinTeamCode) return;
+    setJoinTeamLoading(true);
+    try {
+      const res = await fetch(`/api/children/${childUser.id}/join-team`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ inviteCode: joinTeamCode })
+      });
+      const resData = await res.json();
+      if (res.ok) {
+        confetti({ particleCount: 50, spread: 60 });
+        setJoinTeamCode("");
+        fetchDashboard();
+      } else {
+        alert(resData.error || "Failed to join team.");
+      }
+    } catch (e) { console.error(e); }
+    finally { setJoinTeamLoading(false); }
+  };
+
+  const claimReward = async (rewardId: string, cost: number) => {
+    if (!data || data.child.coins < cost) { alert("Not enough coins! 🪙"); return; }
+    try {
+      const res = await fetch(`/api/children/${childUser.id}/rewards/${rewardId}/claim`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) {
+        confetti({ particleCount: 40, spread: 50 });
+        alert("🎁 Reward claimed! Waiting for parent approval.");
+        fetchDashboard();
+      }
+    } catch (e) {}
+  };
+
+  if (loading || !data) {
+    return (
+      <div className="bg-sky-50 min-h-screen flex flex-col items-center justify-center">
+        <div className="text-6xl animate-float-bob mb-4">🏰</div>
+        <div className="w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full animate-spin mb-3" />
+        <p className="text-sm font-black uppercase tracking-wider text-blue-500">Loading...</p>
+      </div>
+    );
+  }
+
+  const { child, pet, quests, achievements, rewards } = data;
+  const pendingQuests = quests.filter((q: any) => q.status === "pending");
+  const completedQuests = quests.filter((q: any) => q.status === "completed" || q.status === "verified");
+  const todayDone = completedQuests.length;
+  const todayTotal = quests.length;
+  const progressPct = todayTotal > 0 ? Math.round((todayDone / todayTotal) * 100) : 0;
+  const xpProgressPct = child.levelProgress?.progressPercentage ?? 0; // Real XP-toward-next-level %
+  const xpNeeded = child.levelProgress?.nextLevelXpNeeded ?? 200; // XP needed for next level
+  const xpCurrent = child.levelProgress?.currentLevelXp ?? child.xp; // XP earned at current level
+  const streak = child.streak || 0; // Real streak from DB
+
+  const navItems = [
+    { id: "home" as const, icon: Home, label: "Home" },
+    { id: "tasks" as const, icon: CheckSquare, label: "Tasks" },
+    { id: "rewards" as const, icon: Gift, label: "Rewards" },
+    { id: "teams" as const, icon: Users, label: "Teams" },
+    { id: "profile" as const, icon: User, label: "Profile" },
+  ];
+
+  // Dynamic Background
+  let bgColor = "bg-slate-50";
   if (activeTab === "rewards") bgColor = "bg-amber-50";
   else if (activeTab === "home") bgColor = "bg-sky-100";
   else if (activeTab === "teams" && teams.length === 0) bgColor = "bg-gradient-to-b from-[#cbf1fb] via-[#e2ebf8] to-[#e4e1fb]";
   else if (activeTab === "teams") bgColor = "bg-[#f0f6fa]";
 
   return (
-    <div className={`${bgColor} min-h-screen pb-28 select-none transition-colors duration-300 relative`}>
+    <div className={`min-h-screen pb-28 select-none relative overflow-hidden`}>
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed inset-0 w-full h-full object-cover z-0"
+      >
+        <source src="/child-bg.mp4" type="video/mp4" />
+      </video>
+      {/* Dynamic Tint Overlay */}
+      <div className={`fixed inset-0 ${bgColor} opacity-80 backdrop-blur-[4px] z-0 transition-colors duration-500`}></div>
+
+      {/* Main Content wrapper */}
+      <div className="relative z-10 h-full">
 
       {/* Floating Background Circles for Empty Teams */}
       {activeTab === "teams" && teams.length === 0 && (
@@ -1104,6 +1314,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
         />
       )}
 
+      </div>
     </div>
   );
 }
