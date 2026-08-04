@@ -126,10 +126,14 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
   };
 
   return (
-    <div className="app-bg min-h-screen flex flex-col items-center justify-center p-5 select-none">
+    <div className="min-h-screen flex flex-col items-center justify-center p-5 select-none relative overflow-hidden">
+      
+      {/* Background GIF & Overlay */}
+      <img src="/login-bg.gif" alt="background" className="fixed inset-0 w-full h-full object-cover z-0 opacity-90" />
+      <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-0"></div>
 
       {/* Logo & Brand */}
-      <div className="flex flex-col items-center gap-3 mb-8 animate-fade-in text-center">
+      <div className="flex flex-col items-center gap-3 mb-8 animate-fade-in text-center relative z-10">
         <div className="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-5xl shadow-xl">
           🏰
         </div>
@@ -143,8 +147,11 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
         </div>
       </div>
 
-      {/* Login Card */}
-      <div className="card w-full max-w-sm p-6 animate-slide-up">
+      {/* Error */}
+      {error && <div className="text-red-600 bg-red-50 font-bold p-3 rounded-xl mb-4 text-sm animate-shake border border-red-100 relative z-10 shadow-sm">{error}</div>}
+
+      {/* Main Card */}
+      <div className="bg-white/90 backdrop-blur-md rounded-[2.5rem] p-8 w-full max-w-sm shadow-xl shadow-blue-900/5 border-2 border-white animate-scale-in relative z-10">
 
         {/* Role Switcher */}
         <div className="flex rounded-xl bg-slate-100 p-1 mb-6 border-2 border-slate-200">
@@ -178,13 +185,6 @@ export default function LandingPage({ onLoginSuccess }: LandingPageProps) {
         {resetSuccessMsg && (
           <div className="mb-4 p-3 rounded-xl text-sm font-bold text-center animate-bounce-in bg-emerald-50 border-2 border-emerald-200 text-emerald-700">
             ✅ {resetSuccessMsg}
-          </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div className="mb-4 p-3 rounded-xl text-sm font-bold text-center animate-shake bg-red-50 border-2 border-red-200 text-red-600">
-            ⚠️ {error}
           </div>
         )}
 
