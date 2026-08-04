@@ -2,22 +2,12 @@
    PARENT PORTAL CUSTOM UI
 ======================== */
 
-/* Reset background for premium aesthetic */
+/* Reset background to show video */
 .parent-portal-bg { 
-  background: radial-gradient(#e2e8f0 1.5px, transparent 1.5px),
-              radial-gradient(circle at 15% 50%, rgba(224, 231, 255, 0.5), transparent 25%),
-              radial-gradient(circle at 85% 30%, rgba(237, 233, 254, 0.6), transparent 25%),
-              #f8fafc !important; 
-  background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100%;
-  background-attachment: fixed !important;
+  background-color: transparent !important;
 }
 html.dark .parent-portal-bg {
-  background: radial-gradient(#334155 1.5px, transparent 1.5px),
-              radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.1), transparent 25%),
-              radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.1), transparent 25%),
-              #0f172a !important; 
-  background-size: 24px 24px, 100% 100%, 100% 100%, 100% 100%;
-  background-attachment: fixed !important;
+  background-color: transparent !important;
 }
 
 /* --- BOTTOM NAV --- */

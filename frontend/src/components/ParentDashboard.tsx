@@ -187,9 +187,17 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
   return (
     <>
     <div className="parent-portal-bg min-h-screen pb-24 select-none relative">
-      {/* Decorative background blurs */}
-      <div className="fixed top-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-200/40 rounded-full blur-[100px] pointer-events-none z-0"></div>
-      <div className="fixed bottom-[10%] left-[-10%] w-[50%] h-[50%] bg-purple-200/40 rounded-full blur-[120px] pointer-events-none z-0"></div>
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="fixed inset-0 w-full h-full object-cover z-0 opacity-80"
+      >
+        <source src="/background.mp4" type="video/mp4" />
+      </video>
+      <div className="fixed inset-0 bg-white/40 backdrop-blur-[2px] z-0"></div>
 
       {/* Toast */}
       {message && <div className="toast flex items-center gap-2 z-50"><Check className="w-4 h-4 text-green-600" /> {message}</div>}
