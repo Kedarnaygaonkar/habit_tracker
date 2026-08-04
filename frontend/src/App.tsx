@@ -79,7 +79,7 @@ export default function App() {
       <Suspense fallback={<div className="flex h-screen items-center justify-center bg-blue-50"><div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>}>
         <ChildDashboard 
           token={session.token}
-          child={{ id: session.id, name: session.name || "Hero", avatar: session.avatar || "avatar_knight" }}
+          childUser={{ id: session.id, name: session.name || "Hero", avatar: session.avatar || "avatar_knight" }}
           onLogout={handleLogout} 
         />
       </Suspense>
