@@ -213,7 +213,9 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
   if (loading) return <div className="p-10 text-center text-slate-400 font-bold animate-pulse">Loading Teams...</div>;
 
   const team = teams.find(t => t.id === selectedTeamId) || teams[0];
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Use local date to avoid timezone mismatch (toISOString() uses UTC, which can be the next day)
+  const _today = new Date();
+  const todayStr = `${_today.getFullYear()}-${String(_today.getMonth()+1).padStart(2,'0')}-${String(_today.getDate()).padStart(2,'0')}`;
 
   return (
     <div className="space-y-6">
@@ -407,7 +409,8 @@ export default function ParentTeamDashboard({ token, parent }: ParentTeamDashboa
                     {['S','M','T','W','T','F','S'].map(d => <div key={d+Math.random()} className="text-center text-[10px] font-black text-slate-400">{d}</div>)}
                     {Array.from({length: new Date(y, mo, 1).getDay()}).map((_, i) => <div key={'empty'+i}/>)}
                     {days.map(d => {
-                      const dStr = d.toISOString().slice(0, 10);
+                      // Use local date string for each calendar day to match backend's local date
+                      const dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
                       const isToday = dStr === todayStr;
                       const hasActivity = team?.history?.some((h: any) => h.parentId === m.id && h.completedAt.startsWith(dStr));
                       

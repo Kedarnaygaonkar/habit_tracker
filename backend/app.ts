@@ -1050,14 +1050,20 @@ export async function createApp() {
     const teams = db.get().parentTeams.filter(t => t.members.includes(parentId));
     
     const populatedTeams = teams.map(t => {
-      const members = t.members.map(memberId => {
-        const parent = db.get().parents.find(p => p.id === memberId);
+      const teamHistory = db.get().parentQuestHistory.filter((h: any) => h.teamId === t.id);
+
+      const members = t.members.map((memberId: string) => {
+        const parent = db.get().parents.find((p: any) => p.id === memberId);
+        // Calculate XP earned specifically in this team from history
+        const teamXp = teamHistory
+          .filter((h: any) => h.parentId === memberId)
+          .reduce((sum: number, h: any) => sum + (h.xpEarned || 0), 0);
         return parent ? { 
           id: parent.id, 
           email: parent.email, 
           familyName: parent.familyName, 
           level: parent.level || 1, 
-          xp: parent.xp || 0, 
+          xp: teamXp, 
           streak: parent.streak || 0,
           longestStreak: parent.longestStreak || 0
         } : null;
@@ -1065,11 +1071,10 @@ export async function createApp() {
       
       members.sort((a: any, b: any) => b.xp - a.xp);
       
-      const quests = db.get().parentQuests.filter(q => q.teamId === t.id);
-      const rewards = db.get().parentRewards.filter(r => r.teamId === t.id);
-      const history = db.get().parentQuestHistory.filter(h => h.teamId === t.id);
+      const quests = db.get().parentQuests.filter((q: any) => q.teamId === t.id);
+      const rewards = db.get().parentRewards.filter((r: any) => r.teamId === t.id);
 
-      return { ...t, members, quests, rewards, history };
+      return { ...t, members, quests, rewards, history: teamHistory };
     });
     
     res.json(populatedTeams);
@@ -1162,8 +1167,10 @@ export async function createApp() {
     const quest = db.get().parentQuests.find(q => q.id === questId && q.teamId === teamId);
     if (!quest) return res.status(404).json({ error: "Quest not found." });
 
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const existing = db.get().parentQuestHistory.find(h => h.parentId === parentId && h.questId === questId && h.completedAt.startsWith(todayStr));
+    // Use local date (not UTC) to avoid timezone mismatch
+    const todayLocal = new Date();
+    const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth()+1).padStart(2,'0')}-${String(todayLocal.getDate()).padStart(2,'0')}`;
+    const existing = db.get().parentQuestHistory.find((h: any) => h.parentId === parentId && h.questId === questId && h.completedAt.startsWith(todayStr));
     if (existing) return res.status(400).json({ error: "Already completed today." });
 
     const parent = db.get().parents.find(p => p.id === parentId);
@@ -1191,6 +1198,8 @@ export async function createApp() {
       parentId,
       teamId,
       questId,
+      xpEarned: quest.xp,
+      coinsEarned: quest.coins,
       completedAt: new Date().toISOString()
     };
 
