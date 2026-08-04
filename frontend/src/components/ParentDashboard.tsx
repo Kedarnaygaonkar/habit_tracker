@@ -249,7 +249,7 @@ export default function ParentDashboard({ token, parent, onLogout }: ParentDashb
 
             <div className="px-6 flex overflow-x-auto gap-4 pb-4 snap-x hide-scroll relative z-10">
               {children.map(c => (
-                <div key={c.id} className={`snap-start shrink-0 w-[180px] rounded-[2.5rem] p-5 flex flex-col relative cursor-pointer transition-all hover:-translate-y-1 shadow-lg shadow-indigo-100/20 border-2 border-white/60 backdrop-blur-md ${c.gender === 'girl' ? 'bg-[#fce6f3]/80 hover:bg-[#fad4eb]/90' : 'bg-[#e6f0fa]/80 hover:bg-[#d4e6f9]/90'}`} onClick={() => setSelectedHero(c)}>
+                <div key={c.id} className={`snap-start shrink-0 w-[180px] rounded-[2.5rem] p-5 flex flex-col relative cursor-pointer transition-all hover:-translate-y-1 shadow-lg shadow-indigo-100/20 border-2 backdrop-blur-md ${c.gender === 'girl' ? 'bg-pink-100/80 hover:bg-pink-200/90 border-pink-200/60' : 'bg-blue-100/80 hover:bg-blue-200/90 border-blue-200/60'}`} onClick={() => setSelectedHero(c)}>
                   {/* Edit Button (3 dots) */}
                   <button 
                     className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 bg-white/50 hover:bg-white rounded-full p-1.5 transition-colors z-20"
