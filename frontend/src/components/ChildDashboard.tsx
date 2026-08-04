@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
+import PetGame from "./PetGame";
 import { 
   Home, 
   CheckSquare, 
@@ -47,6 +48,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
   const [badgeCatalog, setBadgeCatalog] = useState<any[]>([]);
   const [selectedBadge, setSelectedBadge] = useState<any | null>(null); // for detail modal
   const [newBadgesPopup, setNewBadgesPopup] = useState<any[]>([]); // congrats popup
+  const [showGame, setShowGame] = useState(false);
 
   const [joinTeamCode, setJoinTeamCode] = useState(() => {
     const urlCode = new URLSearchParams(window.location.search).get("team") || localStorage.getItem("pendingTeamCode");
@@ -915,7 +917,7 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
                   
                   <div className="flex gap-3">
                      <button onClick={feedPet} className="flex-1 bg-orange-500 text-white font-black text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 hover:-translate-y-0.5 transition-transform"><span className="text-lg">🍖</span> Feed Pet</button>
-                     <button className="flex-1 bg-purple-600 text-white font-black text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:-translate-y-0.5 transition-transform"><Gamepad2 className="w-5 h-5" /> Play</button>
+                     <button onClick={() => setShowGame(true)} className="flex-1 bg-purple-600 text-white font-black text-sm py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20 hover:-translate-y-0.5 transition-transform"><Gamepad2 className="w-5 h-5" /> Play</button>
                   </div>
                </div>
             </div>
@@ -1091,6 +1093,15 @@ export default function ChildDashboard({ token, childUser, onLogout }: ChildDash
             </button>
           </div>
         </div>
+      )}
+
+      {showGame && (
+        <PetGame 
+          onClose={() => setShowGame(false)} 
+          onWin={(score) => {
+            setShowGame(false);
+          }} 
+        />
       )}
 
     </div>
